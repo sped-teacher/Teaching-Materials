@@ -1,0 +1,63 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 480 480" width="960" height="960">
+  <defs>
+    <filter id="soft" x="-5%" y="-5%" width="110%" height="110%">
+      <feTurbulence type="fractalNoise" baseFrequency="0.035" numOctaves="2" seed="11"/>
+      <feDisplacementMap in="SourceGraphic" scale="3"/>
+    </filter>
+    <radialGradient id="glow" cx="50%" cy="50%" r="50%">
+      <stop offset="0" stop-color="#FFF4C2"/>
+      <stop offset="1" stop-color="#FFF4C2" stop-opacity="0"/>
+    </radialGradient>
+    <g id="bulb">
+      <path d="M0 -18 C-12 -18 -18 -9 -18 0 C-18 8 -12 12 -9 18 L9 18 C12 12 18 8 18 0 C18 -9 12 -18 0 -18 Z" fill="#FBE08A"/>
+      <rect x="-8" y="18" width="16" height="9" rx="2" fill="#C9C1B6"/>
+    </g>
+  </defs>
+  <rect width="480" height="480" fill="#fff"/>
+  <circle cx="240" cy="92" r="78" fill="url(#glow)"/>
+  <g filter="url(#soft)" stroke="#5B4A3E" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+    <!-- 大燈泡 -->
+    <g transform="translate(240 86) scale(2.1)"><use href="#bulb"/></g>
+    <path d="M232 92 l8 -10 l8 10" fill="none" stroke="#D9A62E" stroke-width="2.5"/>
+    <!-- 光線匯聚 -->
+    <path d="M96 212 C130 170 170 140 206 120 M190 206 C200 176 214 156 226 138 M290 206 C280 176 266 156 254 138 M384 212 C350 170 310 140 274 120" fill="none" stroke="#F2C14E" stroke-width="3" stroke-dasharray="3 8"/>
+    <!-- 桌子 -->
+    <ellipse cx="240" cy="410" rx="200" ry="44" fill="#E7C9A4"/>
+    <path d="M110 404 h60 M300 412 h70" fill="none" stroke="#F7EFE2" stroke-width="6"/>
+    <!-- 四個小孩 -->
+    <g>
+      <path d="M50 400 C52 330 74 310 100 310 C126 310 148 330 150 400 Z" fill="#A9D3B8"/>
+      <circle cx="100" cy="270" r="40" fill="#F8D9C0"/>
+      <path d="M60 268 C58 222 142 220 140 266 C124 248 80 248 60 268 Z" fill="#6B4A36"/>
+      <circle cx="86" cy="276" r="3.5" fill="#3E322A" stroke="none"/><circle cx="114" cy="276" r="3.5" fill="#3E322A" stroke="none"/>
+      <path d="M92 292 q8 7 16 0" fill="none"/>
+      <g transform="translate(100 206) scale(.9)"><use href="#bulb"/></g>
+    </g>
+    <g>
+      <path d="M142 410 C144 350 166 330 192 330 C218 330 240 350 242 410 Z" fill="#F4C7B8"/>
+      <circle cx="192" cy="286" r="40" fill="#F8D9C0"/>
+      <path d="M150 290 C144 236 238 232 234 288 C232 262 214 250 192 250 C170 250 154 262 150 290 Z" fill="#3E322A"/>
+      <path d="M152 286 C148 306 150 322 156 330 M232 286 C236 306 234 322 228 330" fill="none" stroke="#3E322A" stroke-width="6"/>
+      <circle cx="178" cy="292" r="3.5" fill="#3E322A" stroke="none"/><circle cx="206" cy="292" r="3.5" fill="#3E322A" stroke="none"/>
+      <path d="M184 308 q8 7 16 0" fill="none"/>
+      <g transform="translate(192 222) scale(.9)"><use href="#bulb"/></g>
+    </g>
+    <g>
+      <path d="M238 410 C240 350 262 330 288 330 C314 330 336 350 338 410 Z" fill="#9DC3E6"/>
+      <circle cx="288" cy="286" r="40" fill="#F1CFB2"/>
+      <path d="M248 284 C244 238 332 236 328 282 C318 262 300 256 288 262 C276 254 258 262 248 284 Z" fill="#2F2620"/>
+      <circle cx="274" cy="292" r="3.5" fill="#3E322A" stroke="none"/><circle cx="302" cy="292" r="3.5" fill="#3E322A" stroke="none"/>
+      <path d="M280 308 q8 7 16 0" fill="none"/>
+      <g transform="translate(288 222) scale(.9)"><use href="#bulb"/></g>
+    </g>
+    <g>
+      <path d="M330 400 C332 330 354 310 380 310 C406 310 428 330 430 400 Z" fill="#CDB8E3"/>
+      <circle cx="380" cy="270" r="40" fill="#F8D9C0"/>
+      <path d="M340 272 C336 222 424 220 420 270 C408 250 360 244 340 272 Z" fill="#8A5A3C"/>
+      <circle cx="412" cy="236" r="14" fill="#8A5A3C"/>
+      <circle cx="366" cy="276" r="3.5" fill="#3E322A" stroke="none"/><circle cx="394" cy="276" r="3.5" fill="#3E322A" stroke="none"/>
+      <path d="M372 292 q8 7 16 0" fill="none"/>
+      <g transform="translate(380 206) scale(.9)"><use href="#bulb"/></g>
+    </g>
+  </g>
+</svg>

@@ -1,0 +1,58 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 480 480" width="960" height="960">
+  <defs>
+    <filter id="soft" x="-5%" y="-5%" width="110%" height="110%">
+      <feTurbulence type="fractalNoise" baseFrequency="0.035" numOctaves="2" seed="4"/>
+      <feDisplacementMap in="SourceGraphic" scale="3"/>
+    </filter>
+    <radialGradient id="net" cx="50%" cy="35%" r="70%">
+      <stop offset="0" stop-color="#EAF3FA" stop-opacity=".55"/>
+      <stop offset="1" stop-color="#CFE2F0" stop-opacity=".55"/>
+    </radialGradient>
+  </defs>
+  <rect width="480" height="480" fill="#fff"/>
+  <g filter="url(#soft)" stroke="#5B4A3E" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+    <!-- 床 -->
+    <rect x="70" y="352" width="340" height="30" rx="8" fill="#D9B48C"/>
+    <rect x="80" y="382" width="14" height="40" rx="4" fill="#C49B72"/>
+    <rect x="386" y="382" width="14" height="40" rx="4" fill="#C49B72"/>
+    <rect x="78" y="326" width="324" height="32" rx="12" fill="#F7F1E6"/>
+    <!-- 枕頭與小孩 -->
+    <ellipse cx="140" cy="318" rx="46" ry="20" fill="#FFFFFF"/>
+    <circle cx="146" cy="300" r="26" fill="#F8D9C0"/>
+    <path d="M120 296 C122 272 168 268 172 292 C160 282 136 282 120 296 Z" fill="#4A3A30"/>
+    <path d="M136 304 q5 4 10 0" fill="none"/>
+    <path d="M152 304 q5 4 10 0" fill="none"/>
+    <circle cx="134" cy="312" r="4" fill="#F4B1A6" stroke="none"/>
+    <circle cx="164" cy="312" r="4" fill="#F4B1A6" stroke="none"/>
+    <path d="M146 318 q4 2 8 0" fill="none"/>
+    <!-- 被子 -->
+    <path d="M168 300 C220 288 330 290 392 304 L396 340 C320 348 220 348 166 340 Z" fill="#F6D98A"/>
+    <path d="M200 312 q20 -6 40 0 M270 314 q20 -6 40 0 M330 316 q20 -6 40 0" fill="none" stroke="#E2B95A"/>
+    <!-- 蚊帳 -->
+    <path d="M62 356 C62 210 140 112 240 96 C340 112 418 210 418 356 Z" fill="url(#net)" stroke="#8FB0C9"/>
+    <path d="M150 350 C150 230 190 140 240 100 M330 350 C330 230 290 140 240 100 M240 100 L240 350" fill="none" stroke="#A9C4D8" stroke-width="1.8"/>
+    <path d="M100 350 C104 250 150 160 240 100 M380 350 C376 250 330 160 240 100" fill="none" stroke="#B8D0E0" stroke-width="1.5"/>
+    <path d="M62 356 q30 10 60 0 q30 10 60 0 q30 10 60 0 q30 10 60 0 q30 10 60 0 q30 10 56 0" fill="none" stroke="#8FB0C9"/>
+    <line x1="240" y1="40" x2="240" y2="96" stroke="#8FB0C9"/>
+    <circle cx="240" cy="96" r="7" fill="#CFE2F0" stroke="#8FB0C9"/>
+    <!-- 蚊子（在外面，飛不進去） -->
+    <g transform="translate(430 170) rotate(-15)">
+      <ellipse cx="-8" cy="-10" rx="9" ry="5" fill="#E6EEF4" stroke="#8C9AA6" stroke-width="1.5" transform="rotate(-30 -8 -10)"/>
+      <ellipse cx="6" cy="-10" rx="9" ry="5" fill="#E6EEF4" stroke="#8C9AA6" stroke-width="1.5" transform="rotate(30 6 -10)"/>
+      <ellipse cx="0" cy="0" rx="12" ry="4.5" fill="#6B5B50" stroke="none"/>
+      <circle cx="-13" cy="-1" r="4" fill="#6B5B50" stroke="none"/>
+      <path d="M-4 3 l-5 10 M2 3 l0 11 M8 3 l5 10 M-17 0 l-8 3" fill="none" stroke="#6B5B50" stroke-width="1.5"/>
+    </g>
+    <g transform="translate(52 210) rotate(12) scale(.85)">
+      <ellipse cx="-8" cy="-10" rx="9" ry="5" fill="#E6EEF4" stroke="#8C9AA6" stroke-width="1.5" transform="rotate(-30 -8 -10)"/>
+      <ellipse cx="6" cy="-10" rx="9" ry="5" fill="#E6EEF4" stroke="#8C9AA6" stroke-width="1.5" transform="rotate(30 6 -10)"/>
+      <ellipse cx="0" cy="0" rx="12" ry="4.5" fill="#6B5B50" stroke="none"/>
+      <circle cx="13" cy="-1" r="4" fill="#6B5B50" stroke="none"/>
+      <path d="M-8 3 l-5 10 M-2 3 l0 11 M4 3 l5 10 M17 0 l8 3" fill="none" stroke="#6B5B50" stroke-width="1.5"/>
+    </g>
+    <path d="M446 150 c20 -30 -10 -50 -30 -40" fill="none" stroke="#B9B0A6" stroke-width="1.8" stroke-dasharray="4 6"/>
+    <path d="M40 190 c-20 -30 10 -60 34 -44" fill="none" stroke="#B9B0A6" stroke-width="1.8" stroke-dasharray="4 6"/>
+    <!-- Zzz 用小月亮代替文字 -->
+    <path d="M186 250 a14 14 0 1 0 14 -18 a10 10 0 1 1 -14 18 Z" fill="#F6E3A3" stroke="#D9BE6A" stroke-width="1.8"/>
+  </g>
+</svg>
