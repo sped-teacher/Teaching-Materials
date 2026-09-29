@@ -16,6 +16,12 @@ __pycache__/
 dist/
 build/
 
+# 外部專案的讀音資料（用 python tools/fetch_tables.py 下載）與本機快取
+tools/texts/tsi.src.txt
+tools/texts/phonic_table_*.txt
+tools/texts/pedia_cache.json
+tools/texts/zy_cache.json
+
 # Claude Code 本機設定
 .claude/settings.local.json
 .claude/launch.json

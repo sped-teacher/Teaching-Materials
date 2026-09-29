@@ -1,0 +1,40 @@
+{
+  "lesson": "05",
+  "cards": [
+    { "name": "商譽", "scene": "A small honest bakery with a long line of happy returning customers, the baker smiling and giving fair portions." },
+    { "name": "服務", "scene": "A friendly volunteer helping an elderly lady carry her bags and showing her the way." },
+    { "name": "關聯", "scene": "A child connecting pictures with lines on a board: a cloud connected to rain, a sun connected to sunglasses." },
+    { "name": "核准", "scene": "A clerk at a desk stamping a paper with an approval stamp, a happy person waiting." },
+    { "name": "申請", "scene": "A child handing a form to a librarian at a desk to apply for a library card." },
+    { "name": "智慧財產局", "scene": "A tidy government office building with people inside checking designs and logo shapes on screens. No text or signs." },
+    { "name": "黑松", "scene": "A tall black pine tree with dark green needles standing strong on a hillside." },
+    { "name": "註冊", "scene": "Students lining up at a school registration table with a teacher checking their names on a list (list shown as lines only)." },
+    { "name": "企業", "scene": "A modern company office with many workers busy at their desks working together." },
+    { "name": "堅毅不拔", "scene": "A strong pine tree standing firmly on a rocky cliff in a storm, not moving." },
+    { "name": "歷經", "scene": "A young tree shown in four stages side by side: through rain, wind, snow and sun, growing into a big tree." },
+    { "name": "英文", "scene": "A child studying with a picture flash card of an apple and speaking happily to a foreign teacher." },
+    { "name": "銷售", "scene": "A friendly shopkeeper selling colorful stationery to a customer at a shop counter, handing over a bag." },
+    { "name": "霸主", "scene": "A lion standing proudly on top of a big rock, the king of the grassland, other animals below." },
+    { "name": "項目", "scene": "A sports day with different events side by side: running, jumping and throwing a ball." },
+    { "name": "斗大", "scene": "A child standing in front of a giant signboard covered only with huge colorful shapes, looking tiny next to it. No letters." },
+
+    { "name": "沽名釣譽", "scene": "A man posing for many cameras while pretending to help, holding a small donation box, looking more at the cameras than the people." },
+    { "name": "當務之急", "scene": "A family quickly closing windows and putting away things in a rush before a storm arrives." },
+    { "name": "三令五申", "scene": "A teacher repeatedly reminding students with a raised finger, children nodding, the same gesture shown several times." },
+    { "name": "歷歷在目", "scene": "An old man looking at a photo album, clear memories of his childhood floating vividly above in bubbles." },
+    { "name": "出奇制勝", "scene": "A small soccer team using a clever surprise move to score a goal against a big team." },
+    { "name": "橫行霸道", "scene": "A big crab walking sideways and pushing other small sea creatures out of the way on the beach." },
+
+    { "name": "應該", "scene": "A child washing hands at a sink before eating, a clean towel nearby, doing the right thing." },
+    { "name": "孩子", "scene": "Several happy children playing together on a playground." },
+    { "name": "伸展", "scene": "A child stretching arms and body up high after exercising." },
+    { "name": "松樹", "scene": "A tall green pine tree with pine cones in a forest." },
+    { "name": "駐足", "scene": "Tourists stopping on a path to admire a beautiful waterfall." },
+    { "name": "專注", "scene": "A child concentrating hard on building a model, very focused." },
+    { "name": "歷史", "scene": "An ancient castle and old stone ruins, a child looking at them with interest." },
+    { "name": "月曆", "scene": "A wall calendar with a picture of flowers and a grid of empty squares, a child circling one square. No numbers." },
+    { "name": "項鍊", "scene": "A pretty pearl necklace hanging on a jewelry stand." },
+    { "name": "山頂", "scene": "Hikers standing happily on the top of a mountain above the clouds." },
+    { "name": "勝利", "scene": "A team of children cheering and jumping, holding up a trophy after winning." }
+  ]
+}

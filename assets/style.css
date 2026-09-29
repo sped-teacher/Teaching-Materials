@@ -1,4 +1,6 @@
 /* 國語五上學習樂園：iPad 觸控優先，低視覺干擾 */
+/* 楷書：全字庫正楷體（數位發展部 CNS11643 全字庫，政府資料開放授權），只含網站用到的字，由 tools/build_font.py 產生 */
+@font-face { font-family: 'TW-Kai'; src: url('fonts/twkai.woff2') format('woff2'); font-display: swap; }
 :root {
   --bg: #F6F1E7;
   --card: #FFFFFF;
@@ -17,22 +19,27 @@
   --star: #E8A92A;
   --c-chars: #2F6DB0;
   --c-words: #2E8B6E;
+  --c-phrases: #3E8A99;
   --c-sentences: #C77A2B;
   --c-reading: #B04A6A;
   --c-lookalikes: #6A5AB0;
   --c-idioms: #A8553A;
+  --c-listening: #2C7F8C;
+  --c-rhetoric: #7A5C2E;
+  --c-zhuyinGame: #85A5A1;
   --conn1: #D2553F;
   --conn2: #2F6DB0;
   --radius: 18px;
   --shadow: 0 2px 10px rgba(60, 45, 20, .08);
   --font: 'Noto Sans TC', 'PingFang TC', 'Heiti TC', 'Microsoft JhengHei', sans-serif;
-  --kai: 'LXGW WenKai TC', 'Kaiti TC', 'BiauKai', 'DFKai-SB', serif;
+  --kai: 'TW-Kai', 'LXGW WenKai TC', 'Kaiti TC', 'BiauKai', 'DFKai-SB', serif;
 }
 
 * { box-sizing: border-box; }
 html { -webkit-text-size-adjust: 100%; }
 body {
   margin: 0;
+  font-synthesis: none; /* 正楷體只有一種粗細，不要讓瀏覽器假加粗 */
   background: var(--bg);
   color: var(--ink);
   font-family: var(--font);
@@ -184,12 +191,15 @@ h3 { font-size: 21px; }
   font-size: 26px; padding: 10px 16px; line-height: 1.4; display: flex; align-items: center; justify-content: center; gap: 8px;
   transition: transform .08s ease, background .15s ease;
 }
-.opt.kai { font-family: var(--kai); font-size: 44px; min-height: 96px; }
+.opt.kai { font-family: var(--kai); font-size: 44px; min-height: 96px; white-space: nowrap; }
+.options.wide { grid-template-columns: repeat(auto-fit, minmax(210px, 1fr)); }
+.options.wide .opt.kai { font-size: 36px; }
 .options.long .opt { font-size: 22px; justify-content: flex-start; text-align: left; }
 .opt:active:not(:disabled) { transform: scale(.97); }
 .opt.right { border-color: var(--right); background: var(--right-soft); }
 .opt.wrong { border-color: var(--wrong); background: var(--wrong-soft); opacity: .55; }
 .opt.gone { visibility: hidden; }
+.options.long .row.gone { display: none; }
 .opt.reveal { border-color: var(--reveal); background: var(--reveal-soft); animation: pulse 1s ease-in-out infinite; }
 @keyframes pulse { 50% { transform: scale(1.04); } }
 .shake { animation: shake .35s ease; }
@@ -209,10 +219,13 @@ h3 { font-size: 21px; }
 .flash .check { position: absolute; top: 8px; right: 10px; color: var(--right); font-size: 22px; opacity: 0; }
 .flash.seen .check { opacity: 1; }
 .flash .hanzi { font-family: var(--kai); font-size: 88px; line-height: 1.1; }
-.flash .zy { font-size: 20px; color: var(--muted); letter-spacing: 2px; }
 .flash .facts { font-size: 17px; color: var(--muted); }
 .flash .facts b { color: var(--ink); font-family: var(--kai); font-size: 22px; }
 .flash .wds { font-size: 19px; }
+.flash .pedia { margin-top: 8px; font-size: 16px; color: var(--accent); text-decoration: none; border: 1px solid var(--line); border-radius: 999px; padding: 6px 14px; background: var(--soft); }
+.flash .poly { margin-top: 6px; padding: 6px 10px; border-radius: 12px; background: var(--reveal-soft); border: 1px solid var(--reveal); font-size: 18px; }
+.flash .poly .tag { display: inline-block; font-size: 14px; font-weight: 700; color: var(--muted); }
+.flash .poly b { color: var(--mc, var(--accent)); }
 .word-card { display: grid; grid-template-columns: 180px 1fr; gap: 16px; align-items: center; text-align: left; padding: 14px; }
 .word-card .word { font-family: var(--kai); font-size: 34px; font-weight: 700; line-height: 1.8; }
 .word-card .meaning { font-size: 19px; }
@@ -224,8 +237,12 @@ h3 { font-size: 21px; }
 .pic .ph { color: #B5AA97; font-size: 15px; text-align: center; line-height: 1.5; }
 .pic .ph span { font-size: 36px; display: block; }
 .pic.big { max-width: 320px; margin: 0 auto; }
-ruby { ruby-position: over; }
-rt { font-size: .46em; font-family: var(--font); color: var(--muted); letter-spacing: 0; }
+/* 注音：直排在國字右側 */
+.zy-c { display: inline-flex; align-items: center; gap: .04em; margin-right: .1em; vertical-align: middle; }
+.zy-v { display: inline-grid; grid-template-columns: auto .45em; font-family: var(--font); font-size: .46em; line-height: 1; color: var(--muted); font-weight: 400; letter-spacing: 0; }
+.zy-s { text-align: center; }
+.zy-t { align-self: start; margin-top: -.2em; font-size: .9em; }
+.zy-light { text-align: center; line-height: .6; }
 
 /* 配對 */
 .match { display: grid; grid-template-columns: 1fr 1.5fr; gap: 12px 16px; }
@@ -272,6 +289,128 @@ rt { font-size: .46em; font-family: var(--font); color: var(--muted); letter-spa
 .pattern-card .pat { font-family: var(--kai); font-size: 44px; margin: 6px 0; }
 .pattern-card .kind { display: inline-block; background: var(--soft); border-radius: 999px; padding: 2px 14px; font-size: 16px; color: var(--muted); }
 .pattern-card .explain { font-size: 20px; margin: 10px 0 16px; }
+.model .tag { flex: none; font-family: var(--font); font-size: 14px; color: var(--muted); background: var(--soft); border: 1px solid var(--line); border-radius: 999px; padding: 1px 10px; }
+.model.origin .tag { color: var(--mc, var(--accent)); border-color: currentColor; }
+.ex.origin b { color: var(--mc, var(--accent)); font-weight: 700; }
+.btn-read { background: #D6A27A; color: #fff; }
+.btn-sm { padding: 4px 12px; font-size: 15px; min-height: 0; border-radius: 999px; text-decoration: none; }
+/* 課文點讀 */
+.reader-bar { display: flex; flex-wrap: wrap; align-items: center; gap: 10px; position: sticky; top: 0; z-index: 5; background: var(--card); padding: 6px 0 10px; border-bottom: 1px solid var(--line); }
+.reader-title { font-family: var(--kai); font-weight: 400; font-size: 34px; text-align: center; margin: 18px 0 8px; }
+.reader-h { font-family: var(--kai); font-weight: 400; font-size: 28px; color: var(--mc, var(--accent)); margin: 22px 0 4px; }
+.reader-text { font-family: var(--kai); font-size: 32px; line-height: 2.1; }
+.reader-p { text-indent: 2em; margin: 0 0 14px; }
+.reader-p .zy-c, .reader-p .zy-v { text-indent: 0; }
+.reader-p .nw-grp { white-space: nowrap; display: inline-block; text-indent: 0; }
+.reader-p .rc { cursor: pointer; border-radius: 6px; transition: background .15s; }
+.reader-p .rc.punct { cursor: default; }
+.reader-p .hl-read { background: var(--reveal-soft); box-shadow: 0 0 0 2px var(--reveal-soft); }
+@media (max-width: 640px) { .reader-text { font-size: 26px; } }
+.btn-score { background: #8C9E74; color: #fff; }
+/* ── 朗讀挑戰 ── */
+.score-head { margin-bottom: 10px; font-size: 18px; }
+.score-dots { display: flex; flex-wrap: wrap; gap: 6px; margin-top: 8px; }
+.score-dots .sd { width: 22px; height: 22px; border-radius: 50%; border: 2px solid var(--line); background: var(--card); padding: 0; }
+.score-dots .sd.cur { border-color: var(--c-reading); box-shadow: 0 0 0 3px rgba(176, 74, 106, .2); }
+.score-dots .sd.s0 { background: var(--wrong-soft); border-color: var(--wrong); }
+.score-dots .sd.s1 { background: var(--reveal-soft); border-color: var(--reveal); }
+.score-dots .sd.s2, .score-dots .sd.s3 { background: var(--right-soft); border-color: var(--right); }
+.score-dots .sd.s3::after { content: '★'; font-size: 12px; color: var(--star); line-height: 18px; }
+.score-sec { font-size: 16px; margin-bottom: 4px; }
+.score-line { text-indent: 0; }
+.score .rc { border-radius: 8px; transition: background .2s; }
+.score .rc.sc-ok { background: var(--right-soft); }
+.score .rc.sc-tone { background: #FCE3C8; box-shadow: inset 0 -4px 0 #E08A2E; }
+.score .rc.sc-miss { background: var(--wrong-soft); box-shadow: inset 0 -4px 0 var(--wrong); }
+.score-mic.rec { background: var(--wrong); border-color: var(--wrong); animation: pulse 1.2s ease-in-out infinite; }
+.score-live { text-align: center; margin-top: 10px; font-size: 18px; min-height: 1.6em; }
+.score-res { display: flex; flex-wrap: wrap; gap: 10px; align-items: center; justify-content: center; font-size: 20px; }
+.score-res b { font-size: 28px; }
+.score-sum { text-align: center; padding: 10px 0; }
+.score-sum .big { font-size: 56px; font-weight: 700; }
+
+/* ── 注音聽打 ── */
+.zg-top { display: flex; gap: 16px; align-items: center; justify-content: center; flex-wrap: wrap; margin: 6px 0 10px; }
+.zg-pic { display: none; width: 180px; aspect-ratio: 1; border-radius: 14px; overflow: hidden; border: 2px solid var(--line); background: #fff; }
+.zg-pic.on { display: block; }
+.zg-pic img { width: 100%; height: 100%; object-fit: contain; display: block; }
+.zg-main { display: flex; flex-direction: column; align-items: center; gap: 12px; }
+.zg-play { min-width: 180px; }
+.zg-slots { display: flex; gap: 10px; justify-content: center; flex-wrap: wrap; }
+.zg-slot {
+  display: inline-flex; align-items: center; gap: 2px; min-width: 104px; height: 112px; padding: 6px 10px;
+  border: 2px solid var(--line); border-radius: 14px; background: var(--card);
+}
+.zg-slot.cur { border-color: var(--c-zhuyinGame); box-shadow: 0 0 0 3px rgba(133, 165, 161, .25); }
+.zg-slot.bad { border-color: var(--wrong); background: var(--wrong-soft); }
+.zg-slot.ok { border-color: var(--right); background: var(--right-soft); }
+.zg-han { font-family: var(--kai); font-size: 56px; line-height: 1; color: var(--ink); }
+.zg-han:not(.got) { color: #B9AF9E; }
+/* 選好的字跟選字列用同一種字型（常用字都有，不會缺字）；答對後才換成楷書（正確的字一定在楷書字型裡） */
+.zg-han.got { font-family: var(--font); font-size: 50px; }
+.zg-slot.ok .zg-han.got { font-family: var(--kai); font-size: 56px; }
+.zg-cands { display: none; flex-wrap: wrap; gap: 8px; justify-content: center; align-items: center; margin: 4px auto 0; padding: 10px 12px; border-radius: 14px; background: var(--accent-soft); border: 1px solid #C9DBEF; max-width: 720px; }
+.zg-cands.on { display: flex; }
+.zg-cands-t { font-size: 17px; color: var(--muted); }
+.zg-cand { min-width: 64px; height: 64px; border-radius: 12px; border: 1px solid #C9DBEF; background: var(--card); font-family: var(--font); font-size: 36px; line-height: 1; }
+.zg-cand:active { transform: scale(.95); }
+.zg-cand.reveal { border-color: var(--reveal); background: var(--reveal-soft); animation: pulse 1s ease-in-out infinite; }
+.zg-none { font-size: 18px; color: var(--wrong); }
+.zg-slot .zg-zy { display: inline-flex; min-width: 30px; }
+.zg-slot .zg-zy .zy-v { font-size: 26px; }
+.zg-ans { font-family: var(--kai); font-size: 30px; }
+.zg-kb { display: flex; flex-direction: column; gap: 8px; margin-top: 14px; padding: 12px; border-radius: var(--radius); background: var(--soft); border: 1px solid var(--line); }
+/* 鍵盤照標準注音鍵盤（大千式）排列，每排往右錯開一點，跟真的鍵盤一樣 */
+.zg-row { display: flex; gap: 6px; justify-content: center; }
+.zg-row.r1 { padding-left: 24px; }
+.zg-row.r2 { padding-left: 48px; }
+.zg-row.r3 { padding-left: 72px; }
+.zg-key {
+  flex: 0 1 56px; min-width: 0; height: 60px; padding: 0 2px; border-radius: 12px; border: 1px solid var(--line);
+  background: var(--card); font-size: 28px; line-height: 1; display: inline-flex; flex-direction: column; align-items: center; justify-content: center;
+  box-shadow: 0 1px 0 rgba(60, 45, 20, .08);
+}
+.zg-key:active { transform: scale(.95); }
+.zg-key.ini { background: #EEF4F3; border-color: #D3E1DE; }
+.zg-key.med { background: #FDF3E4; border-color: #EEDDBF; }
+.zg-key.fin { background: #F1EEF8; border-color: #DCD5EC; }
+.zg-key.tone { background: #FBF1EF; border-color: #EBD6D1; }
+.zg-key .zg-tmark { font-size: 28px; height: 24px; }
+.zg-key small { font-size: 12px; color: var(--muted); margin-top: 2px; }
+.zg-key.del { flex-basis: 72px; font-size: 26px; }
+.zg-key.space { flex: 0 1 360px; height: 52px; }
+.zg-key.space small { font-size: 15px; margin: 0; }
+@media (max-width: 600px) {
+  .zg-kb { padding: 8px 4px; } .zg-row { gap: 3px; } .zg-row.r1 { padding-left: 10px; } .zg-row.r2 { padding-left: 20px; } .zg-row.r3 { padding-left: 30px; }
+  .zg-key { height: 48px; font-size: 20px; border-radius: 8px; } .zg-key .zg-tmark { font-size: 20px; height: 18px; } .zg-key small { font-size: 9px; }
+  .zg-slot { min-width: 84px; height: 96px; } .zg-han, .zg-han.got, .zg-slot.ok .zg-han.got { font-size: 42px; } .zg-cand { min-width: 52px; height: 52px; font-size: 30px; }
+}
+.game-frame { display: block; width: 100%; height: min(72vh, 640px); border: 1px solid var(--line); border-radius: var(--radius); background: #F5F5F0; }
+.rh-clue { text-decoration-color: var(--reveal); text-decoration-thickness: 3px; text-underline-offset: 5px; }
+/* 字族文 */
+.fam-poem { margin-bottom: 16px; }
+.fam-base { display: flex; align-items: center; justify-content: center; gap: 8px; font-size: 22px; color: var(--muted); margin-bottom: 8px; }
+.fam-base .b { font-family: var(--kai); font-size: 56px; color: var(--ink); line-height: 1.6; }
+.fam-line { display: flex; align-items: center; gap: 10px; font-family: var(--kai); font-size: 30px; padding: 8px 4px; border-top: 1px dashed var(--line); }
+.formula { font-family: var(--kai); white-space: nowrap; }
+.flash .formula b { font-size: 30px; }
+.formula b.part { color: var(--mc, var(--accent)); }
+.flash .fam-pic { width: 100%; max-width: 180px; margin-bottom: 4px; }
+.flash .tip { font-size: 16px; color: var(--muted); line-height: 1.5; }
+.flash .hanzi .zy-v { font-size: .26em; }
+.zy-strong .zy-v, .poly-char .zy-v, .opt .zy-v { color: var(--mc, var(--accent)); font-weight: 700; }
+.poly-char { font-family: var(--kai); font-size: 30px; }
+.nw { white-space: nowrap; display: inline-block; }
+.hl-char { color: var(--mc, var(--accent)); }
+.fam-line .hl-char { font-size: 38px; }
+
+/* 短語：詞性上色（動詞紅、名詞藍、形容詞綠） */
+.ph-v { color: var(--conn1); }
+.ph-n { color: var(--conn2); }
+.ph-a { color: var(--right); }
+.ph-q { color: #6A5AB0; }
+.ph-structure { display: inline-flex; flex-wrap: wrap; gap: 4px; justify-content: center; font-size: 22px; font-weight: 700; margin: 6px 0; }
+.ph-slot { background: var(--soft); border: 1px solid var(--line); border-radius: 10px; padding: 2px 8px; }
 .model { display: flex; align-items: center; gap: 10px; justify-content: center; font-family: var(--kai); font-size: 26px; padding: 8px 0; border-top: 1px dashed var(--line); }
 
 /* 慶祝 */
