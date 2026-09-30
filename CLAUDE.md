@@ -7,6 +7,7 @@
 - 國語五上學習樂園：https://sped-teacher.github.io/Teaching-Materials/mandarin/ （`mandarin/`）
 - 新增教材：在根目錄開一個新資料夾，並在總覽 `index.html` 加一張卡片
 - 教材網站左上角名稱格式：「版本＋科目＋年級學期」，例如「康軒國語五上」（國語網站改 `mandarin/assets/app.js` 的 `SITE_NAME`）；新增其他版本、年級照同一格式，總覽頁的子標籤也用「版本＋年級」
+- 教材網站首頁大標題格式：「科目＋年級學期＋學習樂園」，例如「國語五上學習樂園」
 - 部署完成要回報網址
 
 ## 專案規則
