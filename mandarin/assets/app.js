@@ -9,6 +9,8 @@
 (function () {
   'use strict';
 
+  // 左上角顯示的教材名稱：格式「版本＋科目＋年級學期」（之後新增其他版本、年級照這個格式）
+  var SITE_NAME = '康軒國語五上';
   var LESSONS = window.LESSONS || {};
   var LESSON_LIST = [
     { id: '01', title: '蚊帳大使' },
@@ -1168,7 +1170,7 @@
     crumbs.forEach(function (c, i) { if (i) append(nav, h('span', {}, '／')); append(nav, c.href ? h('a', { href: c.href }, c.text) : h('span', {}, c.text)); });
     var main = h('main', {});
     if (mc) main.style.setProperty('--mc', mc);
-    append(app, h('header', { class: 'topbar' }, h('a', { class: 'brand', href: '#/' }, '📚 國語五上樂園'), nav, gearBtn()), main,
+    append(app, h('header', { class: 'topbar' }, h('a', { class: 'brand', href: '#/' }, '📚 ' + SITE_NAME), nav, gearBtn()), main,
       h('footer', { class: 'footer' }, h('a', { href: 'guide.html' }, '📘 使用說明'), '　', h('a', { href: '../' }, '🏫 資源班教材總覽'), h('br'), '特殊教育輔助教材，非出版社官方產品。', h('br'), '內容依康軒版國語五上整理改寫，僅供教學使用，不作商業用途。', h('br'), '楷書字型：全字庫正楷體（數位發展部，CNS11643 中文標準交換碼全字庫網站 https://www.cns11643.gov.tw，政府資料開放授權條款－第1版）'));
     window.scrollTo(0, 0);
     return main;
