@@ -35,7 +35,19 @@ def copy_shared():
             print(f'複製：{a.name} → lesson{dst}', flush=True)
 
 
+def keep_awake():
+    """程式執行期間不讓 Windows 自動睡眠（螢幕可以關）；程式結束就自動恢復，不改電源設定。"""
+    try:
+        import ctypes
+        ES_CONTINUOUS, ES_SYSTEM_REQUIRED = 0x80000000, 0x00000001
+        ctypes.windll.kernel32.SetThreadExecutionState(ES_CONTINUOUS | ES_SYSTEM_REQUIRED)
+        print('已設定：畫圖期間電腦不會自動睡眠', flush=True)
+    except Exception:
+        pass  # 不是 Windows 就略過
+
+
 def main(lids):
+    keep_awake()
     for lid in lids:
         conf = ROOT / 'tools' / f'cards_{lid}.json'
         if not conf.exists():
