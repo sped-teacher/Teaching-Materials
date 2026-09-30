@@ -251,7 +251,8 @@
     var $ = function (id) { return document.getElementById(id); };
 
     // ── 設定與今天的星星（只存在這台裝置）──
-    var st = { theme: 'light', sound: true, disc: true, digits: true, warn: true, minutes: 5, task: '', reward: '', day: '', stars: 0, goal: 5 };
+    var st = { theme: 'light', sound: true, disc: true, digits: true, warn: true, minutes: 5, day: '', stars: 0, goal: 5 };
+    var task = { now: '', reward: '' };   // 任務內容不記住：每次打開都是空白，只顯示提示文字
     try { Object.assign(st, JSON.parse(localStorage.getItem(KEY)) || {}); } catch (e) { }
     var today = new Date().toDateString();
     if (st.day !== today) { st.day = today; st.stars = 0; }
@@ -308,11 +309,11 @@
         chime([523, 659, 784, 1047], 0.25, 0.12);
         var filled = st.stars % st.goal === 0;
         if (filled) {
-          showModal('🏆', '集滿 ' + st.goal + ' 顆星星！', '你今天做得太棒了！', st.reward);
+          showModal('🏆', '集滿 ' + st.goal + ' 顆星星！', '你今天做得太棒了！', task.reward);
           say('太厲害了，你集滿了' + st.goal + '顆星星');
         } else {
           var need = st.goal - st.stars % st.goal;
-          showModal('🌟', '提早完成！', '得到一顆星星，再 ' + need + ' 顆就集滿了。', st.reward);
+          showModal('🌟', '提早完成！', '得到一顆星星，再 ' + need + ' 顆就集滿了。', task.reward);
           say('太棒了，你提早完成了');
         }
       } else {
@@ -418,7 +419,7 @@
     // ── 先…再… ──
     function syncTask() {
       var t = $('task').value.trim(), r = $('reward').value.trim();
-      st.task = t; st.reward = r; save();
+      task.now = t; task.reward = r;
       var box = $('taskShow'); box.innerHTML = '';
       document.body.classList.toggle('notask', !t);
       if (!t) return;
@@ -431,7 +432,8 @@
         th.appendChild(l2); th.appendChild(document.createTextNode(r)); box.appendChild(th);
       }
     }
-    $('task').value = st.task; $('reward').value = st.reward;
+    delete st.task; delete st.reward; save();   // 清掉舊版記住的任務內容
+    $('task').value = ''; $('reward').value = '';
     $('task').addEventListener('input', syncTask); $('reward').addEventListener('input', syncTask);
 
     // ── 星星 ──
