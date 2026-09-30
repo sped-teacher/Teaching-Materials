@@ -12,32 +12,63 @@
   <style>
     :root {
       --bg: #F6F1E7; --card: #FFFFFF; --ink: #2A2825; --muted: #6E675D; --line: #E4DCCD; --soft: #FBF8F2;
-      --mandarin: #2F6DB0; --shadow: 0 2px 10px rgba(60, 45, 20, .08);
+      --mandarin: #2F6DB0; --mandarin-soft: #E3EDF8; --tools: #2E8B6E; --tools-soft: #E2F3E8;
+      --shadow: 0 2px 10px rgba(60, 45, 20, .08);
       --font: 'Noto Sans TC', 'PingFang TC', 'Heiti TC', 'Microsoft JhengHei', sans-serif;
     }
     * { box-sizing: border-box; }
     body { margin: 0; background: var(--bg); color: var(--ink); font-family: var(--font); line-height: 1.6; -webkit-text-size-adjust: 100%; }
+    button { font: inherit; color: inherit; cursor: pointer; touch-action: manipulation; }
     main { max-width: 920px; margin: 0 auto; padding: 32px 16px 40px; }
     header h1 { margin: 0; font-size: 32px; line-height: 1.3; }
     header p { margin: 6px 0 0; color: var(--muted); font-size: 18px; }
-    section { margin-top: 30px; }
-    section h2 { font-size: 21px; margin: 0 0 12px; display: flex; align-items: center; gap: 8px; }
+    :focus-visible { outline: 3px solid var(--c, var(--mandarin)); outline-offset: 2px; }
+
+    /* 主標籤 */
+    .tabs { display: flex; gap: 8px; margin-top: 24px; border-bottom: 2px solid var(--line); }
+    .tab {
+      min-height: 52px; padding: 8px 22px; border: 2px solid transparent; border-bottom: none;
+      border-radius: 14px 14px 0 0; background: transparent; font-size: 20px; font-weight: 700; color: var(--muted);
+      margin-bottom: -2px; display: inline-flex; align-items: center; gap: 8px;
+    }
+    .tab[aria-selected="true"] { background: var(--card); border-color: var(--line); color: var(--c); box-shadow: inset 0 4px 0 var(--c); }
+    .panel { background: var(--card); border: 2px solid var(--line); border-top: none; border-radius: 0 0 18px 18px; padding: 18px; box-shadow: var(--shadow); }
+    .panel[hidden] { display: none; }
+
+    /* 子標籤 */
+    .subtabs { display: flex; flex-wrap: wrap; gap: 8px; margin-bottom: 16px; }
+    .subtab {
+      min-height: 44px; padding: 6px 16px; border-radius: 999px; border: 2px solid var(--line);
+      background: var(--soft); font-size: 17px; font-weight: 500;
+    }
+    .subtab[aria-selected="true"] { border-color: var(--c); background: var(--c-soft); color: var(--c); font-weight: 700; }
+    .subpanel[hidden] { display: none; }
+
+    /* 教材卡片 */
     .grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(260px, 1fr)); gap: 14px; }
     .item {
       display: flex; flex-direction: column; gap: 6px; text-decoration: none; color: var(--ink);
-      background: var(--card); border: 1px solid var(--line); border-top: 6px solid var(--c, var(--mandarin));
+      background: var(--card); border: 1px solid var(--line); border-top: 6px solid var(--c);
       border-radius: 18px; box-shadow: var(--shadow); padding: 18px; min-height: 120px;
       transition: transform .08s ease;
     }
     .item:active { transform: scale(.98); }
     .item .t { font-size: 22px; font-weight: 700; }
     .item .d { font-size: 17px; color: var(--muted); }
-    .item .meta { margin-top: auto; font-size: 15px; color: var(--c, var(--mandarin)); font-weight: 500; }
-    .sub { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 10px; }
-    .sub a { font-size: 16px; color: var(--mandarin); text-decoration: none; padding: 6px 12px; border-radius: 999px; background: var(--card); border: 1px solid var(--line); }
+    .item .meta { margin-top: auto; font-size: 15px; color: var(--c); font-weight: 500; }
+    .links { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 12px; }
+    .links a { font-size: 16px; color: var(--c); text-decoration: none; padding: 6px 12px; border-radius: 999px; background: var(--soft); border: 1px solid var(--line); }
+    .empty { text-align: center; color: var(--muted); padding: 34px 12px; font-size: 18px; }
+    .empty span { display: block; font-size: 42px; margin-bottom: 6px; }
+
+    .mandarin { --c: var(--mandarin); --c-soft: var(--mandarin-soft); }
+    .tools { --c: var(--tools); --c-soft: var(--tools-soft); }
+
     footer { text-align: center; color: var(--muted); font-size: 15px; line-height: 1.8; padding: 24px 16px 40px; border-top: 1px solid var(--line); margin-top: 32px; }
-    :focus-visible { outline: 3px solid var(--mandarin); outline-offset: 2px; }
-    @media (max-width: 640px) { header h1 { font-size: 27px; } main { padding-top: 22px; } }
+    @media (max-width: 640px) {
+      header h1 { font-size: 27px; } main { padding-top: 22px; }
+      .tab { padding: 8px 14px; font-size: 18px; } .panel { padding: 14px; }
+    }
   </style>
 </head>
 <body>
@@ -47,16 +78,31 @@
       <p>教材與教室工具</p>
     </header>
 
-    <section aria-labelledby="sec-mandarin">
-      <h2 id="sec-mandarin">📚 國語</h2>
-      <div class="grid">
-        <a class="item" href="mandarin/">
-          <span class="t">國語五上學習樂園</span>
-          <span class="d">康軒版五上・生字、語詞、句型、閱讀理解、形近字、成語、注音聽打、課文點讀</span>
-          <span class="meta">第 1～12 課 →</span>
-        </a>
+    <div class="tabs" role="tablist" aria-label="教材分類">
+      <button class="tab mandarin" role="tab" id="tab-mandarin" aria-controls="panel-mandarin" aria-selected="true" data-key="mandarin">📚 國語</button>
+      <button class="tab tools" role="tab" id="tab-tools" aria-controls="panel-tools" aria-selected="false" tabindex="-1" data-key="tools">🧰 教室工具</button>
+    </div>
+
+    <!-- 國語 -->
+    <section class="panel mandarin" role="tabpanel" id="panel-mandarin" aria-labelledby="tab-mandarin">
+      <div class="subtabs" role="tablist" aria-label="國語版本與年級">
+        <button class="subtab" role="tab" id="sub-kh5" aria-controls="subpanel-kh5" aria-selected="true" data-key="kh5">康軒五年級</button>
       </div>
-      <div class="sub"><a href="mandarin/guide.html">📘 使用說明</a></div>
+      <div class="subpanel" role="tabpanel" id="subpanel-kh5" aria-labelledby="sub-kh5">
+        <div class="grid">
+          <a class="item" href="mandarin/">
+            <span class="t">國語五上學習樂園</span>
+            <span class="d">康軒版五上・生字、語詞、句型、閱讀理解、形近字、成語、注音聽打、課文點讀</span>
+            <span class="meta">第 1～12 課 →</span>
+          </a>
+        </div>
+        <div class="links"><a href="mandarin/guide.html">📘 使用說明</a></div>
+      </div>
+    </section>
+
+    <!-- 教室工具 -->
+    <section class="panel tools" role="tabpanel" id="panel-tools" aria-labelledby="tab-tools" hidden>
+      <div class="empty"><span>🛠️</span>教室工具準備中</div>
     </section>
   </main>
 
@@ -64,5 +110,38 @@
     資源班教材站・以 GitHub Pages 發布<br>
     特殊教育輔助教材，非出版社官方產品；僅供教學使用，不作商業用途。
   </footer>
+
+  <script>
+    // 標籤切換：網址後面的 #tools、#mandarin 會記住目前的標籤，重新整理或分享連結都會停在同一個標籤
+    (function () {
+      function setup(list, onChange) {
+        var tabs = Array.prototype.slice.call(list.querySelectorAll('[role="tab"]'));
+        function select(tab, focus) {
+          tabs.forEach(function (t) {
+            var on = t === tab;
+            t.setAttribute('aria-selected', on ? 'true' : 'false');
+            t.tabIndex = on ? 0 : -1;
+            document.getElementById(t.getAttribute('aria-controls')).hidden = !on;
+          });
+          if (focus) tab.focus();
+          if (onChange) onChange(tab);
+        }
+        tabs.forEach(function (t, i) {
+          t.addEventListener('click', function () { select(t); });
+          t.addEventListener('keydown', function (e) {
+            var n = e.key === 'ArrowRight' ? 1 : e.key === 'ArrowLeft' ? -1 : 0;
+            if (n) { e.preventDefault(); select(tabs[(i + n + tabs.length) % tabs.length], true); }
+          });
+        });
+        return { select: select, find: function (key) { return tabs.filter(function (t) { return t.dataset.key === key; })[0]; } };
+      }
+      var main = setup(document.querySelector('.tabs'), function (tab) {
+        if (location.hash.slice(1) !== tab.dataset.key) history.replaceState(null, '', '#' + tab.dataset.key);
+      });
+      document.querySelectorAll('.subtabs').forEach(function (s) { setup(s); });
+      var start = main.find(location.hash.slice(1));
+      if (start) main.select(start);
+    })();
+  </script>
 </body>
 </html>
