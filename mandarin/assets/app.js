@@ -1169,7 +1169,7 @@
     var main = h('main', {});
     if (mc) main.style.setProperty('--mc', mc);
     append(app, h('header', { class: 'topbar' }, h('a', { class: 'brand', href: '#/' }, '📚 國語五上樂園'), nav, gearBtn()), main,
-      h('footer', { class: 'footer' }, h('a', { href: 'guide.html' }, '📘 使用說明'), h('br'), '特殊教育輔助教材，非出版社官方產品。', h('br'), '內容依康軒版國語五上整理改寫，僅供教學使用，不作商業用途。', h('br'), '楷書字型：全字庫正楷體（數位發展部，CNS11643 中文標準交換碼全字庫網站 https://www.cns11643.gov.tw，政府資料開放授權條款－第1版）'));
+      h('footer', { class: 'footer' }, h('a', { href: 'guide.html' }, '📘 使用說明'), '　', h('a', { href: '../' }, '🏫 資源班教材總覽'), h('br'), '特殊教育輔助教材，非出版社官方產品。', h('br'), '內容依康軒版國語五上整理改寫，僅供教學使用，不作商業用途。', h('br'), '楷書字型：全字庫正楷體（數位發展部，CNS11643 中文標準交換碼全字庫網站 https://www.cns11643.gov.tw，政府資料開放授權條款－第1版）'));
     window.scrollTo(0, 0);
     return main;
   }

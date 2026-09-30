@@ -16,15 +16,15 @@ __pycache__/
 dist/
 build/
 
-# 外部專案的讀音資料（用 python tools/fetch_tables.py 下載）與本機快取
-tools/texts/tsi.src.txt
-tools/texts/phonic_table_*.txt
-tools/texts/pedia_cache.json
-tools/texts/zy_cache.json
+# 外部專案的讀音資料（用 python mandarin/tools/fetch_tables.py 下載）與本機快取
+**/tools/texts/tsi.src.txt
+**/tools/texts/phonic_table_*.txt
+**/tools/texts/pedia_cache.json
+**/tools/texts/zy_cache.json
 
 # 課文全文（有著作權，不公開）：只留在老師電腦；網站用加密後的 data/reading.enc.js
-data/reading/
-tools/texts/lesson[0-9][0-9].txt
+**/data/reading/
+**/tools/texts/lesson[0-9][0-9].txt
 
 # Claude Code 本機設定
 .claude/settings.local.json
