@@ -1183,7 +1183,7 @@
     LESSON_LIST.forEach(function (l, n) {
       var L = LESSONS[l.id], no = '第 ' + (n + 1) + ' 課';
       if (!L) {
-        var hasRead = READINGS[l.id];
+        var hasRead = hasReading(l.id);
         append(grid, h('div', { class: 'lesson-tile off' }, h('span', { class: 'no' }, no), h('span', { class: 't' }, l.title),
           h('span', { class: 'meta' }, '練習準備中', hasRead ? h('span', { class: 'spacer' }) : null,
             hasRead ? h('a', { class: 'btn btn-read btn-sm', href: '#/read/' + l.id }, '📖 課文點讀') : null,
@@ -1252,13 +1252,14 @@
 
     var strokeUrl = 'https://gsyan888.github.io/html5_fun/html5_stroke_parts/html5_stroke_parts.html?by=gsyan&words=' + encodeURIComponent(L.chars.map(function (x) { return x.c; }).join(''));
     var LK = (window.LESSON_LINKS || {})[lid] || {};
-    if ((LK.reads && LK.reads.length) || LK.score || READINGS[lid]) {
+    var hasR = hasReading(lid), lock = READINGS[lid] ? '' : '🔒 ';
+    if ((LK.reads && LK.reads.length) || LK.score || hasR) {
       append(main, h('div', { class: 'section-label' }, '📖 課文朗讀'),
         h('div', { class: 'extra-links read-links' },
-          READINGS[lid] ? h('a', { class: 'btn btn-read', href: '#/read/' + lid }, '📖 課文點讀') : null,
-          (READINGS[lid] ? [] : LK.reads || []).map(function (r) { return h('a', { class: 'btn btn-read', href: r.url, target: '_blank', rel: 'noopener' }, r.text); }),
+          hasR ? h('a', { class: 'btn btn-read', href: '#/read/' + lid }, lock + '📖 課文點讀') : null,
+          (hasR ? [] : LK.reads || []).map(function (r) { return h('a', { class: 'btn btn-read', href: r.url, target: '_blank', rel: 'noopener' }, r.text); }),
           // 朗讀挑戰改用網站內建的語音辨識評分（原本的 Gemini 版本不穩定）
-          READINGS[lid] ? h('a', { class: 'btn btn-score', href: '#/score/' + lid }, '🎙️ 朗讀挑戰（評分）')
+          hasR ? h('a', { class: 'btn btn-score', href: '#/score/' + lid }, lock + '🎙️ 朗讀挑戰（評分）')
             : LK.score ? h('a', { class: 'btn btn-score', href: LK.score.url, target: '_blank', rel: 'noopener' }, LK.score.text) : null));
     }
     append(main, h('div', { class: 'section-label' }, '🔗 延伸資源（會開新視窗）'),
@@ -1408,6 +1409,13 @@
           });
           return seg;
         })())));
+      if (ENC) {
+        var unlocked = Object.keys(READINGS).length > 0;
+        var lockBtn = h('button', { class: 'btn btn-ghost', type: 'button', disabled: !unlocked }, unlocked ? '🔒 鎖上課文（要重新輸入教室密碼）' : '課文目前是鎖上的');
+        lockBtn.addEventListener('click', function () { lockReadings(); draw(); toast('已鎖上，下次要輸入教室密碼'); });
+        append(body, h('section', {}, h('h3', {}, '教室密碼'),
+          h('p', { class: 'muted', style: 'margin:0 0 8px' }, '課文點讀、朗讀挑戰需要教室密碼。這台 iPad 目前' + (unlocked ? '已解鎖。' : '尚未解鎖。')), lockBtn));
+      }
       append(body, h('section', {}, h('h3', {}, '學習紀錄'), recordsTable()));
       var reset = h('button', { class: 'btn btn-ghost danger', type: 'button', style: 'margin-top:16px' }, '清除這台 iPad 的學習紀錄');
       reset.addEventListener('click', function () { if (window.confirm('確定要清除全部學習紀錄嗎？這個動作無法復原。')) { state.progress = {}; save(); draw(); } });
@@ -1436,6 +1444,77 @@
   //  資料由 tools/make_reader.py 產生（注音查教育部辭典，老師校正寫在 tools/texts/fixes.json）
   // ════════════════════════════════════════════════
   var READINGS = window.READINGS || {};
+
+  // ── 教室密碼：課文全文加密存放（data/reading.enc.js），輸入密碼後才在這台裝置解開 ──
+  // 解開後的金鑰記在這台裝置（localStorage），之後不用再輸入；老師設定頁可以「鎖上」。
+  var ENC = window.READINGS_ENC || null;
+  var CLASS_KEY = 'tm-classkey';
+  function hasReading(lid) { return !!READINGS[lid] || !!(ENC && ENC.lessons.indexOf(lid) >= 0); }
+  function b64(s) { var bin = atob(s), u = new Uint8Array(bin.length); for (var i = 0; i < bin.length; i++) u[i] = bin.charCodeAt(i); return u; }
+  function unb64(buf) { var u = new Uint8Array(buf), s = ''; for (var i = 0; i < u.length; i++) s += String.fromCharCode(u[i]); return btoa(s); }
+  function cryptoOk() { return !!(window.crypto && window.crypto.subtle); }
+  function decryptWith(key) {
+    return crypto.subtle.decrypt({ name: 'AES-GCM', iv: b64(ENC.iv) }, key, b64(ENC.data)).then(function (buf) {
+      var obj = JSON.parse(new TextDecoder().decode(buf));
+      Object.keys(obj).forEach(function (k) { READINGS[k] = obj[k]; });
+      return key;
+    });
+  }
+  function unlockWithPassword(pw) {
+    var enc = new TextEncoder();
+    return crypto.subtle.importKey('raw', enc.encode(pw), 'PBKDF2', false, ['deriveKey']).then(function (base) {
+      return crypto.subtle.deriveKey({ name: 'PBKDF2', salt: b64(ENC.salt), iterations: ENC.iter, hash: 'SHA-256' },
+        base, { name: 'AES-GCM', length: 256 }, true, ['decrypt']);
+    }).then(decryptWith).then(function (key) {
+      return crypto.subtle.exportKey('raw', key).then(function (raw) {
+        try { localStorage.setItem(CLASS_KEY, unb64(raw)); } catch (e) { /* 無法記住：下次再輸入 */ }
+      });
+    });
+  }
+  function unlockFromStore() {
+    var raw = null;
+    try { raw = localStorage.getItem(CLASS_KEY); } catch (e) { raw = null; }
+    if (!ENC || !raw || !cryptoOk()) return Promise.resolve(false);
+    return crypto.subtle.importKey('raw', b64(raw), { name: 'AES-GCM' }, false, ['decrypt'])
+      .then(decryptWith).then(function () { return true; })
+      .catch(function () { try { localStorage.removeItem(CLASS_KEY); } catch (e) { } return false; });
+  }
+  function lockReadings() {
+    try { localStorage.removeItem(CLASS_KEY); } catch (e) { }
+    if (ENC) Object.keys(READINGS).forEach(function (k) { delete READINGS[k]; });
+  }
+  function renderUnlock(kind, lid) {
+    var no = parseInt(lid, 10);
+    var crumbs = [{ text: '首頁', href: '#/' }];
+    if (LESSONS[lid]) crumbs.push({ text: '第 ' + no + ' 課', href: '#/lesson/' + lid });
+    crumbs.push({ text: kind === 'read' ? '課文點讀' : '朗讀挑戰' });
+    var main = shell(crumbs);
+    var input = h('input', { type: 'password', autocomplete: 'off', autocapitalize: 'off', spellcheck: 'false', 'aria-label': '教室密碼' });
+    var msg = h('p', { class: 'muted', style: 'min-height:1.6em;margin:0' });
+    var go = h('button', { class: 'btn btn-primary btn-block', type: 'button' }, '進入教室 →');
+    var busy = false;
+    function submit() {
+      var pw = input.value.trim();
+      if (!pw || busy) return;
+      if (!cryptoOk()) { msg.textContent = '這個瀏覽器不支援解鎖，請改用 Safari 或 Chrome 開啟正式網址。'; return; }
+      busy = true; go.disabled = true; msg.textContent = '開門中……';
+      unlockWithPassword(pw).then(function () { sfx.right(); route(); })
+        .catch(function () {
+          busy = false; go.disabled = false; input.value = '';
+          msg.textContent = '密碼不對，再試一次。'; sfx.wrong();
+          input.classList.remove('shake'); void input.offsetWidth; input.classList.add('shake');
+        });
+    }
+    go.addEventListener('click', submit);
+    input.addEventListener('keydown', function (e) { if (e.key === 'Enter') submit(); });
+    append(main, h('div', { class: 'card gate', style: 'max-width:520px;margin:20px auto;text-align:center' },
+      h('div', { style: 'font-size:56px' }, '🔒'),
+      h('div', { class: 'row', style: 'justify-content:center' }, h('h2', {}, '請輸入教室密碼'), sayBtn('請輸入教室密碼，進入課文教室。')),
+      h('p', { class: 'muted' }, '課文只給班上同學使用，輸入一次後，這台 iPad 會記住。'),
+      input, msg, go));
+    setTimeout(function () { input.focus(); }, 50);
+  }
+
   function renderReader(lid) {
     var R = READINGS[lid], info = LESSON_LIST.find(function (l) { return l.id === lid; }) || {};
     var no = parseInt(lid, 10);
@@ -1699,6 +1778,7 @@
     var p = location.hash.replace(/^#\/?/, '').split('/');
     if (p[0] === 'read' && READINGS[p[1]]) return renderReader(p[1]);
     if (p[0] === 'score' && READINGS[p[1]]) return renderScore(p[1]);
+    if ((p[0] === 'read' || p[0] === 'score') && hasReading(p[1])) return renderUnlock(p[0], p[1]);
     if (p[0] === 'lesson' && LESSONS[p[1]]) {
       if (p[2] === 'm' && MODULES[p[3]]) return renderModule(p[1], p[3], p[4] != null ? parseInt(p[4], 10) : null);
       return renderLesson(p[1]);
@@ -1706,5 +1786,5 @@
     renderHome();
   }
   window.addEventListener('hashchange', route);
-  route();
+  unlockFromStore().then(route, route);
 })();
