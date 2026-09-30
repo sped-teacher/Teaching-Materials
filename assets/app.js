@@ -1245,7 +1245,7 @@
       append(cs, station(mid, locked));
     });
     append(main, cs);
-    append(main, h('div', { class: 'section-label' }, '🌟 加練挑戰', h('span', { class: 'muted', style: 'font-weight:400;font-size:16px' }, '（定期評量常考）')));
+    append(main, h('div', { class: 'section-label' }, '🌟 加練挑戰'));
     var ex = h('div', { class: 'stations' });
     MODULE_ORDER.filter(function (m) { return !MODULES[m].core; }).forEach(function (mid) { append(ex, station(mid, false)); });
     append(main, ex);
