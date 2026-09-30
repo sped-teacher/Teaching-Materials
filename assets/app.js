@@ -1238,7 +1238,7 @@
         h('div', { class: 'status' }, starsEl(s.stars), h('span', {}, s.complete ? '已完成' : '第 ' + s.done + '／' + s.total + ' 組')),
         go);
     };
-    append(main, h('div', { class: 'section-label' }, '🎯 本課先完成', h('span', { class: 'muted', style: 'font-weight:400;font-size:16px' }, '（建議依照順序）')));
+    append(main, h('div', { class: 'section-label' }, '🎯 本課先完成'));
     var cs = h('div', { class: 'stations' });
     core.forEach(function (mid, i) {
       var locked = c.sequential && i > 0 && !st[core[i - 1]].complete;
