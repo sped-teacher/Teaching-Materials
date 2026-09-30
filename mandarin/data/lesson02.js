@@ -211,7 +211,7 @@ window.LESSONS['02'] = {
     ] },
     { id: 'nie', base: '聶', baseZy: 'ㄋㄧㄝˋ', members: [
       { c: '攝', zy: 'ㄕㄜˋ', part: '扌', partName: '提手旁', words: ['拍攝', '攝影'], pic: '拍攝', line: '用手拿著來拍攝', tip: '左邊是「扌」：用手拿相機拍攝。' },
-      { c: '懾', zy: 'ㄕㄜˋ', part: '忄', partName: '心字旁', words: ['震懾', '懾服'], pic: '震懾', line: '心裡害怕被震懾', tip: '左邊是「忄」：心裡害怕，被嚇住了。' }
+      { c: '懾', zy: 'ㄓㄜˊ', part: '忄', partName: '心字旁', words: ['震懾', '懾服'], pic: '震懾', line: '心裡害怕被震懾', tip: '左邊是「忄」：心裡害怕，被嚇住了。' }
     ] },
     { id: 'lu', base: '彔', baseZy: 'ㄌㄨˋ', members: [
       { c: '錄', zy: 'ㄌㄨˋ', part: '金', partName: '金', words: ['記錄', '抄錄'], pic: '記錄', line: '金屬機器來記錄', tip: '左邊是「金」：用機器錄音、記錄。' },
