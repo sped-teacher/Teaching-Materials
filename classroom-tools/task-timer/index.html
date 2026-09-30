@@ -117,21 +117,27 @@
     body.focus .main { grid-template-columns: 1fr; min-height: 0; }
     body.focus .timer-card {
       height: 100%; min-height: 0; padding: 3vmin; display: grid; gap: 2vmin 4vmin; align-items: center;
-      grid-template-columns: minmax(0, 1fr) auto; grid-template-rows: 1fr auto auto; grid-template-areas: "task clock" "tok clock" "ctrl ctrl";
+      grid-template-columns: minmax(0, 1fr) auto; grid-template-rows: auto 1fr auto; grid-template-areas: "tok tok" "task clock" "ctrl ctrl";
     }
-    body.focus.notask .timer-card { grid-template-columns: minmax(0, 1fr) auto; grid-template-rows: 1fr auto; grid-template-areas: "tok clock" "ctrl ctrl"; }
-    body.focus .tokens { grid-area: tok; margin: 0; align-self: end; padding: 1.6vmin 2vmin; }
-    body.focus.notask .tokens { align-self: center; }
+    body.focus.notask .timer-card { grid-template-columns: 1fr; grid-template-areas: "tok" "clock" "ctrl"; }
+    /* 全螢幕：星星代幣板放最上面，標題、星星、提示排成一橫排 */
+    body.focus .tokens {
+      grid-area: tok; margin: 0; padding: 1.2vmin 2.5vmin;
+      display: flex; align-items: center; justify-content: center; gap: 1.5vmin 3vmin; flex-wrap: wrap;
+    }
+    body.focus .tk-head { flex-direction: column; align-items: center; gap: 0; }
+    body.focus .tk-row { margin: 0; gap: 1.2vmin; }
     body.focus .tk-title { font-size: clamp(18px, 2.6vmin, 44px); }
-    body.focus .tk-full, body.focus .tk-note { font-size: clamp(16px, 2vmin, 34px); }
-    body.focus .tk { width: clamp(52px, 7.5vmin, 120px); height: clamp(52px, 7.5vmin, 120px); font-size: clamp(30px, 4.5vmin, 72px); }
+    body.focus .tk-full, body.focus .tk-note { font-size: clamp(16px, 2.2vmin, 36px); }
+    body.focus .tk-note { font-weight: 700; }
+    body.focus .tk { width: clamp(48px, 7vmin, 110px); height: clamp(48px, 7vmin, 110px); font-size: clamp(28px, 4.2vmin, 66px); }
     body.focus .task-show { display: block; grid-area: task; font-size: clamp(30px, 6vmin, 110px); font-weight: 900; line-height: 1.3; }
     body.focus .task-show .lbl { display: block; font-size: .42em; font-weight: 700; color: var(--muted); margin-bottom: .2em; }
     body.focus .task-show .then { display: block; margin-top: .8em; font-size: .6em; color: var(--time); }
     body.focus .task-show .then .lbl { color: var(--muted); font-size: .7em; }
     body.focus .clock { grid-area: clock; padding: 0; }
-    body.focus .dial { width: min(66vh, 52vw); width: min(66dvh, 52vw); }
-    body.focus.notask .dial { width: min(66vh, 80vw); width: min(66dvh, 80vw); }
+    body.focus .dial { width: min(54vh, 52vw); width: min(54dvh, 52vw); }
+    body.focus.notask .dial { width: min(54vh, 80vw); width: min(54dvh, 80vw); }
     body.focus .dial.nodisc { width: auto; }
     body.focus .dial.nodisc .digits { font-size: clamp(90px, 26vmin, 520px); }
     body.focus .status { font-size: clamp(22px, 3.4vmin, 60px); margin-top: 1.5vmin; }
@@ -139,8 +145,9 @@
     body.focus .big { min-height: clamp(64px, 10vmin, 150px); min-width: clamp(150px, 22vmin, 380px); font-size: clamp(22px, 3.6vmin, 60px); border-radius: clamp(18px, 2.5vmin, 36px); }
     /* 直立的平板：任務在上、圓盤在下 */
     @media (orientation: portrait) {
-      body.focus .timer-card, body.focus.notask .timer-card { grid-template-columns: 1fr; grid-template-rows: auto 1fr auto auto; grid-template-areas: "task" "clock" "tok" "ctrl"; text-align: center; }
-      body.focus .dial, body.focus.notask .dial { width: min(52vh, 84vw); width: min(52dvh, 84vw); }
+      body.focus .timer-card { grid-template-columns: 1fr; grid-template-rows: auto auto 1fr auto; grid-template-areas: "tok" "task" "clock" "ctrl"; text-align: center; }
+      body.focus.notask .timer-card { grid-template-columns: 1fr; grid-template-rows: auto 1fr auto; grid-template-areas: "tok" "clock" "ctrl"; }
+      body.focus .dial, body.focus.notask .dial { width: min(42vh, 84vw); width: min(42dvh, 84vw); }
     }
 
     @media (max-width: 800px) { .main { grid-template-columns: 1fr; } }
