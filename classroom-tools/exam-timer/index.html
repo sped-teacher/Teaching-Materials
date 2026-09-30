@@ -30,7 +30,8 @@
     .bar .subject { flex: 1; font-size: clamp(22px, 3.2vw, 36px); font-weight: 900; }
     .bar a { color: var(--muted); text-decoration: none; font-size: 16px; }
     .icon-btn { width: 48px; height: 48px; border-radius: 50%; border: 1px solid var(--line); background: var(--panel); font-size: 20px; display: grid; place-items: center; }
-    .icon-btn[aria-pressed="false"] { opacity: .5; }
+    .pill-btn { height: 48px; padding: 0 16px; border-radius: 999px; border: 1px solid var(--line); background: var(--panel); font-size: 17px; font-weight: 700; white-space: nowrap; }
+    .pill-btn[aria-pressed="false"] { color: var(--muted); }
 
     .stage { flex: 1; display: flex; flex-direction: column; align-items: center; justify-content: center; padding: 0 16px; min-height: 0; }
     .digits {
@@ -59,7 +60,8 @@
     .label { color: var(--muted); font-size: 16px; }
 
     /* 投影模式：隱藏下方面板，只留時間；點畫面叫回來 */
-    body.clean .panel, body.clean .bar a, body.clean .bar .icon-btn:not(#cleanBtn) { display: none; }
+    body.clean .panel, body.clean .bar a, body.clean .bar .icon-btn, body.clean #soundBtn { display: none; }
+    body.clean .digits { font-size: min(30vw, 58vh); font-size: min(30vw, 58dvh); }
 
     .overlay { position: fixed; inset: 0; background: rgba(10, 8, 5, .6); display: grid; place-items: center; padding: 16px; z-index: 20; }
     .overlay[hidden] { display: none; }
@@ -77,8 +79,8 @@
     <div class="subject" id="subject">考試</div>
     <a href="../../#tools">🏫 總覽</a>
     <button class="icon-btn" id="themeBtn" type="button" aria-label="切換深色／淺色">☀️</button>
-    <button class="icon-btn" id="soundBtn" type="button" aria-label="提醒聲音" aria-pressed="true">🔔</button>
-    <button class="icon-btn" id="cleanBtn" type="button" aria-label="投影模式（只顯示時間）">⛶</button>
+    <button class="pill-btn" id="soundBtn" type="button" aria-pressed="true" title="剩 10／5 分鐘與時間到的提醒鈴聲">🔔 聲音開</button>
+    <button class="pill-btn" id="cleanBtn" type="button" title="全螢幕，只顯示時間；點畫面叫回按鈕">⛶ 全螢幕</button>
   </div>
 
   <div class="stage" id="stage">
@@ -224,15 +226,22 @@
 
     function applyTheme() { document.documentElement.dataset.theme = st.theme; $('themeBtn').textContent = st.theme === 'dark' ? '☀️' : '🌙'; }
     $('themeBtn').addEventListener('click', function () { st.theme = st.theme === 'dark' ? 'light' : 'dark'; save(); applyTheme(); });
-    $('soundBtn').addEventListener('click', function () { st.sound = !st.sound; save(); this.setAttribute('aria-pressed', st.sound ? 'true' : 'false'); if (st.sound) chime([660], 0.2); });
-    $('soundBtn').setAttribute('aria-pressed', st.sound ? 'true' : 'false');
-    $('cleanBtn').addEventListener('click', function () {
-      document.body.classList.toggle('clean');
+    function syncSound() {
+      $('soundBtn').setAttribute('aria-pressed', st.sound ? 'true' : 'false');
+      $('soundBtn').textContent = st.sound ? '🔔 聲音開' : '🔕 聲音關';
+    }
+    $('soundBtn').addEventListener('click', function () { st.sound = !st.sound; save(); syncSound(); if (st.sound) chime([660], 0.2); });
+    syncSound();
+    function setClean(on) {
+      document.body.classList.toggle('clean', on);
+      $('cleanBtn').textContent = on ? '✕ 離開全螢幕' : '⛶ 全螢幕';
       var el = document.documentElement;
-      if (document.body.classList.contains('clean') && el.requestFullscreen) el.requestFullscreen().catch(function () { });
-      else if (document.fullscreenElement && document.exitFullscreen) document.exitFullscreen();
-    });
-    $('stage').addEventListener('click', function () { if (document.body.classList.contains('clean')) $('cleanBtn').click(); });
+      if (on && el.requestFullscreen && !document.fullscreenElement) el.requestFullscreen().catch(function () { });
+      if (!on && document.fullscreenElement && document.exitFullscreen) document.exitFullscreen().catch(function () { });
+    }
+    $('cleanBtn').addEventListener('click', function () { setClean(!document.body.classList.contains('clean')); });
+    document.addEventListener('fullscreenchange', function () { if (!document.fullscreenElement && document.body.classList.contains('clean')) setClean(false); });
+    $('stage').addEventListener('click', function () { if (document.body.classList.contains('clean')) setClean(false); });
 
     $('startBtn').addEventListener('click', start);
     $('resetBtn').addEventListener('click', reset);

@@ -3,8 +3,8 @@
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
-  <title>作業限時鐘</title>
-  <meta name="description" content="資源班作業限時鐘：看得見的時間、先做再玩、提早完成集星星">
+  <title>任務限時鐘</title>
+  <meta name="description" content="資源班任務限時鐘：看得見的時間、先做再玩、提早完成集星星">
   <meta name="apple-mobile-web-app-capable" content="yes">
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -34,7 +34,8 @@
     .top h1 { margin: 0; font-size: 24px; flex: 1; }
     .top a { color: var(--muted); text-decoration: none; font-size: 16px; }
     .icon-btn { width: 48px; height: 48px; border-radius: 50%; border: 1px solid var(--line); background: var(--card); font-size: 20px; display: grid; place-items: center; }
-    .icon-btn[aria-pressed="false"] { opacity: .5; }
+    .pill-btn { height: 48px; padding: 0 16px; border-radius: 999px; border: 1px solid var(--line); background: var(--card); font-size: 17px; font-weight: 700; white-space: nowrap; }
+    .pill-btn[aria-pressed="false"] { color: var(--muted); }
 
     .card { background: var(--card); border: 1px solid var(--line); border-radius: 20px; padding: 16px; }
     .main { display: grid; grid-template-columns: minmax(0, 1.4fr) minmax(0, 1fr); gap: 16px; align-items: start; }
@@ -97,13 +98,34 @@
     .modal p { font-size: 20px; color: var(--muted); margin: 0 0 18px; }
     .modal .then { font-size: 22px; font-weight: 700; color: var(--time); margin-bottom: 18px; }
 
-    /* 全螢幕／上課模式：只留時間 */
+    /* ── 全螢幕上課模式：以平板、教室觸控大屏為準，大小跟著螢幕放大（vmin） ── */
+    .task-show { display: none; }
     body.focus .side, body.focus .ft-card, body.focus .top h1, body.focus .top a { display: none; }
-    body.focus .main { grid-template-columns: 1fr; }
-    body.focus .dial { width: min(80vh, 88vw); }
-    body.focus .task-show { display: block; }
-    .task-show { display: none; text-align: center; font-size: clamp(22px, 4vw, 40px); font-weight: 900; margin-bottom: 4px; }
-    .task-show small { display: block; font-size: .55em; font-weight: 500; color: var(--muted); }
+    body.focus .wrap { max-width: none; height: 100vh; height: 100dvh; padding: 2vmin 2.5vmin; grid-template-rows: auto 1fr; gap: 1.5vmin; }
+    body.focus .top { justify-content: flex-end; }
+    body.focus .main { grid-template-columns: 1fr; min-height: 0; }
+    body.focus .timer-card {
+      height: 100%; min-height: 0; padding: 3vmin; display: grid; gap: 2vmin 4vmin; align-items: center;
+      grid-template-columns: minmax(0, 1fr) auto; grid-template-rows: 1fr auto; grid-template-areas: "task clock" "ctrl ctrl";
+    }
+    body.focus.notask .timer-card { grid-template-columns: 1fr; grid-template-areas: "clock" "ctrl"; }
+    body.focus .task-show { display: block; grid-area: task; font-size: clamp(30px, 6vmin, 110px); font-weight: 900; line-height: 1.3; }
+    body.focus .task-show .lbl { display: block; font-size: .42em; font-weight: 700; color: var(--muted); margin-bottom: .2em; }
+    body.focus .task-show .then { display: block; margin-top: .8em; font-size: .6em; color: var(--time); }
+    body.focus .task-show .then .lbl { color: var(--muted); font-size: .7em; }
+    body.focus .clock { grid-area: clock; padding: 0; }
+    body.focus .dial { width: min(66vh, 52vw); width: min(66dvh, 52vw); }
+    body.focus.notask .dial { width: min(66vh, 80vw); width: min(66dvh, 80vw); }
+    body.focus .dial.nodisc { width: auto; }
+    body.focus .dial.nodisc .digits { font-size: clamp(90px, 26vmin, 520px); }
+    body.focus .status { font-size: clamp(22px, 3.4vmin, 60px); margin-top: 1.5vmin; }
+    body.focus .controls { grid-area: ctrl; margin: 0; gap: 2vmin; }
+    body.focus .big { min-height: clamp(64px, 10vmin, 150px); min-width: clamp(150px, 22vmin, 380px); font-size: clamp(22px, 3.6vmin, 60px); border-radius: clamp(18px, 2.5vmin, 36px); }
+    /* 直立的平板：任務在上、圓盤在下 */
+    @media (orientation: portrait) {
+      body.focus .timer-card { grid-template-columns: 1fr; grid-template-rows: auto 1fr auto; grid-template-areas: "task" "clock" "ctrl"; text-align: center; }
+      body.focus .dial, body.focus.notask .dial { width: min(52vh, 84vw); width: min(52dvh, 84vw); }
+    }
 
     @media (max-width: 800px) { .main { grid-template-columns: 1fr; } }
     @media (max-width: 520px) { .ft { grid-template-columns: 1fr; } .ft .arrow { display: none; } .big { min-width: 120px; font-size: 21px; } }
@@ -113,11 +135,11 @@
 <body>
   <div class="wrap">
     <div class="top">
-      <h1>⏳ 作業限時鐘</h1>
+      <h1>⏳ 任務限時鐘</h1>
       <a href="../../#tools">🏫 總覽</a>
       <button class="icon-btn" id="themeBtn" type="button" aria-label="切換淺色／深色">🌙</button>
-      <button class="icon-btn" id="soundBtn" type="button" aria-label="聲音" aria-pressed="true">🔔</button>
-      <button class="icon-btn" id="focusBtn" type="button" aria-label="上課模式（只顯示時間）">⛶</button>
+      <button class="pill-btn" id="soundBtn" type="button" aria-pressed="true" title="時間到的鈴聲、剩 1 分鐘的語音提醒">🔔 聲音開</button>
+      <button class="pill-btn" id="focusBtn" type="button" title="全螢幕，只顯示任務和時間">⛶ 全螢幕</button>
     </div>
 
     <div class="card ft-card">
@@ -129,7 +151,7 @@
     </div>
 
     <div class="main">
-      <div class="card">
+      <div class="card timer-card">
         <div class="task-show" id="taskShow"></div>
         <div class="clock">
           <div class="dial" id="dial">
@@ -185,7 +207,7 @@
   <script>
   (function () {
     'use strict';
-    var KEY = 'classtool-homework-v1';
+    var KEY = 'classtool-task-v1';
     var PRESETS = [1, 3, 5, 10, 15, 20];
     var $ = function (id) { return document.getElementById(id); };
 
@@ -328,21 +350,39 @@
       $('themeBtn').textContent = st.theme === 'dark' ? '☀️' : '🌙';
     }
     $('themeBtn').addEventListener('click', function () { st.theme = st.theme === 'dark' ? 'light' : 'dark'; save(); applyTheme(); });
-    $('soundBtn').addEventListener('click', function () { st.sound = !st.sound; save(); this.setAttribute('aria-pressed', st.sound ? 'true' : 'false'); if (st.sound) chime([660], 0.2); });
-    $('soundBtn').setAttribute('aria-pressed', st.sound ? 'true' : 'false');
-    $('focusBtn').addEventListener('click', function () {
-      document.body.classList.toggle('focus');
+    // 聲音開關：控制時間到的鈴聲、剩 1 分鐘與時間到的語音
+    function syncSound() {
+      $('soundBtn').setAttribute('aria-pressed', st.sound ? 'true' : 'false');
+      $('soundBtn').textContent = st.sound ? '🔔 聲音開' : '🔕 聲音關';
+    }
+    $('soundBtn').addEventListener('click', function () { st.sound = !st.sound; save(); syncSound(); if (st.sound) chime([660], 0.2); });
+    syncSound();
+
+    // 全螢幕上課模式（瀏覽器不支援全螢幕時，仍會切成大字版面）
+    function setFocus(on) {
+      document.body.classList.toggle('focus', on);
+      $('focusBtn').textContent = on ? '✕ 離開全螢幕' : '⛶ 全螢幕';
       var el = document.documentElement;
-      if (document.body.classList.contains('focus') && el.requestFullscreen) el.requestFullscreen().catch(function () { });
-      else if (document.fullscreenElement && document.exitFullscreen) document.exitFullscreen();
-    });
+      if (on && el.requestFullscreen && !document.fullscreenElement) el.requestFullscreen().catch(function () { });
+      if (!on && document.fullscreenElement && document.exitFullscreen) document.exitFullscreen().catch(function () { });
+    }
+    $('focusBtn').addEventListener('click', function () { setFocus(!document.body.classList.contains('focus')); });
+    document.addEventListener('fullscreenchange', function () { if (!document.fullscreenElement && document.body.classList.contains('focus')) setFocus(false); });
 
     // ── 先…再… ──
     function syncTask() {
       var t = $('task').value.trim(), r = $('reward').value.trim();
       st.task = t; st.reward = r; save();
-      $('taskShow').innerHTML = '';
-      if (t) { $('taskShow').textContent = t; if (r) { var s = document.createElement('small'); s.textContent = '做完可以：' + r; $('taskShow').appendChild(s); } }
+      var box = $('taskShow'); box.innerHTML = '';
+      document.body.classList.toggle('notask', !t);
+      if (!t) return;
+      var lbl = document.createElement('span'); lbl.className = 'lbl'; lbl.textContent = '現在要做';
+      box.appendChild(lbl); box.appendChild(document.createTextNode(t));
+      if (r) {
+        var th = document.createElement('span'); th.className = 'then';
+        var l2 = document.createElement('span'); l2.className = 'lbl'; l2.textContent = '做完可以';
+        th.appendChild(l2); th.appendChild(document.createTextNode(r)); box.appendChild(th);
+      }
     }
     $('task').value = st.task; $('reward').value = st.reward;
     $('task').addEventListener('input', syncTask); $('reward').addEventListener('input', syncTask);
