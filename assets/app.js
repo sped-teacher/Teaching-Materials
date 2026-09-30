@@ -1510,7 +1510,7 @@
     append(main, h('div', { class: 'card gate', style: 'max-width:520px;margin:20px auto;text-align:center' },
       h('div', { style: 'font-size:56px' }, '🔒'),
       h('div', { class: 'row', style: 'justify-content:center' }, h('h2', {}, '請輸入教室密碼'), sayBtn('請輸入教室密碼，進入課文教室。')),
-      h('p', { class: 'muted' }, '課文只給班上同學使用，輸入一次後，這台 iPad 會記住。'),
+      h('p', { class: 'muted', style: 'line-height:1.8' }, '課文只給班上同學使用，', h('br'), '輸入一次後，這台 iPad 會記住。'),
       input, msg, go));
     setTimeout(function () { input.focus(); }, 50);
   }
