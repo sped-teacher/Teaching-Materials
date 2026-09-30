@@ -26,20 +26,21 @@
     button { font: inherit; color: inherit; cursor: pointer; touch-action: manipulation; }
     :focus-visible { outline: 3px solid var(--digit); outline-offset: 2px; }
 
-    .bar { display: flex; align-items: center; gap: 10px; padding: 12px 16px; }
+    .bar { display: flex; align-items: center; gap: 10px; padding: 12px 16px; position: relative; z-index: 5; }
     .bar .subject { flex: 1; font-size: clamp(22px, 3.2vw, 36px); font-weight: 900; }
     .bar a { color: var(--muted); text-decoration: none; font-size: 16px; }
     .icon-btn { width: 48px; height: 48px; border-radius: 50%; border: 1px solid var(--line); background: var(--panel); font-size: 20px; display: grid; place-items: center; }
     .pill-btn { height: 48px; padding: 0 16px; border-radius: 999px; border: 1px solid var(--line); background: var(--panel); font-size: 17px; font-weight: 700; white-space: nowrap; }
     .pill-btn[aria-pressed="false"] { color: var(--muted); }
 
-    .stage { flex: 1; display: flex; flex-direction: column; align-items: center; justify-content: center; padding: 0 16px; min-height: 0; }
+    .stage { flex: 1; display: flex; flex-direction: column; align-items: center; justify-content: center; padding: 0 16px; min-height: 0; overflow: hidden; container-type: size; }
+    /* 數字依「中間區域」的寬和高取小的放大：寬螢幕、矮螢幕都不會超出去蓋到按鈕 */
     .digits {
       font-weight: 900; font-variant-numeric: tabular-nums; line-height: 1; letter-spacing: 2px;
-      font-size: clamp(96px, 26vw, 420px); color: var(--digit); transition: color .4s;
+      font-size: max(56px, min(26vw, 30vh)); font-size: max(48px, min(25cqw, 52cqh)); color: var(--digit); transition: color .4s;
     }
     .digits.warn { color: var(--warn); }
-    .msg { font-size: clamp(22px, 3.6vw, 44px); font-weight: 700; min-height: 1.4em; text-align: center; margin-top: 6px; }
+    .msg { font-size: clamp(20px, 3.6vw, 44px); font-size: clamp(18px, min(3.6cqw, 8cqh), 44px); font-weight: 700; min-height: 1.4em; text-align: center; margin-top: 6px; }
     .msg.warn { color: var(--warn); }
     .times { display: flex; gap: 22px; flex-wrap: wrap; justify-content: center; margin-top: 10px; font-size: clamp(17px, 2vw, 24px); color: var(--muted); }
     .times b { color: var(--ink); font-variant-numeric: tabular-nums; }
@@ -61,7 +62,16 @@
 
     /* 投影模式：隱藏下方面板，只留時間；點畫面叫回來 */
     body.clean .panel, body.clean .bar a, body.clean .bar .icon-btn, body.clean #soundBtn { display: none; }
-    body.clean .digits { font-size: min(30vw, 58vh); font-size: min(30vw, 58dvh); }
+    body.clean .digits { font-size: min(30vw, 55vh); font-size: min(29cqw, 62cqh); }
+    /* 矮螢幕：下方按鈕區縮小一點，把空間留給數字 */
+    @media (max-height: 700px) {
+      .panel { padding-top: 8px; padding-bottom: 8px; }
+      .row + .row { margin-top: 6px; }
+      .big { min-height: 48px; font-size: 19px; }
+      .chip { min-height: 40px; }
+      .stepper button { width: 42px; height: 42px; }
+      .progress { margin-top: 10px; }
+    }
 
     .overlay { position: fixed; inset: 0; background: rgba(10, 8, 5, .6); display: grid; place-items: center; padding: 16px; z-index: 20; }
     .overlay[hidden] { display: none; }
