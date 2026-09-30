@@ -5,6 +5,8 @@
 | 教材 | 資料夾 | 網址 |
 |---|---|---|
 | 國語五上學習樂園（康軒版） | `mandarin/` | https://sped-teacher.github.io/Teaching-Materials/mandarin/ |
+| 作業限時鐘 | `classroom-tools/homework-timer/` | https://sped-teacher.github.io/Teaching-Materials/classroom-tools/homework-timer/ |
+| 考試倒數計時 | `classroom-tools/exam-timer/` | https://sped-teacher.github.io/Teaching-Materials/classroom-tools/exam-timer/ |
 
 ## 在新電腦開始使用
 

@@ -1,0 +1,250 @@
+<!doctype html>
+<html lang="zh-Hant-TW">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <title>考試倒數計時</title>
+  <meta name="description" content="資源班考試倒數計時：投影用大字、顯示結束時間、可延長作答">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+TC:wght@400;500;700;900&display=swap" rel="stylesheet">
+  <style>
+    /* 深色（投影）為預設；淺色適合平板近看或明亮教室 */
+    :root {
+      --bg: #15161A; --panel: #1F2126; --ink: #F5EBD4; --muted: #A9A294; --line: #33363D; --soft: #262930;
+      --digit: #F2C14E; --warn: #F29E4C; --track: #2E3138; --go: #3FA877; --go-ink: #0E1A14;
+      --font: 'Noto Sans TC', 'PingFang TC', 'Heiti TC', 'Microsoft JhengHei', sans-serif;
+    }
+    :root[data-theme="light"] {
+      --bg: #F6F1E7; --panel: #FFFFFF; --ink: #2A2825; --muted: #6E675D; --line: #E4DCCD; --soft: #FBF8F2;
+      --digit: #1F4E86; --warn: #B8641A; --track: #ECE5D6; --go: #2E8B6E; --go-ink: #FFFFFF;
+    }
+    * { box-sizing: border-box; }
+    html, body { height: 100%; }
+    body { margin: 0; background: var(--bg); color: var(--ink); font-family: var(--font); -webkit-text-size-adjust: 100%; display: flex; flex-direction: column; }
+    button { font: inherit; color: inherit; cursor: pointer; touch-action: manipulation; }
+    :focus-visible { outline: 3px solid var(--digit); outline-offset: 2px; }
+
+    .bar { display: flex; align-items: center; gap: 10px; padding: 12px 16px; }
+    .bar .subject { flex: 1; font-size: clamp(22px, 3.2vw, 36px); font-weight: 900; }
+    .bar a { color: var(--muted); text-decoration: none; font-size: 16px; }
+    .icon-btn { width: 48px; height: 48px; border-radius: 50%; border: 1px solid var(--line); background: var(--panel); font-size: 20px; display: grid; place-items: center; }
+    .icon-btn[aria-pressed="false"] { opacity: .5; }
+
+    .stage { flex: 1; display: flex; flex-direction: column; align-items: center; justify-content: center; padding: 0 16px; min-height: 0; }
+    .digits {
+      font-weight: 900; font-variant-numeric: tabular-nums; line-height: 1; letter-spacing: 2px;
+      font-size: clamp(96px, 26vw, 420px); color: var(--digit); transition: color .4s;
+    }
+    .digits.warn { color: var(--warn); }
+    .msg { font-size: clamp(22px, 3.6vw, 44px); font-weight: 700; min-height: 1.4em; text-align: center; margin-top: 6px; }
+    .msg.warn { color: var(--warn); }
+    .times { display: flex; gap: 22px; flex-wrap: wrap; justify-content: center; margin-top: 10px; font-size: clamp(17px, 2vw, 24px); color: var(--muted); }
+    .times b { color: var(--ink); font-variant-numeric: tabular-nums; }
+    .progress { width: min(92vw, 1200px); height: 14px; border-radius: 99px; background: var(--track); overflow: hidden; margin-top: 18px; }
+    .progress i { display: block; height: 100%; width: 100%; background: var(--digit); border-radius: 99px; transition: width .3s linear, background .4s; }
+    .progress i.warn { background: var(--warn); }
+
+    .panel { background: var(--panel); border-top: 1px solid var(--line); padding: 14px 16px calc(14px + env(safe-area-inset-bottom)); }
+    .row { display: flex; flex-wrap: wrap; gap: 10px; justify-content: center; align-items: center; }
+    .row + .row { margin-top: 10px; }
+    .big { min-height: 60px; min-width: 130px; padding: 8px 24px; border-radius: 16px; border: 2px solid var(--line); background: var(--soft); font-size: 22px; font-weight: 900; }
+    .big.go { background: var(--go); border-color: var(--go); color: var(--go-ink); }
+    .chip { min-height: 50px; padding: 6px 18px; border-radius: 999px; border: 2px solid var(--line); background: var(--soft); font-size: 18px; font-weight: 700; }
+    .chip.on { border-color: var(--digit); color: var(--digit); }
+    .stepper { display: inline-flex; align-items: center; gap: 8px; }
+    .stepper button { width: 50px; height: 50px; border-radius: 50%; border: 2px solid var(--line); background: var(--soft); font-size: 26px; font-weight: 700; }
+    .stepper span { min-width: 90px; text-align: center; font-size: 22px; font-weight: 900; font-variant-numeric: tabular-nums; }
+    .label { color: var(--muted); font-size: 16px; }
+
+    /* 投影模式：隱藏下方面板，只留時間；點畫面叫回來 */
+    body.clean .panel, body.clean .bar a, body.clean .bar .icon-btn:not(#cleanBtn) { display: none; }
+
+    .overlay { position: fixed; inset: 0; background: rgba(10, 8, 5, .6); display: grid; place-items: center; padding: 16px; z-index: 20; }
+    .overlay[hidden] { display: none; }
+    .modal { background: var(--panel); color: var(--ink); border-radius: 24px; padding: 30px 24px; width: min(640px, 100%); text-align: center; border: 2px solid var(--line); }
+    .modal .em { font-size: 80px; line-height: 1.1; }
+    .modal h2 { font-size: clamp(34px, 6vw, 60px); margin: 8px 0; }
+    .modal p { font-size: 22px; color: var(--muted); margin: 0 0 20px; }
+
+    @media (max-width: 600px) { .big { min-width: 110px; font-size: 20px; } }
+    @media (prefers-reduced-motion: reduce) { * { transition: none !important; } }
+  </style>
+</head>
+<body>
+  <div class="bar">
+    <div class="subject" id="subject">考試</div>
+    <a href="../../#tools">🏫 總覽</a>
+    <button class="icon-btn" id="themeBtn" type="button" aria-label="切換深色／淺色">☀️</button>
+    <button class="icon-btn" id="soundBtn" type="button" aria-label="提醒聲音" aria-pressed="true">🔔</button>
+    <button class="icon-btn" id="cleanBtn" type="button" aria-label="投影模式（只顯示時間）">⛶</button>
+  </div>
+
+  <div class="stage" id="stage">
+    <div class="digits" id="digits" role="timer" aria-live="off">40:00</div>
+    <div class="msg" id="msg" aria-live="polite">準備開始</div>
+    <div class="times"><span>現在 <b id="now">--:--</b></span><span>結束 <b id="end">--:--</b></span></div>
+    <div class="progress" aria-hidden="true"><i id="bar"></i></div>
+  </div>
+
+  <div class="panel">
+    <div class="row">
+      <button class="big go" id="startBtn" type="button">▶ 開始</button>
+      <button class="big" id="resetBtn" type="button">↺ 重設</button>
+      <button class="big" id="add5" type="button">＋5 分</button>
+      <button class="big" id="add10" type="button">＋10 分</button>
+    </div>
+    <div class="row" id="subjects"></div>
+    <div class="row">
+      <span class="label">考試時間</span>
+      <span class="stepper">
+        <button type="button" id="minus" aria-label="少 5 分鐘">−</button>
+        <span id="setVal">40 分</span>
+        <button type="button" id="plus" aria-label="多 5 分鐘">＋</button>
+      </span>
+      <span class="label">提醒：剩 10 分、5 分</span>
+    </div>
+  </div>
+
+  <div class="overlay" id="overlay" hidden>
+    <div class="modal" role="dialog" aria-modal="true" aria-labelledby="mTitle">
+      <div class="em">✏️</div>
+      <h2 id="mTitle">時間到，請停筆</h2>
+      <p>把筆放下，等老師收卷。</p>
+      <button class="big go" id="mOk" type="button">好</button>
+    </div>
+  </div>
+
+  <script>
+  (function () {
+    'use strict';
+    var KEY = 'classtool-exam-v1';
+    var SUBJECTS = ['國語', '數學', '社會', '自然', '英語'];
+    var $ = function (id) { return document.getElementById(id); };
+
+    var st = { theme: 'dark', sound: true, minutes: 40, subject: '國語' };
+    try { Object.assign(st, JSON.parse(localStorage.getItem(KEY)) || {}); } catch (e) { }
+    function save() { try { localStorage.setItem(KEY, JSON.stringify(st)); } catch (e) { } }
+
+    var total = st.minutes * 60, left = total, endAt = 0, timer = null, running = false, said = {}, wakeLock = null;
+
+    function fmt(s) {
+      s = Math.max(0, Math.ceil(s));
+      var hh = Math.floor(s / 3600), mm = Math.floor(s % 3600 / 60), ss = s % 60;
+      return (hh ? hh + ':' + String(mm).padStart(2, '0') : String(mm).padStart(2, '0')) + ':' + String(ss).padStart(2, '0');
+    }
+    function clock(d) { return String(d.getHours()).padStart(2, '0') + ':' + String(d.getMinutes()).padStart(2, '0'); }
+    function draw() {
+      var warn = left <= 5 * 60 && left > 0 && total > 5 * 60;
+      $('digits').textContent = fmt(left);
+      $('digits').classList.toggle('warn', warn);
+      $('bar').style.width = (total ? Math.max(0, left / total) * 100 : 0) + '%';
+      $('bar').classList.toggle('warn', warn);
+      var now = new Date();
+      $('now').textContent = clock(now);
+      $('end').textContent = running ? clock(new Date(endAt)) : clock(new Date(now.getTime() + left * 1000));
+    }
+    function msg(t, warn) { $('msg').textContent = t; $('msg').classList.toggle('warn', !!warn); }
+
+    function tick() {
+      left = (endAt - Date.now()) / 1000;
+      [10, 5].forEach(function (m) {
+        if (!said[m] && left <= m * 60 && total > m * 60 + 30) {
+          said[m] = true; chime([660, 880], 0.3); msg('還剩 ' + m + ' 分鐘，請檢查答案', true);
+        }
+      });
+      if (left <= 0) { left = 0; draw(); finish(); return; }
+      draw();
+    }
+    function start() {
+      if (running) { pause(); return; }
+      if (left <= 0) left = total;
+      running = true; endAt = Date.now() + left * 1000; clearInterval(timer); timer = setInterval(tick, 250); tick();
+      $('startBtn').textContent = '⏸ 暫停';
+      if (!$('msg').classList.contains('warn')) msg('作答中');
+      lockScreen(true); unlockAudio();
+    }
+    function pause() {
+      running = false; clearInterval(timer); left = Math.max(0, (endAt - Date.now()) / 1000);
+      $('startBtn').textContent = '▶ 繼續'; msg('暫停中'); draw(); lockScreen(false);
+    }
+    function reset() {
+      running = false; clearInterval(timer); total = st.minutes * 60; left = total; said = {};
+      $('startBtn').textContent = '▶ 開始'; msg('準備開始'); draw(); lockScreen(false);
+    }
+    function addTime(m) {
+      total += m * 60; left += m * 60; if (running) endAt += m * 60 * 1000;
+      [10, 5].forEach(function (k) { if (left > k * 60) said[k] = false; });
+      msg('延長 ' + m + ' 分鐘'); draw();
+    }
+    function finish() {
+      running = false; clearInterval(timer); lockScreen(false);
+      $('startBtn').textContent = '▶ 開始'; msg('時間到');
+      chime([784, 659, 523], 0.6, 0.4);
+      $('overlay').hidden = false; $('mOk').focus();
+    }
+    $('mOk').addEventListener('click', function () { $('overlay').hidden = true; reset(); });
+
+    var actx = null;
+    function unlockAudio() { try { actx = actx || new (window.AudioContext || window.webkitAudioContext)(); if (actx.state === 'suspended') actx.resume(); } catch (e) { } }
+    function chime(freqs, dur, gap) {
+      if (!st.sound) return;
+      try {
+        unlockAudio(); var t = actx.currentTime;
+        freqs.forEach(function (f) {
+          var o = actx.createOscillator(), g = actx.createGain();
+          o.type = 'sine'; o.frequency.value = f;
+          g.gain.setValueAtTime(0.0001, t); g.gain.exponentialRampToValueAtTime(0.16, t + 0.03); g.gain.exponentialRampToValueAtTime(0.0001, t + dur + 0.6);
+          o.connect(g); g.connect(actx.destination); o.start(t); o.stop(t + dur + 0.7); t += (gap || 0.2);
+        });
+      } catch (e) { }
+    }
+    function lockScreen(on) {
+      if (!('wakeLock' in navigator)) return;
+      if (on && !wakeLock) navigator.wakeLock.request('screen').then(function (l) { wakeLock = l; l.addEventListener('release', function () { wakeLock = null; }); }).catch(function () { });
+      if (!on && wakeLock) { wakeLock.release(); wakeLock = null; }
+    }
+    document.addEventListener('visibilitychange', function () { if (document.visibilityState === 'visible' && running) lockScreen(true); });
+
+    function setMinutes(m) {
+      st.minutes = Math.min(180, Math.max(5, m)); save();
+      $('setVal').textContent = st.minutes + ' 分';
+      if (!running) reset();
+    }
+    function setSubject(s) {
+      st.subject = s; save(); $('subject').textContent = s + '　考試';
+      [].forEach.call($('subjects').children, function (b) { b.classList.toggle('on', b.textContent === s); });
+    }
+    SUBJECTS.forEach(function (s) {
+      var b = document.createElement('button'); b.type = 'button'; b.className = 'chip'; b.textContent = s;
+      b.addEventListener('click', function () { setSubject(s); });
+      $('subjects').appendChild(b);
+    });
+
+    function applyTheme() { document.documentElement.dataset.theme = st.theme; $('themeBtn').textContent = st.theme === 'dark' ? '☀️' : '🌙'; }
+    $('themeBtn').addEventListener('click', function () { st.theme = st.theme === 'dark' ? 'light' : 'dark'; save(); applyTheme(); });
+    $('soundBtn').addEventListener('click', function () { st.sound = !st.sound; save(); this.setAttribute('aria-pressed', st.sound ? 'true' : 'false'); if (st.sound) chime([660], 0.2); });
+    $('soundBtn').setAttribute('aria-pressed', st.sound ? 'true' : 'false');
+    $('cleanBtn').addEventListener('click', function () {
+      document.body.classList.toggle('clean');
+      var el = document.documentElement;
+      if (document.body.classList.contains('clean') && el.requestFullscreen) el.requestFullscreen().catch(function () { });
+      else if (document.fullscreenElement && document.exitFullscreen) document.exitFullscreen();
+    });
+    $('stage').addEventListener('click', function () { if (document.body.classList.contains('clean')) $('cleanBtn').click(); });
+
+    $('startBtn').addEventListener('click', start);
+    $('resetBtn').addEventListener('click', reset);
+    $('add5').addEventListener('click', function () { addTime(5); });
+    $('add10').addEventListener('click', function () { addTime(10); });
+    $('minus').addEventListener('click', function () { setMinutes(st.minutes - 5); });
+    $('plus').addEventListener('click', function () { setMinutes(st.minutes + 5); });
+    document.addEventListener('keydown', function (e) { if (e.code === 'Space' && e.target.tagName !== 'BUTTON') { e.preventDefault(); start(); } });
+    setInterval(function () { if (!running) draw(); }, 5000);
+
+    applyTheme(); setSubject(st.subject); setMinutes(st.minutes); reset();
+  })();
+  </script>
+</body>
+</html>
