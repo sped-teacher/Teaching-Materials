@@ -84,9 +84,20 @@
     .switch[aria-checked="true"] { background: var(--time); }
     .switch[aria-checked="true"]::after { left: 28px; }
 
-    .stars { margin-top: 14px; }
-    .stars .row { display: flex; flex-wrap: wrap; gap: 4px; font-size: 30px; color: var(--star); min-height: 40px; }
-    .stars .note { font-size: 16px; color: var(--muted); display: flex; justify-content: space-between; align-items: center; gap: 8px; }
+    /* 代幣板 */
+    .tokens { margin-top: 16px; padding: 12px 14px; border-radius: 16px; background: var(--soft); border: 1px solid var(--line); text-align: center; }
+    .tk-head { display: flex; justify-content: center; align-items: baseline; gap: 10px; flex-wrap: wrap; }
+    .tk-title { font-size: 18px; font-weight: 700; }
+    .tk-full { font-size: 16px; color: var(--star); font-weight: 700; }
+    .tk-row { display: flex; justify-content: center; flex-wrap: wrap; gap: 8px; margin: 8px 0 4px; }
+    .tk { width: 52px; height: 52px; border-radius: 50%; display: grid; place-items: center; font-size: 30px; border: 3px dashed var(--line); background: var(--card); }
+    .tk.on { border: 3px solid var(--star); background: var(--time-soft); }
+    .tk.pop { animation: pop .6s ease; }
+    @keyframes pop { 0% { transform: scale(.3); } 60% { transform: scale(1.25); } 100% { transform: scale(1); } }
+    .tk-note { font-size: 16px; color: var(--muted); }
+    .seg { display: inline-flex; gap: 6px; }
+    .seg button { min-width: 48px; min-height: 40px; border-radius: 10px; border: 2px solid var(--line); background: var(--soft); font-size: 17px; font-weight: 700; }
+    .seg button.on { border-color: var(--time); background: var(--time-soft); }
     .link-btn { background: none; border: none; color: var(--muted); text-decoration: underline; font-size: 15px; padding: 4px; }
 
     /* 時間到／完成的提示 */
@@ -106,9 +117,14 @@
     body.focus .main { grid-template-columns: 1fr; min-height: 0; }
     body.focus .timer-card {
       height: 100%; min-height: 0; padding: 3vmin; display: grid; gap: 2vmin 4vmin; align-items: center;
-      grid-template-columns: minmax(0, 1fr) auto; grid-template-rows: 1fr auto; grid-template-areas: "task clock" "ctrl ctrl";
+      grid-template-columns: minmax(0, 1fr) auto; grid-template-rows: 1fr auto auto; grid-template-areas: "task clock" "tok clock" "ctrl ctrl";
     }
-    body.focus.notask .timer-card { grid-template-columns: 1fr; grid-template-areas: "clock" "ctrl"; }
+    body.focus.notask .timer-card { grid-template-columns: minmax(0, 1fr) auto; grid-template-rows: 1fr auto; grid-template-areas: "tok clock" "ctrl ctrl"; }
+    body.focus .tokens { grid-area: tok; margin: 0; align-self: end; padding: 1.6vmin 2vmin; }
+    body.focus.notask .tokens { align-self: center; }
+    body.focus .tk-title { font-size: clamp(18px, 2.6vmin, 44px); }
+    body.focus .tk-full, body.focus .tk-note { font-size: clamp(16px, 2vmin, 34px); }
+    body.focus .tk { width: clamp(52px, 7.5vmin, 120px); height: clamp(52px, 7.5vmin, 120px); font-size: clamp(30px, 4.5vmin, 72px); }
     body.focus .task-show { display: block; grid-area: task; font-size: clamp(30px, 6vmin, 110px); font-weight: 900; line-height: 1.3; }
     body.focus .task-show .lbl { display: block; font-size: .42em; font-weight: 700; color: var(--muted); margin-bottom: .2em; }
     body.focus .task-show .then { display: block; margin-top: .8em; font-size: .6em; color: var(--time); }
@@ -123,7 +139,7 @@
     body.focus .big { min-height: clamp(64px, 10vmin, 150px); min-width: clamp(150px, 22vmin, 380px); font-size: clamp(22px, 3.6vmin, 60px); border-radius: clamp(18px, 2.5vmin, 36px); }
     /* 直立的平板：任務在上、圓盤在下 */
     @media (orientation: portrait) {
-      body.focus .timer-card { grid-template-columns: 1fr; grid-template-rows: auto 1fr auto; grid-template-areas: "task" "clock" "ctrl"; text-align: center; }
+      body.focus .timer-card, body.focus.notask .timer-card { grid-template-columns: 1fr; grid-template-rows: auto 1fr auto auto; grid-template-areas: "task" "clock" "tok" "ctrl"; text-align: center; }
       body.focus .dial, body.focus.notask .dial { width: min(52vh, 84vw); width: min(52dvh, 84vw); }
     }
 
@@ -170,6 +186,12 @@
           <button class="big ghost" id="resetBtn" type="button">↺ 重來</button>
           <button class="big done" id="doneBtn" type="button" disabled>🎉 我做完了</button>
         </div>
+        <!-- 代幣板：提早完成就點亮一格，集滿有慶祝 -->
+        <div class="tokens" id="tokens">
+          <div class="tk-head"><span class="tk-title">今天完成的任務／作業</span><span class="tk-full" id="tkFull"></span></div>
+          <div class="tk-row" id="tkRow" aria-live="polite"></div>
+          <div class="tk-note" id="tkNote">在時間內做完，就能點亮一顆星星 ⭐</div>
+        </div>
       </div>
 
       <div class="card side">
@@ -185,10 +207,9 @@
           <div class="opt"><span>顯示數字</span><button class="switch" id="optDigits" role="switch" aria-checked="true" type="button"></button></div>
           <div class="opt"><span>剩 1 分鐘語音提醒</span><button class="switch" id="optWarn" role="switch" aria-checked="true" type="button"></button></div>
         </div>
-        <div class="stars">
-          <h2>今天完成的作業</h2>
-          <div class="row" id="starRow" aria-live="polite"></div>
-          <div class="note"><span id="starNote">還沒有，加油！</span><button class="link-btn" id="clearStars" type="button">重新計算</button></div>
+        <div class="opts">
+          <div class="opt"><span>星星目標</span><span class="seg" id="goalSeg"></span></div>
+          <div class="opt"><span>今天的星星</span><button class="link-btn" id="clearStars" type="button">重新計算</button></div>
         </div>
       </div>
     </div>
@@ -212,7 +233,7 @@
     var $ = function (id) { return document.getElementById(id); };
 
     // ── 設定與今天的星星（只存在這台裝置）──
-    var st = { theme: 'light', sound: true, disc: true, digits: true, warn: true, minutes: 5, task: '', reward: '', day: '', stars: 0 };
+    var st = { theme: 'light', sound: true, disc: true, digits: true, warn: true, minutes: 5, task: '', reward: '', day: '', stars: 0, goal: 5 };
     try { Object.assign(st, JSON.parse(localStorage.getItem(KEY)) || {}); } catch (e) { }
     var today = new Date().toDateString();
     if (st.day !== today) { st.day = today; st.stars = 0; }
@@ -265,10 +286,17 @@
       running = false; clearInterval(timer); lockScreen(false);
       $('startBtn').textContent = '▶ 開始'; $('doneBtn').disabled = true;
       if (early) {
-        st.stars++; save(); renderStars();
+        st.stars++; save(); renderStars(true);
         chime([523, 659, 784, 1047], 0.25, 0.12);
-        showModal('🌟', '提早完成！', '你在時間內做完了，得到一顆星星。', st.reward);
-        say('太棒了，你提早完成了');
+        var filled = st.stars % st.goal === 0;
+        if (filled) {
+          showModal('🏆', '集滿 ' + st.goal + ' 顆星星！', '你今天做得太棒了！', st.reward);
+          say('太厲害了，你集滿了' + st.goal + '顆星星');
+        } else {
+          var need = st.goal - st.stars % st.goal;
+          showModal('🌟', '提早完成！', '得到一顆星星，再 ' + need + ' 顆就集滿了。', st.reward);
+          say('太棒了，你提早完成了');
+        }
       } else {
         chime([784, 659, 523], 0.5, 0.35);
         showModal('🔔', '時間到', '停下來，看看做到哪裡了。', '');
@@ -388,11 +416,31 @@
     $('task').addEventListener('input', syncTask); $('reward').addEventListener('input', syncTask);
 
     // ── 星星 ──
-    function renderStars() {
-      var row = $('starRow'); row.innerHTML = '';
-      for (var i = 0; i < st.stars; i++) { var s = document.createElement('span'); s.textContent = '⭐'; row.appendChild(s); }
-      $('starNote').textContent = st.stars ? '今天提早完成 ' + st.stars + ' 次' : '還沒有，加油！';
+    // 代幣板：一排 goal 格，提早完成點亮一格；集滿一排算一次，下一顆開始新的一排
+    var GOALS = [3, 5, 10];
+    function renderStars(justEarned) {
+      var goal = st.goal, n = st.stars;
+      var rounds = Math.floor(n / goal), inRow = n % goal;
+      if (n > 0 && inRow === 0) { inRow = goal; rounds--; }   // 剛好集滿：這一排先保持全亮
+      var row = $('tkRow'); row.innerHTML = '';
+      for (var i = 0; i < goal; i++) {
+        var s = document.createElement('span');
+        s.className = 'tk' + (i < inRow ? ' on' : '') + (justEarned && i === inRow - 1 ? ' pop' : '');
+        s.textContent = i < inRow ? '⭐' : '';
+        row.appendChild(s);
+      }
+      var full = rounds + (inRow === goal ? 1 : 0);
+      $('tkFull').textContent = full ? '🏆 已集滿 ' + full + ' 次' : '';
+      var need = goal - inRow;
+      $('tkNote').textContent = inRow === goal ? '集滿了！好厲害！' : n === 0 ? '在時間內做完，就能點亮一顆星星 ⭐' : '再 ' + need + ' 顆就集滿了！';
+      $('tokens').setAttribute('aria-label', '今天得到 ' + n + ' 顆星星');
+      [].forEach.call($('goalSeg').children, function (b) { b.classList.toggle('on', +b.dataset.g === goal); });
     }
+    GOALS.forEach(function (g) {
+      var b = document.createElement('button'); b.type = 'button'; b.dataset.g = g; b.textContent = g;
+      b.addEventListener('click', function () { st.goal = g; save(); renderStars(); });
+      $('goalSeg').appendChild(b);
+    });
     $('clearStars').addEventListener('click', function () { if (confirm('要把今天的星星重新計算嗎？')) { st.stars = 0; save(); renderStars(); } });
 
     $('startBtn').addEventListener('click', start);
