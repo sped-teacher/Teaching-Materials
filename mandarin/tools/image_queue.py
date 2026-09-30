@@ -27,8 +27,8 @@ COPY = [('02', '07', n) for n in ('記錄', '俸祿', '綠葉')] + \
 
 def copy_shared():
     for src, dst, name in COPY:
-        a = ROOT / 'images' / f'lesson{src}' / f'{name}.png'
-        b = ROOT / 'images' / f'lesson{dst}' / f'{name}.png'
+        a = ROOT / 'images' / f'lesson{src}' / f'{name}.webp'
+        b = ROOT / 'images' / f'lesson{dst}' / f'{name}.webp'
         if a.exists() and not b.exists():
             b.parent.mkdir(parents=True, exist_ok=True)
             shutil.copy2(a, b)

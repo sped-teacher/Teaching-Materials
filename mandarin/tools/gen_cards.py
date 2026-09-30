@@ -17,7 +17,7 @@
   python tools/gen_cards.py --hf tools/cards_01.json       # 改用 Hugging Face
 
 設定檔格式：{ "lesson": "01", "cards": [ { "name": 語詞, "scene": 英文畫面描述 } ] }
-圖片裁成正方形 960×960，存成 images/lessonXX/語詞.png。
+圖片裁成正方形 640×640，存成 images/lessonXX/語詞.webp（每張約 30 KB）。
 帳號憑證、token 絕對不要寫進這個檔案或 repo。
 """
 import json
@@ -31,7 +31,7 @@ from pathlib import Path
 
 from PIL import Image
 
-SIZE = 960
+SIZE = 640  # iPad 高解析螢幕顯示圖卡（最大約 320 點）用 640 就夠清楚
 STYLE = (
     'Clean simple educational illustration for teaching picture cards, Japanese simple '
     'clip-art style, soft flat colors with gentle rounded outlines, bright but not harsh '
@@ -91,14 +91,20 @@ def gen_hf(prompt: str) -> Image.Image:
     return Image.open(result[0] if isinstance(result, (list, tuple)) else result)
 
 
-def make(lesson: str, name: str, scene: str, engine) -> Path:
-    img = engine(f'{STYLE} {scene.strip()} {NO_TEXT}').convert('RGB')
+def save_webp(img: Image.Image, out: Path):
+    """裁成正方形、縮成 640×640，存成 WebP（每張約 30 KB，網站載入快）。"""
+    img = img.convert('RGB')
     s = min(img.size)
     left, top = (img.width - s) // 2, (img.height - s) // 2
     img = img.crop((left, top, left + s, top + s)).resize((SIZE, SIZE), Image.LANCZOS)
-    out = ROOT / 'images' / f'lesson{lesson}' / f'{name}.png'
     out.parent.mkdir(parents=True, exist_ok=True)
-    img.save(out, optimize=True)
+    img.save(out, 'WEBP', quality=80, method=6)
+
+
+def make(lesson: str, name: str, scene: str, engine) -> Path:
+    img = engine(f'{STYLE} {scene.strip()} {NO_TEXT}')
+    out = ROOT / 'images' / f'lesson{lesson}' / f'{name}.webp'
+    save_webp(img, out)
     return out
 
 
@@ -114,7 +120,7 @@ if __name__ == '__main__':
     only, lesson = set(args[1:]), conf['lesson']
     for card in conf['cards']:
         name = card['name']
-        out = ROOT / 'images' / f'lesson{lesson}' / f'{name}.png'
+        out = ROOT / 'images' / f'lesson{lesson}' / f'{name}.webp'
         if only and name not in only:
             continue
         if not only and not redo and out.exists():

@@ -192,7 +192,7 @@
     return f;
   }
 
-  // ── 圖卡（圖片之後放進 images/lessonXX/語詞.png）──
+  // ── 圖卡：images/lessonXX/語詞.webp（640×640，每張約 30 KB）──
   function picEl(lid, name, big) {
     var box = h('div', { class: 'pic' + (big ? ' big' : '') });
     var exts = ['webp', 'png', 'jpg', 'svg'], i = 0;
@@ -989,7 +989,7 @@
       var picShown = false, hasPic = false, img = new Image();
       img.alt = '「' + it.w + '」的圖';
       img.onload = function () { hasPic = true; picBox.appendChild(img); if (picShown || c.level < 3) { picShown = true; picBox.classList.add('on'); } };
-      img.src = 'images/lesson' + lid + '/' + encodeURIComponent(it.w) + '.png';
+      img.src = 'images/lesson' + lid + '/' + encodeURIComponent(it.w) + '.webp';
       function showPic() {
         if (picShown || !hasPic) return false;
         picShown = true; picBox.classList.add('on');
