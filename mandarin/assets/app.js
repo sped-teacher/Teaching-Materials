@@ -744,7 +744,7 @@
           step('看字卡：點每一張卡，聽聽看怎麼念。', 'cards', function (stage, api) {
             runCards(stage, items, api, function (ch) {
               var el = h('div', { role: 'button', tabindex: '0' },
-                h('div', { class: 'hanzi' }, withZy(ch.c, ch.zy)),
+                h('div', { class: 'hanzi' }, withZy(ch.c, ch.zy, true)),   // 生字卡一定顯示注音（學生字要知道怎麼念），不受注音開關影響
                 h('div', { class: 'facts' }, h('span', { class: 'nw' }, '部首 ', h('b', {}, radicalLabel(ch))), '　', h('span', { class: 'nw' }, '筆畫 ', h('b', {}, String(ch.strokes)))),
                 h('div', { class: 'wds' }, ch.words.join('、')),
                 ch.poly ? h('div', { class: 'poly' }, h('span', { class: 'tag' }, '多音字'), ch.poly.map(function (p) {
