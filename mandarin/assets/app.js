@@ -790,7 +790,7 @@
     },
 
     words: {
-      name: '學會語詞', icon: '🧩', desc: '看圖卡、懂意思、配對遊戲', core: true,
+      name: '學會語詞', icon: '🧩', desc: '看詞卡和圖卡、配對、看意思選語詞', core: true,
       units: function (L, c) { return mkUnits(L.words, c.group); },
       steps: function (L, unit, c) {
         var items = unit.items;
@@ -830,7 +830,7 @@
 
     // 短語短句：看結構（詞性上色）→ 排短語 → 選出順序正確的短語
     phrases: {
-      name: '短語短句', icon: '🔗', desc: '認識短語短句結構、排排看', core: true,
+      name: '短語短句', icon: '🔗', desc: '認識短語短句、排一排、選一選', core: true,
       units: function (L) { return (L.phrases || []).map(function (p) { return { key: p.id, items: [p], label: p.model.join('') }; }); },
       steps: function (L, unit, c) {
         var p = unit.items[0];
@@ -881,7 +881,7 @@
     },
 
     sentences: {
-      name: '句型練習', icon: '🧱', desc: '認識句型、排句子、選連接詞', core: true,
+      name: '句型練習', icon: '🧱', desc: '認識句型、排句子、選連接詞、自己造句', core: true,
       units: function (L, c) {
         return L.sentences.filter(function (s) { return !s.flex || c.level === 3; })
           .map(function (s) { return { key: s.id, items: [s], label: s.pattern + (s.flex ? '（挑戰）' : '') }; });
@@ -957,7 +957,7 @@
 
     // 字族文：先讀韻文認識一家人 → 母體字加部首組字 → 句子選字；最後一組是綜合測驗
     lookalikes: {
-      name: '形近字', icon: '🔍', desc: '讀字族文、組字、句子選字', core: false,
+      name: '形近字', icon: '🔍', desc: '讀字族文、看語詞選字、組字、句子選字', core: false,
       units: function (L) {
         return L.families.map(function (f) { return { key: f.id, items: [f], label: f.title || (f.poly ? '「' + f.base + '」一字兩音' : '「' + f.base + '」字家族') }; })
           .concat([{ key: 'mix', items: L.lookalikes, label: '綜合測驗' }]);
@@ -1070,7 +1070,7 @@
     },
 
     idioms: {
-      name: '生字變成語', icon: '🏮', desc: '補上生字、看圖選成語、配對', core: false,
+      name: '生字變成語', icon: '🏮', desc: '看成語卡、補字、看意思選成語、配對', core: false,
       units: function (L, c) { return mkUnits(L.idioms, Math.min(6, Math.max(3, c.group))); },
       steps: function (L, unit, c) {
         var items = unit.items;
@@ -1151,7 +1151,7 @@
   };
   // 修辭小偵探：認識修辭（例句上色）→ 判斷是不是 → 找出比成什麼
   MODULES.rhetoric = {
-    name: '修辭小偵探', icon: '🕵️', desc: '認識修辭、找出句子裡的修辭', core: false,
+    name: '修辭小偵探', icon: '🕵️', desc: '認識修辭、判斷有沒有用、找出比成什麼', core: false,
     units: function (L) { return (L.rhetoric || []).map(function (r) { return { key: r.id, items: [r], label: r.name }; }); },
     steps: function (L, unit, c) {
       var r = unit.items[0], nJ = { 1: 4, 2: 6 }[c.level] || (r.judge || []).length, nA = { 1: 3, 2: 4 }[c.level] || r.ask.length;
@@ -1828,6 +1828,14 @@
     var body = ov.querySelector('.modal');
     body.classList.add('teacher');
     function sw(on, fn) { var b = h('button', { class: 'switch' + (on ? ' on' : ''), type: 'button', role: 'switch', 'aria-checked': on ? 'true' : 'false' }); b.addEventListener('click', fn); return b; }
+    // 可收合的區塊；opened 記住使用者打開／關起來的狀態，重畫後維持
+    var opened = {};
+    function fold(key, title, def, content) {
+      var d = h('details', { class: 'fold' }, h('summary', {}, title), h('div', { class: 'fold-body' }, content));
+      d.open = key in opened ? opened[key] : def;
+      d.addEventListener('toggle', function () { opened[key] = d.open; });
+      return d;
+    }
     function set(k, v) { state.settings[k] = v; save(); draw(); }
     function draw() {
       var s = state.settings, c = cfg();
@@ -1864,9 +1872,13 @@
         append(body, h('section', {}, h('h3', {}, '教室密碼'),
           h('p', { class: 'muted', style: 'margin:0 0 8px' }, '課文點讀、朗讀挑戰需要教室密碼。這台 iPad 目前' + (unlocked ? '已解鎖。' : '尚未解鎖。')), lockBtn));
       }
-      append(body, h('section', {}, h('h3', {}, '學習紀錄'), recordsTable()));
-      append(body, h('section', {}, h('h3', {}, '單課小考成績'), testList()));
-      append(body, h('section', {}, h('h3', {}, '學生造的句子'), madeList(draw)));
+      // 紀錄區都可以收合（重畫時記得哪些是打開的）；常用的「造句批改」「小考成績」放前面、預設打開
+      var pending = 0;
+      Object.keys(state.progress).forEach(function (k) { (state.progress[k].made || []).forEach(function (m) { if (!m.mark) pending++; }); });
+      append(body,
+        fold('made', '✍️ 學生造的句子' + (pending ? '（' + pending + ' 句待批改）' : ''), true, madeList(draw)),
+        fold('tests', '📝 單課小考成績', true, testList()),
+        fold('records', '📊 學習紀錄（每課可展開，含朗讀挑戰）', false, recordsTable(fold)));
       var reset = h('button', { class: 'btn btn-ghost danger', type: 'button', style: 'margin-top:16px' }, '清除這台 iPad 的學習紀錄');
       reset.addEventListener('click', function () { if (window.confirm('確定要清除全部學習紀錄嗎？（含錯題、小考成績、造的句子）這個動作無法復原。')) { state.progress = {}; state.mistakes = []; save(); draw(); } });
       append(body, reset);
@@ -1911,32 +1923,68 @@
         b.addEventListener('click', function () { m.mark = m.mark === val ? undefined : val; save(); if (refresh) refresh(); });
         return b;
       };
-      var info = [];
+      var info = [m.p + '・等級' + m.lv];
+      if (m.orig) info.push('老師修改；原句「' + m.orig + '」');
       if (m.redo) info.push('重寫自「' + m.redo + '」');
       if (m.rev) info.push('自己改了 ' + m.rev + ' 次');
       if (m.t > 1) info.push('結構試了 ' + m.t + ' 次');
       var state2 = m.mark === 'redone' ? h('span', { class: 'muted' }, '已重寫') : h('span', { class: 'mark-btns' }, mk('ok', '✓', '意思通順'), mk('redo', '✗', '要重寫'));
-      append(tb, h('tr', {}, h('td', {}, m.d), h('td', {}, '第' + parseInt(r.lid, 10) + '課'), h('td', {}, m.p),
-        h('td', { style: 'font-size:18px' }, m.s, info.length ? h('div', { class: 'muted', style: 'font-size:14px' }, info.join('・')) : null),
-        h('td', {}, '等級' + m.lv), h('td', {}, state2)));
+      // ✏️ 老師直接修改（在旁邊陪學生時，改好按 🔊 念給學生聽）
+      var cell = h('td', { style: 'font-size:18px' });
+      function showText() {
+        cell.innerHTML = '';
+        var edit = h('button', { class: 'mark-btn', type: 'button', title: '老師修改這一句' }, '✏️');
+        edit.addEventListener('click', showEdit);
+        append(cell, h('div', { class: 'row', style: 'gap:6px;align-items:flex-start' }, h('span', { style: 'flex:1' }, m.s), sayBtn(m.s), edit),
+          info.length ? h('div', { class: 'muted', style: 'font-size:14px' }, info.join('・')) : null);
+      }
+      function showEdit() {
+        cell.innerHTML = '';
+        var inp = h('input', { type: 'text', class: 'make-in', value: m.s, lang: 'zh-Hant', autocomplete: 'off', style: 'font-size:18px;min-height:48px;width:100%' });
+        var ok = h('button', { class: 'btn btn-primary', type: 'button', style: 'min-height:44px' }, '儲存');
+        var no = h('button', { class: 'btn btn-ghost', type: 'button', style: 'min-height:44px' }, '取消');
+        ok.addEventListener('click', function () {
+          var t = cleanSentence(inp.value);
+          if (!hanCount(t)) return;
+          if (!/[。？！]$/.test(t)) t = t.replace(/[，、；：]+$/, '') + '。';
+          if (t !== m.s) { if (!m.orig) m.orig = m.s; m.s = t; m.mark = 'ok'; }   // 老師改過就算通過
+          save(); if (refresh) refresh();
+        });
+        no.addEventListener('click', showText);
+        inp.addEventListener('keydown', function (e) { if (e.key === 'Enter') ok.click(); });
+        append(cell, inp, h('div', { class: 'row', style: 'gap:8px;margin-top:6px' }, ok, no));
+        setTimeout(function () { inp.focus(); }, 30);
+      }
+      showText();
+      append(tb, h('tr', {}, h('td', { class: 'nw' }, m.d, h('br'), '第' + parseInt(r.lid, 10) + '課'),
+        cell, h('td', { class: 'nw' }, state2)));
     });
-    return h('div', { style: 'overflow-x:auto' }, h('table', { class: 'records' },
-      h('thead', {}, h('tr', {}, h('th', {}, '日期'), h('th', {}, '課次'), h('th', {}, '句型'), h('th', {}, '句子'), h('th', {}, ''), h('th', {}, '批改'))), tb),
-      h('p', { class: 'muted', style: 'font-size:15px' }, '電腦只檢查句型結構（連接詞、順序、每段有沒有寫）。意思是否通順請老師批改：✓ 通順；✗ 要重寫，學生下次打開「錯題複習」會先重寫這一句。'));
+    return h('div', { style: 'overflow-x:auto' }, h('table', { class: 'records made-tbl' },
+      h('thead', {}, h('tr', {}, h('th', {}, '日期'), h('th', {}, '句子'), h('th', {}, '批改'))), tb),
+      h('p', { class: 'muted', style: 'font-size:15px' }, '電腦只檢查句型結構（連接詞、順序、每段有沒有寫）。意思請老師批改：✓ 通順；✗ 要重寫（學生下次打開「錯題複習」會先重寫）；✏️ 老師直接修改，改好可按 🔊 念給學生聽。'));
   }
-  function recordsTable() {
-    var tb = h('tbody');
+  // 學習紀錄：每課一個可收合的區塊；標題列出這課的完成組數和朗讀挑戰平均分數
+  function recordsTable(fold) {
+    var box = h('div');
     Object.keys(LESSONS).sort().forEach(function (lid) {
+      var tb = h('tbody'), done = 0, total = 0;
       MODULE_ORDER.forEach(function (mid) {
         var s = modStatus(lid, mid), recs = Object.keys(s.prog).map(function (k) { return s.prog[k]; });
+        done += s.done; total += s.total;
         var acc = recs.length ? Math.round(recs.reduce(function (a, r) { return a + r.acc; }, 0) / recs.length) + '%' : '—';
         var last = recs.length ? recs.map(function (r) { return r.date; }).sort().pop() : '—';
-        append(tb, h('tr', {}, h('td', {}, '第' + LESSONS[lid].no + '課 ' + MODULES[mid].name), h('td', {}, s.done + '／' + s.total), h('td', {}, starsEl(s.stars)), h('td', {}, acc), h('td', {}, last)));
+        append(tb, h('tr', {}, h('td', {}, MODULES[mid].icon + ' ' + MODULES[mid].name), h('td', {}, s.done + '／' + s.total), h('td', {}, starsEl(s.stars)), h('td', {}, acc), h('td', {}, last)));
       });
+      // 朗讀挑戰：每段最高分（key＝等級:段落）
+      var sp = (state.progress[lid] && state.progress[lid].score) || {}, segs = Object.keys(sp).map(function (k) { return sp[k]; }).filter(function (v) { return typeof v === 'number'; });
+      var sAvg = segs.length ? Math.round(segs.reduce(function (a, b) { return a + b; }, 0) / segs.length) : null;
+      if (hasReading(lid)) append(tb, h('tr', {}, h('td', {}, '🎙️ 朗讀挑戰'), h('td', {}, segs.length ? '念了 ' + segs.length + ' 段' : '—'), h('td', {}, sAvg != null ? starsEl(scoreStars(sAvg)) : starsEl(0)), h('td', {}, sAvg != null ? '平均 ' + sAvg + ' 分' : '—'), h('td', {}, '')));
+      var title = '第 ' + LESSONS[lid].no + ' 課 ' + LESSONS[lid].title + '　完成 ' + done + '／' + total + ' 組' + (sAvg != null ? '・朗讀 ' + sAvg + ' 分' : '');
+      append(box, fold('rec' + lid, title, false, h('div', { style: 'overflow-x:auto' }, h('table', { class: 'records' },
+        h('thead', {}, h('tr', {}, h('th', {}, '活動'), h('th', {}, '組數'), h('th', {}, '星星'), h('th', {}, '獨立答對'), h('th', {}, '日期'))), tb))));
     });
-    return h('div', { style: 'overflow-x:auto' }, h('table', { class: 'records' },
-      h('thead', {}, h('tr', {}, h('th', {}, '活動'), h('th', {}, '組數'), h('th', {}, '星星'), h('th', {}, '獨立答對'), h('th', {}, '日期'))), tb),
-      h('p', { class: 'muted', style: 'font-size:15px' }, '「獨立答對」＝沒有用提示、第一次就答對的比例，可作為 IEP 觀察參考。改變等級後分組方式會不同，組數會重新計算。'));
+    append(box, h('p', { class: 'muted', style: 'font-size:15px' }, '「獨立答對」＝沒有用提示、第一次就答對的比例，可作為 IEP 觀察參考。朗讀挑戰是每段最高分的平均。改變等級後分組方式會不同，組數會重新計算。'));
+    return box;
   }
 
   // ── 路由 ───────────────────────────────────────

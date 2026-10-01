@@ -500,3 +500,15 @@ h3 { font-size: 21px; }
 .mark-btn.on.ok { border-color: var(--right, #2E8B57); background: #E2F3E8; color: #2E8B57; }
 .mark-btn.on.redo { border-color: var(--wrong, #C2554F); background: #FBE7E5; color: #C2554F; }
 .make-who { color: var(--muted); font-family: var(--font); font-size: 22px; }
+
+/* 老師設定：可收合的區塊 */
+.teacher details.fold { margin-top: 14px; border: 1px solid var(--line); border-radius: 14px; background: var(--card); }
+.teacher details.fold > summary { cursor: pointer; list-style: none; padding: 12px 14px; font-size: 18px; font-weight: 700; display: flex; align-items: center; gap: 8px; }
+.teacher details.fold > summary::-webkit-details-marker { display: none; }
+.teacher details.fold > summary::after { content: '＋'; margin-left: auto; color: var(--muted); font-weight: 400; }
+.teacher details.fold[open] > summary::after { content: '－'; }
+.teacher .fold-body { padding: 0 12px 12px; }
+.teacher .fold-body details.fold { margin-top: 8px; background: var(--soft); }
+.teacher .fold-body details.fold > summary { font-size: 16px; padding: 10px 12px; }
+.records td.nw { white-space: nowrap; }
+.made-tbl td { vertical-align: top; }
