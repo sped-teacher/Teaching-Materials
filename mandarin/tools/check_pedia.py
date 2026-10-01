@@ -5,7 +5,7 @@
   python tools/check_pedia.py 07 08      # 只核對指定課次
 
 結果寫到 tools/texts/教育百科核對.txt（不一致的詞），查過的結果快取在 tools/texts/pedia_cache.json。
-每查一個詞停 1 秒，避免被網站擋（HTTP 429）。
+每查一個詞停 3 秒，避免被網站擋（HTTP 429）；中斷後重跑會從快取接著查。
 """
 import html as htmlmod
 import json
@@ -103,7 +103,7 @@ def fetch(w):
             res[book] = reads
     cache[w] = res
     CACHE_F.write_text(json.dumps(cache, ensure_ascii=False, indent=0), encoding='utf-8')
-    time.sleep(1)
+    time.sleep(3)   # 每 1 秒查一次仍常被擋（429 會等 30～90 秒），改 3 秒反而比較快
     return res
 
 
