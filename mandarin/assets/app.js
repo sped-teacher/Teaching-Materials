@@ -541,6 +541,9 @@
   }
   // 句型「雖然……可是……」→ ['雖然', '可是', '']：每個「……」是學生要寫的地方
   function patParts(p) { return p.pattern.split('……'); }
+  // 不能直接用連接詞開頭、前面要先寫「誰」的句型（我先……再……、弟弟一邊……一邊……）
+  var SUBJ_FIRST = ['先', '一邊', '時而', '不但', '不但沒', '不僅'];
+  function needsSubject(p) { var parts = patParts(p); return parts[0] !== '' && SUBJ_FIRST.indexOf(parts[0]) >= 0; }
   function fixSentence(s, p) {
     s = cleanSentence(s);
     var conns = p.conn, f = findConns(s, conns), lead = patParts(p)[0] === '';
@@ -566,6 +569,8 @@
       if (f.missing > 0 && s.indexOf(w) >= 0) return { msg: '「' + conns[f.missing - 1] + '」要寫在「' + w + '」前面。' };
       return { msg: '句子裡要有「' + w + '」。這個句型是「' + p.pattern + '」。' };
     }
+    // 要先寫主詞的句型：第一個連接詞前面要有「誰」
+    if (needsSubject(p) && hanCount(s.slice(0, f.pos[0])) < 1) return { msg: '「' + conns[0] + '」前面要寫是誰（例如：我、妹妹）。' };
     // 每一段要寫的內容（至少 2 個字）
     var segs = [];
     if (parts[0] === '') segs.push({ txt: s.slice(0, f.pos[0]), where: '「' + conns[0] + '」前面' });
@@ -619,6 +624,12 @@
       //     但 [　　] 。
       box = h('div', { class: 'make-frame' });
       var blanks = parts.length - 1;
+      // 要先寫主詞的句型：最前面加一格「誰？」
+      var subjIn = null;
+      if (needsSubject(p)) {
+        append(box, h('span', { class: 'make-conn make-lead make-who' }, '誰？'), mkInput('例如：我、妹妹'), h('span', { class: 'make-conn make-end' }, ''));
+        subjIn = inputs.pop();   // 主詞格不算在句型的空格裡
+      }
       for (var bi = 0; bi < blanks; bi++) {
         var last = bi === blanks - 1;
         append(box,
@@ -629,9 +640,10 @@
     } else {
       box = h('div', { class: 'make-free' }, mkInput('用「' + p.pattern + '」寫一個句子'));
     }
+    function allIns() { return subjIn ? [subjIn].concat(inputs) : inputs; }
     function assemble() {
       if (!frame) return inputs[0].value;
-      var s = '';
+      var s = subjIn ? cleanSentence(subjIn.value).replace(/[，。？！；：、]+$/, '') : '';
       parts.forEach(function (part, i) {
         if (part) s += (i > 0 ? '，' : '') + part;
         if (i < parts.length - 1) {
@@ -687,7 +699,7 @@
       // 結構通過 → 念一遍 → 學生自己判斷意思通不通順（後設認知）；要改就回到格子裡改
       done = true; sfx.right();
       if (!recorded) { recorded = true; api.record(tries === 0); }
-      inputs.forEach(function (x) { x.disabled = true; });
+      allIns().forEach(function (x) { x.disabled = true; });
       checkBtn.disabled = true;
       var raw = cleanSentence(assemble()), changed = !frame && raw !== r.fixed;
       var okBtn = h('button', { class: 'btn btn-primary self-btn', type: 'button' }, '👍 通順');
@@ -707,19 +719,19 @@
       });
       editBtn.addEventListener('click', function () {
         revised++; done = false; fb.innerHTML = '';
-        inputs.forEach(function (x) { x.disabled = false; });
+        allIns().forEach(function (x) { x.disabled = false; });
         checkBtn.disabled = false;
         var tip = '改好了再按「檢查我的句子」。想一想：前後兩段的意思有沒有接得上？';
         append(fb, h('div', { class: 'hintbox' }, '✏️', h('span', { style: 'flex:1' }, tip), sayBtn(tip)));
         if (c.autoRead) speak(tip);
-        if (inputs[0]) inputs[0].focus();
+        if (allIns()[0]) allIns()[0].focus();
       });
     }
     append(stage,
       h('p', { class: 'muted', style: 'margin:0 0 6px' }, frame ? '在空格裡寫上你的想法，句子就完成了。' : '用「' + p.pattern + '」寫一個完整的句子。'),
       h('p', { class: 'muted', style: 'margin:0 0 12px;font-size:16px' }, '可以打字，也可以按 🎤 用說的（或用鍵盤上的麥克風）。'),
       box, exBox, h('div', { style: 'margin-top:14px' }, checkBtn), tools, fb);
-    setTimeout(function () { if (inputs[0]) inputs[0].focus(); }, 80);
+    setTimeout(function () { if (allIns()[0]) allIns()[0].focus(); }, 80);
   }
 
   var MODULES = {

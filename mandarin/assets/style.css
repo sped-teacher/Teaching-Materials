@@ -499,3 +499,4 @@ h3 { font-size: 21px; }
 .mark-btn { width: 44px; height: 44px; border-radius: 12px; border: 2px solid var(--line); background: var(--card); font-size: 20px; font-weight: 700; color: var(--muted); }
 .mark-btn.on.ok { border-color: var(--right, #2E8B57); background: #E2F3E8; color: #2E8B57; }
 .mark-btn.on.redo { border-color: var(--wrong, #C2554F); background: #FBE7E5; color: #C2554F; }
+.make-who { color: var(--muted); font-family: var(--font); font-size: 22px; }
