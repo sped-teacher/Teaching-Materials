@@ -25,6 +25,9 @@
     .tbl th, .tbl td { border-bottom: 1px solid var(--line); padding: 10px 12px; text-align: left; vertical-align: top; line-height: 1.6; }
     .tbl th { background: var(--soft); color: var(--muted); font-weight: 500; white-space: nowrap; }
     .tbl-wrap { overflow-x: auto; border: 1px solid var(--line); border-radius: 12px; }
+    details.more { margin: 8px 0 12px; }
+    details.more summary { cursor: pointer; display: inline-block; padding: 8px 14px; border-radius: 999px; background: var(--card); border: 1px solid var(--line); font-size: 17px; color: var(--accent); }
+    details.more[open] summary { margin-bottom: 10px; }
     .tag { display: inline-block; padding: 1px 10px; border-radius: 999px; font-size: 15px; background: var(--soft); border: 1px solid var(--line); white-space: nowrap; }
     .tag.core { background: var(--accent-soft); border-color: var(--accent); color: var(--accent); }
     .note { background: var(--reveal-soft); border: 1px solid var(--reveal); border-radius: 14px; padding: 12px 16px; margin: 12px 0; font-size: 17px; line-height: 1.8; }
@@ -108,6 +111,9 @@
       <li><b>等級 3：自己寫整句</b>。</li>
       <li><b>要先寫「誰」的句型</b>：先……再……、一邊……一邊……、時而……時而……、不但……還……、不僅……更／也……、不但沒……反而……。句框最前面會多一格「誰？」（例如：<b>我</b>先寫功課，再看電視）。其他句型（雖然、只要、為了、如果……）可以直接用連接詞開頭。</li>
     </ul>
+    <p><b>電腦會檢查</b>：連接詞有沒有都寫、順序對不對、每一段有沒有寫內容、是不是照抄例句；不對會給提示，通過後幫忙補標點。<b>電腦判斷不了意思通不通順</b>，所以要請學生自己檢查、老師批改（見下方）。</p>
+    <details class="more">
+      <summary>看詳細規則</summary>
     <div class="tbl-wrap">
       <table class="tbl">
         <thead><tr><th>電腦檢查（照順序）</th><th>學生看到的提示（例）</th></tr></thead>
@@ -122,11 +128,12 @@
         </tbody>
       </table>
     </div>
+    <p>自動整理：去掉多的空白和鍵盤多打的小點、半形標點換成全形、連接詞前補逗號、句尾補句號。</p>
+    </details>
     <ul>
-      <li><b>自動整理</b>：去掉多的空白和鍵盤多打的小點、半形標點換成全形、連接詞前補逗號、句尾補句號。</li>
       <li><b>答錯 2 次</b>會出現例句，也可以「先跳過」。</li>
       <li><b>結構通過後</b>念一遍給學生聽，再問「意思通順嗎？」：按 <b>👍 通順</b> 就完成；按 <b>✏️ 我要改改看</b> 可以回去修改（會記錄改了幾次）。</li>
-      <li><b>電腦判斷不了意思</b>（例如「雖然西瓜，但太陽出來」結構對但不通順），所以句子會存到老師設定的「學生造的句子」，請老師批改：<b>✓ 通順</b>；<b>✗ 要重寫</b>，學生下次打開「錯題複習」會先看到原句和「老師覺得這句意思還不太通順，請重寫一次」，重寫後原句標「已重寫」、新句子等老師再看。</li>
+      <li><b>老師批改</b>：句子會存到老師設定的「學生造的句子」（例如「雖然西瓜，但太陽出來」結構對但不通順，電腦抓不到）：<b>✓ 通順</b>；<b>✗ 要重寫</b>，學生下次打開「錯題複習」會先看到原句和「老師覺得這句意思還不太通順，請重寫一次」，重寫後原句標「已重寫」、新句子等老師再看。</li>
     </ul>
 
     <h3>課文朗讀（需要教室密碼）</h3>
