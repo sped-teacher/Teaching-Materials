@@ -1,7 +1,7 @@
 """
 用教育部《國語辭典簡編本》核對課文點讀的詞語讀音。
-預設直接查簡編本網站（dict.concised.moe.edu.tw，快、不太會被擋）；加 --pedia 改查教育百科
-（優先簡編本，沒有才用《重編國語辭典修訂本》，但常被限流）。
+讀音只依《簡編本》《國語小字典》，不用《重編國語辭典修訂本》（教育部標明它適用於語文研究者）。
+預設直接查簡編本網站（dict.concised.moe.edu.tw，快、不太會被擋）；加 --pedia 改查教育百科（只取其中的簡編本，但常被限流）。
 
   python tools/check_pedia.py            # 核對 12 課所有含多音字的詞
   python tools/check_pedia.py 07 08      # 只核對指定課次
@@ -192,7 +192,8 @@ def main(lids):
         if res is None:
             missing += 1
             continue
-        reads = res.get('教育部國語辭典簡編本', []) or res.get('教育部重編國語辭典修訂本', [])
+        # 只用《簡編本》（老師決定：不用《重編國語辭典修訂本》，它是給語文研究者的，常列又音）
+        reads = res.get('教育部國語辭典簡編本', [])
         if not reads:
             missing += 1
             continue
