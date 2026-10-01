@@ -20,6 +20,7 @@ build/
 **/tools/texts/tsi.src.txt
 **/tools/texts/phonic_table_*.txt
 **/tools/texts/pedia_cache.json
+**/tools/texts/concised_cache.json
 **/tools/texts/zy_cache.json
 
 # 課文全文（有著作權，不公開）：只留在老師電腦；網站用加密後的 data/reading.enc.js

@@ -1,8 +1,11 @@
 """
-用教育百科（優先《國語辭典簡編本》，沒有才用《重編國語辭典修訂本》）核對課文點讀的詞語讀音。
+用教育部《國語辭典簡編本》核對課文點讀的詞語讀音。
+預設直接查簡編本網站（dict.concised.moe.edu.tw，快、不太會被擋）；加 --pedia 改查教育百科
+（優先簡編本，沒有才用《重編國語辭典修訂本》，但常被限流）。
 
   python tools/check_pedia.py            # 核對 12 課所有含多音字的詞
   python tools/check_pedia.py 07 08      # 只核對指定課次
+  python tools/check_pedia.py --pedia    # 改用教育百科
 
 結果寫到 tools/texts/教育百科核對.txt（不一致的詞），查過的結果快取在 tools/texts/pedia_cache.json。
 每查一個詞停 3 秒，避免被網站擋（HTTP 429）；中斷後重跑會從快取接著查。
@@ -107,6 +110,61 @@ def fetch(w):
     return res
 
 
+CONC_F = TXT / 'concised_cache.json'
+conc_cache = json.loads(CONC_F.read_text(encoding='utf-8')) if CONC_F.exists() else {}
+# 簡編本網站：只有一筆時會轉址到詞條頁，要帶著搜尋頁給的 cookie，否則詞條頁是空的
+import http.cookiejar
+CONC_OPENER = urllib.request.build_opener(urllib.request.HTTPCookieProcessor(http.cookiejar.CookieJar()))
+CONC_OPENER.addheaders = [('User-Agent', 'Mozilla/5.0 (teaching-materials reading check)')]
+
+
+def fetch_concised(w):
+    """直接查教育部《國語辭典簡編本》網站（教育百科常被限流時用）。
+    搜尋結果列表就有注音；只有一筆時會直接跳到詞條頁，從頁面描述取注音。"""
+    if w in conc_cache:
+        return conc_cache[w]
+    url = 'https://dict.concised.moe.edu.tw/search.jsp?md=1&word=' + urllib.parse.quote(w)
+    for wait in (0, 20, 60):
+        time.sleep(wait)
+        try:
+            raw = CONC_OPENER.open(url, timeout=30).read().decode('utf-8', 'replace')
+            if not raw.strip():
+                raise IOError('5xx empty page')   # 空白頁當成暫時錯誤，等一下再試
+            break
+        except Exception as e:
+            if '429' not in str(e) and '5' not in str(getattr(e, 'code', '')):
+                return None
+    else:
+        return None
+    zys = []
+    m = re.search(r'name="Description" content="字詞:([^,]*),注音:([^,]*),釋義:([^"]{0,24})', raw)
+    if m and m.group(1) == w:            # 只有一筆：詞條頁
+        zys.append((re.split(r'[（(]變[)）]', m.group(2))[0], htmlmod.unescape(m.group(3))))
+    # 列表：<tr data-link='dictView…'>…<td><a…><cR>答案</cR></a></td><td><phon>ㄉㄚ<sup>ˊ</sup></phon> …
+    # 「(變)」後面是變調讀音（<idiv>…</idiv>），只取本調，和點讀比對時的處理一致
+    for row in re.finditer(r'<tr data-link=[\'"]dictView[^\'"]*[\'"][^>]*>(.*?)</tr>', raw, flags=re.S | re.I):
+        cells = re.findall(r'<td[^>]*>(.*?)</td>', row.group(1), flags=re.S | re.I)
+        if len(cells) < 3:
+            continue
+        title = re.sub(r'<[^>]+>', '', cells[1]).strip()
+        if title != w:
+            continue
+        base = re.sub(r'<idiv>.*?</idiv>', '', cells[2], flags=re.S | re.I)
+        zy = ' '.join(re.sub(r'<[^>]+>', '', p).strip() for p in re.findall(r'<phon>(.*?)</phon>', base, flags=re.S | re.I))
+        if zy.strip():
+            zys.append((zy, ''))
+    reads = []
+    for zy, mean in zys:
+        syls = [s for s in re.split(r'[\s　]+', zy.strip()) if s]
+        if syls:
+            reads.append({'py': ' '.join(zy2py(s) for s in syls), 'raw': ' '.join(syls), 'mean': mean})
+    res = {'教育部國語辭典簡編本': reads} if reads else {}
+    conc_cache[w] = res
+    CONC_F.write_text(json.dumps(conc_cache, ensure_ascii=False, indent=0), encoding='utf-8')
+    time.sleep(0.5)
+    return res
+
+
 def main(lids):
     poly = set()
     for line in (TXT / 'phonic_table_A.txt').read_text(encoding='utf-8-sig').splitlines():
@@ -127,7 +185,10 @@ def main(lids):
     for n, ((w, zy), where) in enumerate(words.items(), 1):
         if n % 50 == 0:
             print(n, '/', len(words), flush=True)
-        res = fetch(w)
+        # 先查簡編本網站；查不到（例如簡編本沒收的詞）且教育百科快取裡有，就用教育百科的結果
+        res = fetch_concised(w) if USE_CONCISED else fetch(w)
+        if not res and w in cache:
+            res = cache[w]
         if res is None:
             missing += 1
             continue
@@ -149,5 +210,8 @@ def main(lids):
     print('共', len(words), '詞；不一致', len(bad), '；非第一讀音', len(alt), '；辭典查不到', missing)
 
 
+USE_CONCISED = '--pedia' not in sys.argv   # 預設直接查簡編本網站；加 --pedia 改回查教育百科
+
 if __name__ == '__main__':
-    main(sys.argv[1:] or ['%02d' % i for i in range(1, 13)])
+    args = [a for a in sys.argv[1:] if not a.startswith('--')]
+    main(args or ['%02d' % i for i in range(1, 13)])
