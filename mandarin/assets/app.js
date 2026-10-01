@@ -501,6 +501,175 @@
   }
   function radicalLabel(ch) { return ch.rform ? ch.rform + '（' + ch.radical + '）' : ch.radical; }
 
+  // ════════════════════════════════════════════════
+  //  自己造句：打字或用說的。用「規則」檢查句型結構（連接詞、順序、每一段有沒有寫），
+  //  幫忙補標點後念一遍；意思通不通順電腦判斷不了，句子會存起來給老師看（老師設定頁）。
+  // ════════════════════════════════════════════════
+  var HALF_PUNCT = { ',': '，', '.': '。', '?': '？', '!': '！', ';': '；', ':': '：' };
+  function cleanSentence(s) {
+    return String(s || '').replace(/[,.?!;:]/g, function (m) { return HALF_PUNCT[m]; })
+      .replace(/\s+/g, '').replace(/([，。？！；：、])\1+/g, '$1').replace(/^[，。？！；：、]+/, '');
+  }
+  function hanCount(s) { return (String(s).match(/[㐀-鿿]/g) || []).length; }
+  function bareText(s) { return String(s).replace(/[^㐀-鿿]/g, ''); }
+  // 依序找連接詞的位置（同一個詞出現兩次也可以，例如「一邊……一邊……」）
+  function findConns(s, conns) {
+    var pos = [], from = 0;
+    for (var i = 0; i < conns.length; i++) {
+      var k = s.indexOf(conns[i], from);
+      if (k < 0) return { missing: i, pos: pos };
+      pos.push(k); from = k + conns[i].length;
+    }
+    return { pos: pos };
+  }
+  // 句型「雖然……可是……」→ ['雖然', '可是', '']：每個「……」是學生要寫的地方
+  function patParts(p) { return p.pattern.split('……'); }
+  function fixSentence(s, p) {
+    s = cleanSentence(s);
+    var conns = p.conn, f = findConns(s, conns), lead = patParts(p)[0] === '';
+    if (f.missing == null) {
+      for (var i = f.pos.length - 1; i >= 0; i--) {
+        var k = f.pos[i];
+        // 連接詞前面補逗號：第二個以後的連接詞；句型開頭是「……」時第一個也要（今天下雨，所以……）
+        if (k > 0 && (i > 0 || lead) && !/[，。？！；：、「]/.test(s[k - 1])) s = s.slice(0, k) + '，' + s.slice(k);
+      }
+    }
+    if (!/[。？！]$/.test(s)) s = s.replace(/[，、；：]+$/, '') + '。';
+    return s;
+  }
+  function checkSentence(raw, p) {
+    var s = cleanSentence(raw), conns = p.conn, parts = patParts(p);
+    if (/[A-Za-z]/.test(s)) return { msg: '請用中文寫句子。' };
+    if (!hanCount(s)) return { msg: '還沒有寫句子喔。' };
+    if (/([㐀-鿿])\1\1/.test(s)) return { msg: '好像有字重複打了，檢查一下。' };
+    var f = findConns(s, conns);
+    if (f.missing != null) {
+      var w = conns[f.missing];
+      if (f.missing > 0 && w === conns[f.missing - 1]) return { msg: '句子裡要有兩個「' + w + '」。這個句型是「' + p.pattern + '」。' };
+      if (f.missing > 0 && s.indexOf(w) >= 0) return { msg: '「' + conns[f.missing - 1] + '」要寫在「' + w + '」前面。' };
+      return { msg: '句子裡要有「' + w + '」。這個句型是「' + p.pattern + '」。' };
+    }
+    // 每一段要寫的內容（至少 2 個字）
+    var segs = [];
+    if (parts[0] === '') segs.push({ txt: s.slice(0, f.pos[0]), where: '「' + conns[0] + '」前面' });
+    for (var i = 0; i < conns.length; i++) {
+      var a = f.pos[i] + conns[i].length, b = i + 1 < conns.length ? f.pos[i + 1] : s.length;
+      if (i + 1 < conns.length || parts[parts.length - 1] === '') segs.push({ txt: s.slice(a, b), where: '「' + conns[i] + '」後面' });
+    }
+    for (var k = 0; k < segs.length; k++) if (hanCount(segs[k].txt) < 2) return { msg: segs[k].where + '要再多寫一點。' };
+    if (hanCount(s) < bareText(conns.join('')).length + 5) return { msg: '句子太短了，再多寫一點。' };
+    var me = bareText(s), copies = (p.models || []).concat(p.origin || []).some(function (m) { return bareText(m) === me; });
+    if (copies) return { msg: '這是例句喔，換成你自己的話試試看。' };
+    return { ok: true, fixed: fixSentence(s, p) };
+  }
+  // 🎤 用說的（瀏覽器語音辨識）；不支援的瀏覽器就不顯示，學生仍可用鍵盤上的麥克風
+  var SR_CLASS = window.SpeechRecognition || window.webkitSpeechRecognition;
+  function micFor(input) {
+    if (!SR_CLASS) return null;
+    var b = h('button', { class: 'say mic-btn', type: 'button', 'aria-label': '用說的' }, '🎤'), rec = null;
+    b.addEventListener('click', function () {
+      if (rec) { rec.stop(); return; }
+      stopSpeak();
+      var base = input.value;
+      rec = new SR_CLASS(); rec.lang = 'zh-TW'; rec.interimResults = true; rec.continuous = false;
+      rec.onresult = function (e) { var t = ''; for (var r = 0; r < e.results.length; r++) t += e.results[r][0].transcript; input.value = base + t; };
+      rec.onerror = function (e) {
+        if (e.error === 'not-allowed' || e.error === 'service-not-allowed') toast('請在瀏覽器設定裡允許使用麥克風');
+        else if (e.error === 'network') toast('語音輸入要連上網路');
+      };
+      rec.onend = function () { rec = null; b.classList.remove('speaking'); b.textContent = '🎤'; };
+      try { rec.start(); b.classList.add('speaking'); b.textContent = '⏹'; } catch (err) { rec = null; }
+    });
+    window.addEventListener('hashchange', function () { if (rec) { try { rec.abort(); } catch (e) { } } }, { once: true });
+    return b;
+  }
+  function runMake(stage, p, L, api) {
+    var c = api.cfg, frame = c.level < 3, parts = patParts(p), tries = 0, done = false;
+    var model = (p.models || [])[0] || (p.origin || [])[0] || '';
+    var inputs = [];
+    function mkInput(ph) {
+      var inp = h('input', { type: 'text', class: 'make-in', lang: 'zh-Hant', autocomplete: 'off', autocapitalize: 'off', spellcheck: 'false', enterkeyhint: 'done', placeholder: ph || '' });
+      inp.addEventListener('keydown', function (e) { if (e.key === 'Enter') check(); });
+      inputs.push(inp);
+      var mic = micFor(inp);
+      return h('span', { class: 'make-slot' }, inp, mic);
+    }
+    var box;
+    if (frame) {
+      // 句型框：連接詞固定，學生填空格
+      box = h('div', { class: 'make-frame' });
+      parts.forEach(function (part, i) {
+        if (part) append(box, h('span', { class: 'make-conn' }, colorConn((i > 0 ? '，' : '') + part, p.conn)));
+        if (i < parts.length - 1) append(box, mkInput(i === 0 && part === '' ? '先寫……' : '寫你的想法'));
+      });
+      append(box, h('span', { class: 'make-conn' }, '。'));
+    } else {
+      box = h('div', { class: 'make-free' }, mkInput('用「' + p.pattern + '」寫一個句子'));
+    }
+    function assemble() {
+      if (!frame) return inputs[0].value;
+      var s = '';
+      parts.forEach(function (part, i) {
+        if (part) s += (i > 0 ? '，' : '') + part;
+        if (i < parts.length - 1) {
+          var t = cleanSentence(inputs[i].value).replace(/[，。？！；：、]+$/, '');
+          if (part && t.indexOf(part) === 0) t = t.slice(part.length);                       // 用說的時常把連接詞也念進去
+          var nx = parts[i + 1]; if (nx && t.slice(-nx.length) === nx) t = t.slice(0, -nx.length);
+          s += t;
+        }
+      });
+      return s;
+    }
+    var exBox = h('div');
+    function showExample() {
+      if (exBox.firstChild || !model) return;
+      append(exBox, h('div', { class: 'model' }, h('span', { class: 'tag' }, '例句'), h('span', {}, colorConn(model, p.conn)), sayBtn(model)));
+    }
+    if (c.level === 1) showExample();
+    var fb = h('div', { class: 'feedback' });
+    var checkBtn = h('button', { class: 'btn btn-primary btn-block', type: 'button' }, '✅ 檢查我的句子');
+    checkBtn.addEventListener('click', check);
+    var tools = h('div', { class: 'tools' });
+    if (c.level > 1 && model) append(tools, btnTo('💡 看例句', 'btn-ghost', function () { showExample(); }));
+    function saveMade(text) {
+      var pr = state.progress; pr[L.id] = pr[L.id] || {};
+      pr[L.id].made = (pr[L.id].made || []).concat([{ p: p.pattern, s: text, d: today(), lv: c.level, t: tries + 1 }]).slice(-60);
+      save();
+    }
+    function check() {
+      if (done) return;
+      var empty = inputs.every(function (x) { return !x.value.trim(); });
+      var r = empty ? { msg: '還沒有寫句子喔。' } : checkSentence(assemble(), p);
+      fb.innerHTML = '';
+      if (!r.ok) {
+        tries++; sfx.wrong();
+        append(fb, h('div', { class: 'hintbox' }, '💡', h('span', { style: 'flex:1' }, r.msg), sayBtn(r.msg)));
+        if (c.autoRead) speak(r.msg);
+        if (tries >= 2) {
+          showExample();
+          append(fb, btnTo('先跳過，下一步 →', 'btn-ghost', function () { done = true; api.record(false); api.next(); }));
+        }
+        return;
+      }
+      done = true; sfx.right(); api.record(tries === 0);
+      inputs.forEach(function (x) { x.disabled = true; });
+      checkBtn.disabled = true;
+      saveMade(r.fixed);
+      var raw = cleanSentence(assemble()), changed = !frame && raw !== r.fixed;
+      append(fb, h('div', { class: 'praise' }, pick(PRAISE)),
+        h('div', { class: 'card made-card' }, h('div', { class: 'muted', style: 'font-size:16px' }, changed ? '我幫你加上了標點符號，念一遍：' : '你的句子：'),
+          h('div', { class: 'row', style: 'justify-content:center' }, h('span', { class: 'made-text' }, colorConn(r.fixed, p.conn)), sayBtn(r.fixed))),
+        h('p', { class: 'muted', style: 'text-align:center;margin:4px 0' }, '念念看，意思通順嗎？老師也會看你造的句子。'),
+        nextBtn('完成 →', api.next));
+      speak(r.fixed);
+    }
+    append(stage,
+      h('p', { class: 'muted', style: 'margin:0 0 6px' }, frame ? '在空格裡寫上你的想法，句子就完成了。' : '用「' + p.pattern + '」寫一個完整的句子。'),
+      h('p', { class: 'muted', style: 'margin:0 0 12px;font-size:16px' }, '可以打字，也可以按 🎤 用說的（或用鍵盤上的麥克風）。'),
+      box, exBox, h('div', { style: 'margin-top:14px' }, checkBtn), tools, fb);
+    setTimeout(function () { if (inputs[0]) inputs[0].focus(); }, 80);
+  }
+
   var MODULES = {
     chars: {
       name: '認識生字', icon: '✏️', desc: '看字卡、聽音選字、找部首', core: true,
@@ -691,6 +860,9 @@
               prompt: function () { return h('div', { class: 'sentence' }, blanked(q.stem)); }
             };
           }), api);
+        }));
+        list.push(step(c.level < 3 ? '自己造句：在空格寫上你的想法。' : '自己造句：用「' + p.pattern + '」寫一個句子。', 'quiz', function (stage, api) {
+          runMake(stage, p, L, api);
         }));
         return list;
       }
@@ -1419,11 +1591,28 @@
           h('p', { class: 'muted', style: 'margin:0 0 8px' }, '課文點讀、朗讀挑戰需要教室密碼。這台 iPad 目前' + (unlocked ? '已解鎖。' : '尚未解鎖。')), lockBtn));
       }
       append(body, h('section', {}, h('h3', {}, '學習紀錄'), recordsTable()));
+      append(body, h('section', {}, h('h3', {}, '學生造的句子'), madeList()));
       var reset = h('button', { class: 'btn btn-ghost danger', type: 'button', style: 'margin-top:16px' }, '清除這台 iPad 的學習紀錄');
       reset.addEventListener('click', function () { if (window.confirm('確定要清除全部學習紀錄嗎？這個動作無法復原。')) { state.progress = {}; save(); draw(); } });
       append(body, reset);
     }
     draw();
+  }
+  // 老師設定：學生在「句型練習 → 自己造句」寫的句子（新的在上面）
+  function madeList() {
+    var rows = [];
+    Object.keys(state.progress).sort().forEach(function (lid) {
+      (state.progress[lid].made || []).forEach(function (m) { rows.push({ lid: lid, m: m }); });
+    });
+    if (!rows.length) return h('p', { class: 'muted', style: 'margin:0' }, '還沒有造句紀錄。');
+    var tb = h('tbody');
+    rows.slice(-40).reverse().forEach(function (r) {
+      append(tb, h('tr', {}, h('td', {}, r.m.d), h('td', {}, '第' + parseInt(r.lid, 10) + '課'), h('td', {}, r.m.p),
+        h('td', { style: 'font-size:18px' }, r.m.s), h('td', {}, '等級' + r.m.lv + (r.m.t > 1 ? '・試了' + r.m.t + '次' : ''))));
+    });
+    return h('div', { style: 'overflow-x:auto' }, h('table', { class: 'records' },
+      h('thead', {}, h('tr', {}, h('th', {}, '日期'), h('th', {}, '課次'), h('th', {}, '句型'), h('th', {}, '句子'), h('th', {}, ''))), tb),
+      h('p', { class: 'muted', style: 'font-size:15px' }, '電腦只檢查句型結構（連接詞、順序、每段有沒有寫），意思是否通順請老師看這裡。'));
   }
   function recordsTable() {
     var tb = h('tbody');
