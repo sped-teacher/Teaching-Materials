@@ -31,15 +31,16 @@
     /* 一課的流程 */
     .flow { display: grid; grid-template-columns: repeat(auto-fit, minmax(170px, 1fr)); gap: 10px; margin: 12px 0; padding: 0; list-style: none; counter-reset: f; }
     .flow li { margin: 0; background: var(--card); border: 1px solid var(--line); border-top: 6px solid var(--c, var(--accent)); border-radius: 14px; padding: 12px 14px; font-size: 16px; line-height: 1.6; }
-    .flow li b { display: block; font-size: 18px; margin-bottom: 2px; }
-    .flow li b::before { counter-increment: f; content: counter(f) '. '; color: var(--c, var(--accent)); }
+    .flow li > b:first-child { display: block; font-size: 18px; margin-bottom: 2px; }
+    .flow li > b:first-child::before { counter-increment: f; content: counter(f) '. '; color: var(--c, var(--accent)); }
     /* 老師例行 */
     .todo { display: grid; gap: 10px; margin: 12px 0; padding: 0; list-style: none; }
     .todo li { margin: 0; display: grid; grid-template-columns: 44px 1fr; gap: 10px; align-items: start; background: var(--card); border: 1px solid var(--line); border-radius: 14px; padding: 12px 14px; }
     .todo .ic { font-size: 28px; line-height: 1.2; text-align: center; }
-    .todo b { display: block; font-size: 18px; }
+    .todo div > b:first-child { display: block; font-size: 18px; }   /* 只有每項的標題換行，句子裡的粗體照常 */
     /* 收合的細節 */
-    details.more { margin: 10px 0; background: var(--card); border: 1px solid var(--line); border-radius: 14px; }
+    details.more { margin: 10px 0; background: var(--card); border: 1px solid var(--line); border-radius: 14px; scroll-margin-top: 80px; }
+    details.more.flash { box-shadow: 0 0 0 3px var(--accent); transition: box-shadow .3s; }
     details.more summary { cursor: pointer; list-style: none; padding: 14px 16px; font-size: 18px; font-weight: 700; display: flex; align-items: center; gap: 10px; }
     details.more summary::-webkit-details-marker { display: none; }
     details.more summary::after { content: '＋'; margin-left: auto; color: var(--muted); font-weight: 400; }
@@ -286,5 +287,25 @@
     <a class="btn btn-primary back" href="./">← 回到首頁</a>
     <a class="btn btn-ghost back" href="../">🏫 資源班教材總覽</a>
   </main>
+  <script>
+    // 點到「功能細節」的連結（例如 #d-review）：自動展開那一段、捲到那裡、閃一下框線
+    (function () {
+      function openTarget(id) {
+        var el = id && document.getElementById(id);
+        if (!el || el.tagName !== 'DETAILS') return false;
+        el.open = true;
+        el.scrollIntoView({ behavior: 'smooth', block: 'start' });
+        el.classList.add('flash'); setTimeout(function () { el.classList.remove('flash'); }, 1200);
+        return true;
+      }
+      document.addEventListener('click', function (e) {
+        var a = e.target.closest('a[href^="#"]');
+        if (!a) return;
+        var id = a.getAttribute('href').slice(1);
+        if (openTarget(id)) { e.preventDefault(); history.replaceState(null, '', '#' + id); }
+      });
+      if (location.hash) setTimeout(function () { openTarget(location.hash.slice(1)); }, 50);   // 從別頁連過來
+    })();
+  </script>
 </body>
 </html>
