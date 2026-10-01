@@ -463,9 +463,11 @@ h3 { font-size: 21px; }
 }
 
 /* 自己造句 */
-.make-frame { display: flex; flex-wrap: wrap; align-items: center; gap: 10px; font-family: var(--kai); font-size: 28px; line-height: 1.6; }
+.make-frame { display: grid; grid-template-columns: auto minmax(0, 1fr) auto; align-items: center; gap: 12px 10px; font-family: var(--kai); font-size: 28px; line-height: 1.6; }
+.make-lead { text-align: right; }
+.make-end { min-width: 1em; }
 .make-conn { white-space: nowrap; }
-.make-slot { display: inline-flex; align-items: center; gap: 6px; flex: 1 1 220px; }
+.make-slot { display: flex; align-items: center; gap: 6px; min-width: 0; }
 .make-free .make-slot { width: 100%; }
 .make-in {
   flex: 1; min-width: 0; min-height: 60px; font-size: 24px; font-family: var(--font);

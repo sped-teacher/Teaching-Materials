@@ -596,13 +596,18 @@
     }
     var box;
     if (frame) {
-      // 句型框：連接詞固定，學生填空格
+      // 句型框：一段一列，連接詞在左邊對齊、格子在中間、標點在右邊
+      //   原本 [　　] ，
+      //     但 [　　] 。
       box = h('div', { class: 'make-frame' });
-      parts.forEach(function (part, i) {
-        if (part) append(box, h('span', { class: 'make-conn' }, colorConn((i > 0 ? '，' : '') + part, p.conn)));
-        if (i < parts.length - 1) append(box, mkInput(i === 0 && part === '' ? '先寫……' : '寫你的想法'));
-      });
-      append(box, h('span', { class: 'make-conn' }, '。'));
+      var blanks = parts.length - 1;
+      for (var bi = 0; bi < blanks; bi++) {
+        var last = bi === blanks - 1;
+        append(box,
+          h('span', { class: 'make-conn make-lead' }, parts[bi] ? colorConn(parts[bi], p.conn) : ''),
+          mkInput(bi === 0 && parts[0] === '' ? '先寫……' : '寫你的想法'),
+          h('span', { class: 'make-conn make-end' }, last ? (parts[blanks] || '') + '。' : '，'));
+      }
     } else {
       box = h('div', { class: 'make-free' }, mkInput('用「' + p.pattern + '」寫一個句子'));
     }
