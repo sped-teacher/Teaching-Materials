@@ -654,11 +654,17 @@
     checkBtn.addEventListener('click', check);
     var tools = h('div', { class: 'tools' });
     if (c.level > 1 && model) append(tools, btnTo('💡 看例句', 'btn-ghost', function () { showExample(); }));
+    var recorded = false, revised = 0;
+    // self：學生自評「通順」；rev：自己改過幾次；redo：重寫哪一句（老師打 ✗ 的）
     function saveMade(text) {
       var pr = state.progress; pr[L.id] = pr[L.id] || {};
-      pr[L.id].made = (pr[L.id].made || []).concat([{ p: p.pattern, s: text, d: today(), lv: c.level, t: tries + 1 }]).slice(-60);
+      pr[L.id].made = (pr[L.id].made || []).concat([{ p: p.pattern, s: text, d: today(), lv: c.level, t: tries + 1, self: 'ok', rev: revised, redo: api.redoOf ? api.redoOf.s : undefined }]).slice(-60);
+      if (api.redoOf) api.redoOf.mark = 'redone';
       save();
     }
+    // 老師打 ✗ 要重寫的句子：上面先顯示原句
+    if (api.redoOf) append(stage, h('div', { class: 'hintbox', style: 'margin:0 0 12px' }, '✏️',
+      h('span', { style: 'flex:1' }, '老師覺得這句意思還不太通順，請重寫一次：', h('br'), h('b', {}, '「' + api.redoOf.s + '」')), sayBtn('老師覺得這句意思還不太通順，請重寫一次。' + api.redoOf.s)));
     function check() {
       if (done) return;
       var empty = inputs.every(function (x) { return !x.value.trim(); });
@@ -670,21 +676,44 @@
         if (c.autoRead) speak(r.msg);
         if (tries >= 2) {
           showExample();
-          append(fb, btnTo('先跳過，下一步 →', 'btn-ghost', function () { done = true; api.record(false); api.next(); }));
+          append(fb, btnTo('先跳過，下一步 →', 'btn-ghost', function () {
+            done = true; api.record(false);
+            if (api.redoOf) { api.redoOf.skip = today(); save(); }   // 重寫的句子今天先跳過，明天再出現
+            api.next();
+          }));
         }
         return;
       }
-      done = true; sfx.right(); api.record(tries === 0);
+      // 結構通過 → 念一遍 → 學生自己判斷意思通不通順（後設認知）；要改就回到格子裡改
+      done = true; sfx.right();
+      if (!recorded) { recorded = true; api.record(tries === 0); }
       inputs.forEach(function (x) { x.disabled = true; });
       checkBtn.disabled = true;
-      saveMade(r.fixed);
       var raw = cleanSentence(assemble()), changed = !frame && raw !== r.fixed;
-      append(fb, h('div', { class: 'praise' }, pick(PRAISE)),
+      var okBtn = h('button', { class: 'btn btn-primary self-btn', type: 'button' }, '👍 通順');
+      var editBtn = h('button', { class: 'btn btn-ghost self-btn', type: 'button' }, '✏️ 我要改改看');
+      var selfQ = '念念看，這個句子的意思通順嗎？';
+      append(fb, h('div', { class: 'praise' }, '句型正確！'),
         h('div', { class: 'card made-card' }, h('div', { class: 'muted', style: 'font-size:16px' }, changed ? '我幫你加上了標點符號，念一遍：' : '你的句子：'),
           h('div', { class: 'row', style: 'justify-content:center' }, h('span', { class: 'made-text' }, colorConn(r.fixed, p.conn)), sayBtn(r.fixed))),
-        h('p', { class: 'muted', style: 'text-align:center;margin:4px 0' }, '念念看，意思通順嗎？老師也會看你造的句子。'),
-        nextBtn('完成 →', api.next));
-      speak(r.fixed);
+        h('div', { class: 'self-check' },
+          h('div', { class: 'row', style: 'justify-content:center' }, h('b', {}, selfQ), sayBtn(selfQ)),
+          h('div', { class: 'self-btns' }, okBtn, editBtn)));
+      speak(r.fixed + '。' + selfQ);
+      okBtn.addEventListener('click', function () {
+        saveMade(r.fixed); sfx.right();
+        fb.querySelector('.self-check').remove();
+        append(fb, h('p', { class: 'muted', style: 'text-align:center;margin:4px 0' }, '很好！老師也會看你造的句子。'), nextBtn('完成 →', api.next));
+      });
+      editBtn.addEventListener('click', function () {
+        revised++; done = false; fb.innerHTML = '';
+        inputs.forEach(function (x) { x.disabled = false; });
+        checkBtn.disabled = false;
+        var tip = '改好了再按「檢查我的句子」。想一想：前後兩段的意思有沒有接得上？';
+        append(fb, h('div', { class: 'hintbox' }, '✏️', h('span', { style: 'flex:1' }, tip), sayBtn(tip)));
+        if (c.autoRead) speak(tip);
+        if (inputs[0]) inputs[0].focus();
+      });
     }
     append(stage,
       h('p', { class: 'muted', style: 'margin:0 0 6px' }, frame ? '在空格裡寫上你的想法，句子就完成了。' : '用「' + p.pattern + '」寫一個完整的句子。'),
@@ -1377,7 +1406,7 @@
     append(main, h('div', { class: 'hero' },
       h('div', { class: 'row' }, h('h1', {}, '國語五上學習樂園'), sayBtn('國語五上學習樂園。選一課開始學習。')),
       h('p', {}, '康軒版・五年級上學期　選一課開始學習。　', h('a', { href: 'guide.html' }, '📘 使用說明'))));
-    var dueAll = dueMistakes().length;
+    var dueAll = reviewCount();
     if (dueAll) append(main, h('a', { class: 'review-banner', href: '#/review' }, '🔁 今天有 ' + dueAll + ' 題錯題要複習', h('span', { class: 'spacer' }), '開始複習 →'));
     var grid = h('div', { class: 'lesson-grid' });
     LESSON_LIST.forEach(function (l, n) {
@@ -1451,7 +1480,7 @@
     append(main, ex);
 
     // 複習與小考
-    var dueN = dueMistakes(lid).length, allN = mistakes().filter(function (m) { return m.lid === lid; }).length;
+    var dueN = reviewCount(lid), allN = mistakes().filter(function (m) { return m.lid === lid; }).length + redoList(lid).length;
     var tests = (state.progress[lid] && state.progress[lid].tests) || [], lastT = tests[tests.length - 1];
     var revGo = h('button', { class: 'btn go', type: 'button' }, dueN ? '開始複習 →' : '看看錯題');
     revGo.addEventListener('click', function () { location.hash = '#/review/' + lid; });
@@ -1575,6 +1604,16 @@
     var now = Date.now();
     return mistakes().filter(function (m) { return (!lid || m.lid === lid) && m.due <= now; });
   }
+  // 老師打 ✗ 要重寫的句子（還沒重寫的）
+  function redoList(lid) {
+    var out = [];
+    Object.keys(state.progress).forEach(function (k) {
+      if (lid && k !== lid) return;
+      (state.progress[k].made || []).forEach(function (m) { if (m.mark === 'redo' && m.skip !== today()) out.push({ lid: k, m: m }); });
+    });
+    return out;
+  }
+  function reviewCount(lid) { return dueMistakes(lid).length + redoList(lid).length; }
   // 快照還原成題目：🔊 按鈕依 data-say 重新接上朗讀
   function itemFromSnap(m) {
     var s = m.snap;
@@ -1598,6 +1637,16 @@
     var due = shuffle(dueMistakes(lid)), all = mistakes().filter(function (m) { return !lid || m.lid === lid; });
     append(main, h('div', { class: 'task-head' }, h('div', { class: 'task-title' }, h('span', { class: 'icon' }, '🔁'),
       h('h2', { style: 'flex:1' }, '錯題複習' + (lid ? '・第 ' + parseInt(lid, 10) + ' 課' : '')), sayBtn('錯題複習。把之前答錯的題目再做一次。'))));
+    // 先重寫老師打 ✗ 的句子，再做選擇題
+    var redo = redoList(lid).filter(function (r) { return LESSONS[r.lid] && (LESSONS[r.lid].sentences || []).some(function (s) { return s.pattern === r.m.p; }); });
+    if (redo.length) {
+      var r0 = redo[0], L0 = LESSONS[r0.lid], p0 = L0.sentences.find(function (s) { return s.pattern === r0.m.p; });
+      var st0 = h('div', { class: 'stage' });
+      append(main, h('div', { class: 'now' }, h('div', { style: 'flex:1' }, h('div', { class: 'lbl' }, '☑ 現在要做什麼'),
+        h('div', { class: 'txt' }, '重寫句子：用「' + p0.pattern + '」再寫一次（還有 ' + redo.length + ' 句要重寫）。'))), st0);
+      runMake(st0, p0, L0, { cfg: cfg(), redoOf: r0.m, record: function () { }, next: function () { renderReview(lid); } });
+      return;
+    }
     if (!due.length) {
       var next = all.reduce(function (t, m) { return Math.min(t, m.due); }, Infinity);
       append(main, h('div', { class: 'card', style: 'text-align:center' }, h('div', { style: 'font-size:56px' }, '🎉'),
@@ -1805,7 +1854,7 @@
       }
       append(body, h('section', {}, h('h3', {}, '學習紀錄'), recordsTable()));
       append(body, h('section', {}, h('h3', {}, '單課小考成績'), testList()));
-      append(body, h('section', {}, h('h3', {}, '學生造的句子'), madeList()));
+      append(body, h('section', {}, h('h3', {}, '學生造的句子'), madeList(draw)));
       var reset = h('button', { class: 'btn btn-ghost danger', type: 'button', style: 'margin-top:16px' }, '清除這台 iPad 的學習紀錄');
       reset.addEventListener('click', function () { if (window.confirm('確定要清除全部學習紀錄嗎？（含錯題、小考成績、造的句子）這個動作無法復原。')) { state.progress = {}; state.mistakes = []; save(); draw(); } });
       append(body, reset);
@@ -1835,7 +1884,7 @@
       h('thead', {}, h('tr', {}, h('th', {}, '課次'), h('th', {}, '最近小考'), h('th', {}, '要加強（答對不到 6 成）'), h('th', {}, '錯題練習中'))), tb));
   }
   // 老師設定：學生在「句型練習 → 自己造句」寫的句子（新的在上面）
-  function madeList() {
+  function madeList(refresh) {
     var rows = [];
     Object.keys(state.progress).sort().forEach(function (lid) {
       (state.progress[lid].made || []).forEach(function (m) { rows.push({ lid: lid, m: m }); });
@@ -1843,12 +1892,25 @@
     if (!rows.length) return h('p', { class: 'muted', style: 'margin:0' }, '還沒有造句紀錄。');
     var tb = h('tbody');
     rows.slice(-40).reverse().forEach(function (r) {
-      append(tb, h('tr', {}, h('td', {}, r.m.d), h('td', {}, '第' + parseInt(r.lid, 10) + '課'), h('td', {}, r.m.p),
-        h('td', { style: 'font-size:18px' }, r.m.s), h('td', {}, '等級' + r.m.lv + (r.m.t > 1 ? '・試了' + r.m.t + '次' : ''))));
+      var m = r.m;
+      // 老師批改：✓ 通順；✗ 要重寫（學生下次進錯題複習會先重寫這句）
+      var mk = function (val, label, title) {
+        var b = h('button', { class: 'mark-btn' + (m.mark === val ? ' on ' + val : ''), type: 'button', title: title }, label);
+        b.addEventListener('click', function () { m.mark = m.mark === val ? undefined : val; save(); if (refresh) refresh(); });
+        return b;
+      };
+      var info = [];
+      if (m.redo) info.push('重寫自「' + m.redo + '」');
+      if (m.rev) info.push('自己改了 ' + m.rev + ' 次');
+      if (m.t > 1) info.push('結構試了 ' + m.t + ' 次');
+      var state2 = m.mark === 'redone' ? h('span', { class: 'muted' }, '已重寫') : h('span', { class: 'mark-btns' }, mk('ok', '✓', '意思通順'), mk('redo', '✗', '要重寫'));
+      append(tb, h('tr', {}, h('td', {}, m.d), h('td', {}, '第' + parseInt(r.lid, 10) + '課'), h('td', {}, m.p),
+        h('td', { style: 'font-size:18px' }, m.s, info.length ? h('div', { class: 'muted', style: 'font-size:14px' }, info.join('・')) : null),
+        h('td', {}, '等級' + m.lv), h('td', {}, state2)));
     });
     return h('div', { style: 'overflow-x:auto' }, h('table', { class: 'records' },
-      h('thead', {}, h('tr', {}, h('th', {}, '日期'), h('th', {}, '課次'), h('th', {}, '句型'), h('th', {}, '句子'), h('th', {}, ''))), tb),
-      h('p', { class: 'muted', style: 'font-size:15px' }, '電腦只檢查句型結構（連接詞、順序、每段有沒有寫），意思是否通順請老師看這裡。'));
+      h('thead', {}, h('tr', {}, h('th', {}, '日期'), h('th', {}, '課次'), h('th', {}, '句型'), h('th', {}, '句子'), h('th', {}, ''), h('th', {}, '批改'))), tb),
+      h('p', { class: 'muted', style: 'font-size:15px' }, '電腦只檢查句型結構（連接詞、順序、每段有沒有寫）。意思是否通順請老師批改：✓ 通順；✗ 要重寫，學生下次打開「錯題複習」會先重寫這一句。'));
   }
   function recordsTable() {
     var tb = h('tbody');

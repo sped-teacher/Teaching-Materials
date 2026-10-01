@@ -490,3 +490,12 @@ h3 { font-size: 21px; }
 .test-score { text-align: center; font-size: 44px; color: var(--c-test); margin: 4px 0 8px; }
 /* 小考、錯題複習：每題上面的「這題要做什麼」 */
 .q-ask { display: flex; align-items: center; gap: 10px; margin: 0 0 6px; padding: 10px 14px; border-radius: 14px; background: var(--soft); border-left: 6px solid var(--mc, var(--accent)); font-size: 20px; font-weight: 700; }
+/* 自己造句：學生自我檢查、老師批改 */
+.self-check { margin-top: 12px; padding: 14px; border-radius: 16px; background: var(--soft); border: 2px dashed var(--line); text-align: center; }
+.self-check b { font-size: 21px; }
+.self-btns { display: flex; gap: 12px; justify-content: center; flex-wrap: wrap; margin-top: 10px; }
+.self-btn { min-width: 180px; min-height: 60px; font-size: 21px; }
+.mark-btns { display: inline-flex; gap: 6px; }
+.mark-btn { width: 44px; height: 44px; border-radius: 12px; border: 2px solid var(--line); background: var(--card); font-size: 20px; font-weight: 700; color: var(--muted); }
+.mark-btn.on.ok { border-color: var(--right, #2E8B57); background: #E2F3E8; color: #2E8B57; }
+.mark-btn.on.redo { border-color: var(--wrong, #C2554F); background: #FBE7E5; color: #C2554F; }
