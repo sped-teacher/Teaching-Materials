@@ -702,11 +702,11 @@
       allIns().forEach(function (x) { x.disabled = true; });
       checkBtn.disabled = true;
       var raw = cleanSentence(assemble()), changed = !frame && raw !== r.fixed;
-      var okBtn = h('button', { class: 'btn btn-primary self-btn', type: 'button' }, '👍 通順');
+      // 電腦只檢查結構，還沒有老師批改，所以不說「正確」
+      var okBtn = h('button', { class: 'btn btn-primary self-btn', type: 'button' }, '👍 通順，送給老師');
       var editBtn = h('button', { class: 'btn btn-ghost self-btn', type: 'button' }, '✏️ 我要改改看');
-      var selfQ = '念念看，這個句子的意思通順嗎？';
-      append(fb, h('div', { class: 'praise' }, '句型正確！'),
-        h('div', { class: 'card made-card' }, h('div', { class: 'muted', style: 'font-size:16px' }, changed ? '我幫你加上了標點符號，念一遍：' : '你的句子：'),
+      var selfQ = '念念看，這個句子的意思通順嗎？通順就送給老師批改。';
+      append(fb, h('div', { class: 'card made-card' }, h('div', { class: 'muted', style: 'font-size:16px' }, changed ? '我幫你加上了標點符號，念一遍：' : '你的句子：'),
           h('div', { class: 'row', style: 'justify-content:center' }, h('span', { class: 'made-text' }, colorConn(r.fixed, p.conn)), sayBtn(r.fixed))),
         h('div', { class: 'self-check' },
           h('div', { class: 'row', style: 'justify-content:center' }, h('b', {}, selfQ), sayBtn(selfQ)),
@@ -715,7 +715,9 @@
       okBtn.addEventListener('click', function () {
         saveMade(r.fixed); sfx.right();
         fb.querySelector('.self-check').remove();
-        append(fb, h('p', { class: 'muted', style: 'text-align:center;margin:4px 0' }, '很好！老師也會看你造的句子。'), nextBtn('完成 →', api.next));
+        var sent = '📮 已經送出，等老師批改。';
+        append(fb, h('div', { class: 'row', style: 'justify-content:center;margin:4px 0' }, h('b', {}, sent), sayBtn(sent)), nextBtn('完成 →', api.next));
+        speak(sent);
       });
       editBtn.addEventListener('click', function () {
         revised++; done = false; fb.innerHTML = '';

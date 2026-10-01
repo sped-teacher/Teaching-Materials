@@ -4,32 +4,64 @@
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
   <title>使用說明｜國語五上學習樂園</title>
-  <meta name="description" content="國語五上學習樂園（資源班國語輔助教材）使用說明">
+  <meta name="description" content="國語五上學習樂園（資源班國語輔助教材）老師使用說明">
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+TC:wght@400;500;700&display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="assets/style.css?v=202610011403">
+  <link rel="stylesheet" href="assets/style.css?v=202610011455">
   <style>
-    .guide { max-width: 760px; margin: 0 auto; padding: 18px 16px 40px; }
+    .guide { max-width: 820px; margin: 0 auto; padding: 18px 16px 40px; }
     .guide h1 { font-size: 30px; margin: 6px 0 4px; }
     .guide .lead { color: var(--muted); margin: 0 0 10px; }
-    .guide h2 { font-size: 23px; margin: 30px 0 10px; display: flex; align-items: center; gap: 8px; scroll-margin-top: 80px; }
+    .guide h2 { font-size: 24px; margin: 34px 0 10px; display: flex; align-items: center; gap: 8px; scroll-margin-top: 80px; }
+    .guide h3 { font-size: 19px; margin: 18px 0 6px; }
     .guide p, .guide li { font-size: 18px; line-height: 1.8; }
     .guide ol, .guide ul { padding-left: 1.4em; margin: 6px 0; }
     .guide li + li { margin-top: 6px; }
     .guide .card { margin: 10px 0; }
-    .tbl { width: 100%; border-collapse: collapse; font-size: 17px; background: var(--card); }
-    .tbl th, .tbl td { border-bottom: 1px solid var(--line); padding: 9px 12px; text-align: left; vertical-align: top; line-height: 1.6; }
-    .tbl th { background: var(--soft); color: var(--muted); font-weight: 500; white-space: nowrap; }
+    .layer { font-size: 15px; font-weight: 700; color: var(--muted); letter-spacing: .1em; margin: 40px 0 -18px; border-top: 2px solid var(--line); padding-top: 10px; }
+    /* 目錄 */
+    .toc { display: grid; grid-template-columns: repeat(auto-fill, minmax(230px, 1fr)); gap: 8px; margin: 12px 0; }
+    .toc a { display: block; background: var(--card); border: 1px solid var(--line); border-radius: 12px; padding: 10px 14px; font-size: 17px; font-weight: 700; text-decoration: none; color: inherit; }
+    .toc a small { display: block; font-weight: 400; color: var(--muted); font-size: 14px; }
+    /* 表格 */
+    .tbl { width: 100%; border-collapse: collapse; font-size: 16px; background: var(--card); }
+    .tbl th, .tbl td { border-bottom: 1px solid var(--line); padding: 9px 10px; text-align: left; vertical-align: top; line-height: 1.6; }
+    .tbl th { background: var(--soft); color: var(--muted); font-weight: 500; }
     .tbl tr.group td { background: var(--soft); font-weight: 700; }
+    .tbl td:first-child { white-space: nowrap; font-weight: 700; }
+    /* 各站速查：每站一列卡片，下面三格 目的／卡關訊號／介入句 */
+    .st, .st tbody { display: block; }
+    .st tr { display: grid; grid-template-columns: repeat(3, 1fr); border-bottom: 1px solid var(--line); }
+    .st tr.group { display: block; }
+    .st td { border-bottom: 0; }
+    .st tr:not(.group) td:first-child { grid-column: 1 / -1; padding-bottom: 0; white-space: normal; }
+    .st tr:not(.group) td:nth-child(n+2)::before { display: block; font-size: 13px; color: var(--muted); font-weight: 500; }
+    .st td:nth-child(2)::before { content: '目的'; }
+    .st td:nth-child(3)::before { content: '卡關訊號'; }
+    .st td:nth-child(4)::before { content: '老師介入句'; }
     .tbl-wrap { overflow-x: auto; border: 1px solid var(--line); border-radius: 12px; margin: 8px 0; }
     .note { background: var(--reveal-soft); border: 1px solid var(--reveal); border-radius: 14px; padding: 10px 16px; margin: 10px 0; font-size: 17px; line-height: 1.8; }
     .note b { color: #7A5700; }
+    /* 檢核清單：做什麼／按哪裡／會看到什麼／卡住怎辦 */
+    .check { list-style: none; padding: 0 !important; counter-reset: c; }
+    .check > li { counter-increment: c; background: var(--card); border: 1px solid var(--line); border-radius: 14px; padding: 12px 16px 12px 56px; position: relative; }
+    .check > li::before { content: counter(c); position: absolute; left: 14px; top: 12px; width: 30px; height: 30px; border-radius: 50%; background: var(--accent, #2F6DB0); color: #fff; font-weight: 700; display: flex; align-items: center; justify-content: center; font-size: 16px; }
+    .check > li > b:first-child { font-size: 19px; }
+    .kv { display: grid; grid-template-columns: auto 1fr; gap: 2px 10px; margin-top: 4px; font-size: 17px; line-height: 1.7; }
+    .kv dt { color: var(--muted); white-space: nowrap; }
+    .kv dd { margin: 0; }
+    /* 等級決策 */
+    .decide { display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; margin: 10px 0; }
+    .decide > div { background: var(--card); border: 1px solid var(--line); border-radius: 14px; padding: 12px 14px; font-size: 17px; line-height: 1.7; }
+    .decide h4 { margin: 0 0 4px; font-size: 18px; }
     /* 一課的順序 */
     .order { display: flex; flex-wrap: wrap; align-items: center; gap: 8px; margin: 8px 0 4px; font-size: 18px; }
     .order span { background: var(--card); border: 1px solid var(--line); border-radius: 999px; padding: 6px 14px; font-weight: 700; }
     .order i { font-style: normal; color: var(--muted); }
-    /* 收合 */
+    .line { color: #1F5A99; }
+    .example { background: var(--soft); border-radius: 12px; padding: 10px 14px; font-size: 17px; line-height: 1.8; margin: 8px 0; }
+    /* 問題診斷 */
     details.more { margin: 8px 0; background: var(--card); border: 1px solid var(--line); border-radius: 14px; scroll-margin-top: 80px; }
     details.more.flash { box-shadow: 0 0 0 3px var(--accent); transition: box-shadow .3s; }
     details.more summary { cursor: pointer; list-style: none; padding: 13px 16px; font-size: 18px; font-weight: 700; display: flex; align-items: center; gap: 10px; }
@@ -38,7 +70,21 @@
     details.more[open] summary::after { content: '－'; }
     details.more .body { padding: 0 16px 12px; }
     .back { display: inline-flex; margin-top: 10px; }
-    @media (max-width: 640px) { .guide h1 { font-size: 26px; } .guide p, .guide li { font-size: 17px; } }
+    .top { font-size: 15px; margin-left: auto; font-weight: 400; }
+    @media (max-width: 640px) {
+      .guide h1 { font-size: 26px; } .guide p, .guide li { font-size: 17px; }
+      .decide { grid-template-columns: 1fr; }
+      .check > li { padding-left: 50px; }
+      .st tr { grid-template-columns: 1fr; }
+    }
+    @media print {
+      .topbar, .toc, .back, .top, .noprint { display: none !important; }
+      .guide { max-width: none; padding: 0; }
+      .guide h2 { margin-top: 18px; }
+      #ref { break-before: page; }
+      .tbl-wrap { overflow: visible; }
+      details.more .body { display: block; }
+    }
   </style>
 </head>
 <body>
@@ -48,217 +94,291 @@
   </header>
 
   <main class="guide">
-    <h1>📘 使用說明</h1>
-    <p class="lead">資源班國語輔助教材（康軒五上第 1～12 課）。不用登入，紀錄存在學生自己的 iPad。</p>
+    <h1 id="top">📘 老師使用說明</h1>
+    <p class="lead">這頁是寫給老師的（學生不用看）。先看「30 秒看懂」，其他需要時再跳過去看。</p>
 
-    <!-- ─────────────────────────────── -->
-    <h2 id="start">🚀 開始使用</h2>
+    <!-- ═══════════ 第 0 層：30 秒看懂 ═══════════ -->
+    <h2 id="intro">⏱️ 30 秒看懂</h2>
     <div class="card">
+      <ul>
+        <li><b>這是什麼</b>：康軒國語五上第 1～12 課的 iPad 練習，生字、語詞、句型、課文、形近字、成語都有。</li>
+        <li><b>給誰用</b>：資源班學生，一人一台 iPad；分<b>等級 1～3</b>，同一課可以依程度給不同支持。</li>
+        <li><b>不是什麼</b>：不是考試系統，也不是線上班級——<b>不用登入、不上傳</b>，紀錄只在那台 iPad 上。</li>
+      </ul>
+      <p style="margin:8px 0 0"><b>老師只要記得 3 件事：</b></p>
       <ol>
-        <li>用 Safari 打開網址 → 「分享」→「<b>加入主畫面</b>」。</li>
-        <li>按住右上角 ⚙️ <b>2 秒</b>，回答乘法題，幫學生選<b>等級 1～3</b>（1 支持最多，3 最少）。</li>
-        <li>第一次點「課文點讀」時，輸入<b>教室密碼</b>（只要一次）。</li>
+        <li>每台 iPad 開學設一次<b>等級</b>（按住右上角 ⚙️ 2 秒）。</li>
+        <li>學生照順序做：<b>🎯 本課先完成 → 🌟 加練挑戰 → 🔁 錯題複習 → 📝 單課小考</b>。</li>
+        <li>下課前花 3 分鐘<b>批改造句</b>、看<b>小考成績</b>（也在 ⚙️ 裡）。</li>
       </ol>
     </div>
 
-    <!-- ─────────────────────────────── -->
-    <h2 id="student">🧒 學生這樣用</h2>
-    <p>點一課，照這個順序：</p>
+    <nav class="toc" aria-label="目錄">
+      <a href="#setup">✅ 開學前一次搞定<small>第一次用看這裡</small></a>
+      <a href="#levels">🎚️ 等級怎麼選<small>先 2，再升降</small></a>
+      <a href="#lesson">🗺️ 一課怎麼帶<small>每天上課的流程</small></a>
+      <a href="#trouble">🛠️ 出問題怎麼辦<small>症狀 → 檢查</small></a>
+      <a href="#stations">📋 各站速查<small>目的、卡關、介入句</small></a>
+      <a href="#make">✍️ 造句批改<small>每天 3 分鐘</small></a>
+      <a href="#scores">📊 成績怎麼看<small>寫 IEP 用</small></a>
+      <a href="#device">📱 設備與隱私<small>紀錄存在哪裡</small></a>
+    </nav>
+
+    <!-- ═══════════ 第 1 層：操作 ═══════════ -->
+    <div class="layer">第 1 部分・照著做</div>
+
+    <h2 id="setup">✅ 開學前一次搞定<a class="top" href="#top">↑ 回上面</a></h2>
+    <p>每台學生 iPad 做一次，約 3 分鐘。</p>
+    <ol class="check">
+      <li><b>加到主畫面</b>
+        <dl class="kv">
+          <dt>按哪裡</dt><dd>用 <b>Safari</b> 打開網址 → 上方「分享」⬆️ →「加入主畫面」。</dd>
+          <dt>會看到</dt><dd>主畫面多一個圖示，之後學生點它就好，不用再打網址。</dd>
+          <dt>卡住</dt><dd>找不到「加入主畫面」：分享選單往下滑；用 Chrome 開的話改用 Safari。</dd>
+        </dl></li>
+      <li><b>打開老師設定</b>
+        <dl class="kv">
+          <dt>按哪裡</dt><dd><b>按住</b>右上角 ⚙️ <b>2 秒</b>（圓圈跑滿）→ 回答乘法題。</dd>
+          <dt>會看到</dt><dd>「⚙️ 老師設定」視窗。</dd>
+          <dt>卡住</dt><dd>只點一下會跳「請按住 2 秒」，這是故意的（防學生誤開）。</dd>
+        </dl></li>
+      <li><b>設等級初值</b>
+        <dl class="kv">
+          <dt>按哪裡</dt><dd>「學習等級」選一個；<b>不確定就選 2</b>（預設就是 2）。</dd>
+          <dt>會看到</dt><dd>選到的等級反白。之後怎麼調，看 <a href="#levels">等級怎麼選</a>。</dd>
+          <dt>順便</dt><dd>注音、自動念題目、音效、朗讀速度、「核心活動依序解鎖」也在這裡，可以先不動。</dd>
+        </dl></li>
+      <li><b>輸入教室密碼</b>
+        <dl class="kv">
+          <dt>按哪裡</dt><dd>按「完成」→ 隨便點一課 →「📖 課文點讀」→ 輸入教室密碼。</dd>
+          <dt>會看到</dt><dd>課文出現。這台 iPad 會記住，<b>之後不用再輸入</b>。</dd>
+          <dt>注意</dt><dd>密碼由老師輸入，不要告訴學生、不要寫在 iPad 上。</dd>
+        </dl></li>
+      <li><b>試一下聲音和麥克風</b>
+        <dl class="kv">
+          <dt>按哪裡</dt><dd>點任何 🔊；再到「句型練習」最後一步按 🎤 說一句話。</dd>
+          <dt>卡住</dt><dd>沒聲音、🎤 不能用 → 看 <a href="#t-sound">出問題怎麼辦</a>。</dd>
+        </dl></li>
+    </ol>
+
+    <h2 id="lesson">🗺️ 一課怎麼帶<a class="top" href="#top">↑ 回上面</a></h2>
     <div class="order">
       <span>🎯 本課先完成</span><i>→</i><span>🌟 加練挑戰</span><i>→</i><span>🔁 錯題複習</span><i>→</i><span>📝 單課小考</span>
     </div>
-    <div class="card">
-      <ul>
-        <li>每一站上面有「☑ <b>現在要做什麼</b>」。</li>
-        <li>看到 <b>🔊</b> 就可以點來聽；不會就按 <b>💡 提示</b>。</li>
-        <li>做完一組得 <b>⭐ 1～3 顆</b>，沒有計時、不扣分。</li>
-        <li>答錯的題目會自動放進<b>錯題複習</b>，隔幾天再出現。</li>
-      </ul>
+    <div class="tbl-wrap">
+      <table class="tbl">
+        <thead><tr><th>階段</th><th>什麼時候</th><th>老師可以說</th></tr></thead>
+        <tbody>
+          <tr><td>🎯 本課先完成</td><td>新課的前幾節。5 站：生字 → 語詞 → 短語短句 → 句型 → 讀懂課文。</td><td class="line">「今天先做到有⭐的地方就好，不會就按 💡。」</td></tr>
+          <tr><td>🌟 加練挑戰</td><td>🎯 做完、或程度好的學生先做。形近字、成語是定期評量會考的。</td><td class="line">「形近字長得很像，先看字族文再選。」</td></tr>
+          <tr><td>🔁 錯題複習</td><td><b>每節開頭</b>先做（首頁、本課頁有提醒才需要）。</td><td class="line">「先把昨天錯的救回來，再做新的。」</td></tr>
+          <tr><td>📝 單課小考</td><td>🎯 都做完、或定期評量前。沒有提示。</td><td class="line">「這次沒有 💡，錯了沒關係，會放進錯題複習。」</td></tr>
+        </tbody>
+      </table>
+    </div>
+    <h3>每節課 5 分鐘腳本</h3>
+    <ol>
+      <li><b>開始（1 分）</b>：學生點主畫面圖示 → 有 🔁 提醒就先做錯題複習。</li>
+      <li><b>中間</b>：做本課的站。老師巡視時看「卡關訊號」（<a href="#stations">各站速查</a>）。</li>
+      <li><b>結束前（3 分）</b>：按住 ⚙️ →「✍️ 學生造的句子」批改（<a href="#make">怎麼批改</a>）。</li>
+      <li><b>每週一次</b>：看「📝 單課小考成績」的「要加強」，下週先補那一站。</li>
+    </ol>
+
+    <h2 id="trouble">🛠️ 出問題怎麼辦<a class="top" href="#top">↑ 回上面</a></h2>
+    <p>點症狀打開，<b>由上往下</b>一項一項檢查。</p>
+
+    <details class="more" id="t-sound">
+      <summary>🔇 沒有聲音</summary>
+      <div class="body">
+        <p><b>先分辨是哪一種沒聲音：</b></p>
+        <ol>
+          <li><b>全部都沒聲音</b>（🔊、答對的音效都沒有）→ iPad 音量調大、側邊靜音／控制中心的鈴鐺關掉；藍牙耳機是不是連到別的地方。</li>
+          <li><b>剛打開時按 🔊 沒聲音</b>，後來又好了 → iPad 規定要先點過畫面才能發聲；先點一下畫面再按 🔊。</li>
+          <li><b>音效有、🔊 念字沒聲音或念得怪</b> → iPad「設定 → 輔助使用 → 朗讀內容 → 聲音 → 中文（台灣）」下載一個聲音。</li>
+          <li><b>🔊 有、答對答錯沒有音效</b> → 老師設定「音效」被關掉了。</li>
+          <li><b>題目沒有自動念</b> → 不是壞掉：等級 2、3 預設要點 🔊 才念；要自動念就在老師設定開「自動念題目」。</li>
+        </ol>
+      </div>
+    </details>
+
+    <details class="more" id="t-mic">
+      <summary>🎤 不能用／朗讀挑戰沒反應</summary>
+      <div class="body"><ol>
+        <li>有沒有連網路？語音辨識要上網。</li>
+        <li>iPad「設定 → Safari → 麥克風」改成「允許」（或「詢問」，跳出來時按允許）。</li>
+        <li>用 Safari 或主畫面圖示打開（Firefox 不能用）。</li>
+        <li>還是不行 → 改用鍵盤上的 🎤（要開「設定 → 一般 → 鍵盤 → 啟用聽寫」），或直接打字。</li>
+        <li>朗讀分數怪怪的：辨識器會猜成通順的詞，細微聲調抓不到，<b>分數只供參考</b>。</li>
+      </ol></div>
+    </details>
+
+    <details class="more" id="t-update">
+      <summary>🆕 看不到新版</summary>
+      <div class="body"><ol>
+        <li>網站更新後最多約 10 分鐘才會生效。</li>
+        <li>把主畫面的 App <b>完全關掉</b>（從下往上滑、把它滑掉）再打開。</li>
+      </ol></div>
+    </details>
+
+    <details class="more" id="t-record">
+      <summary>🗂️ 紀錄、星星不見了</summary>
+      <div class="body"><ol>
+        <li>是不是<b>換了一台 iPad</b>？紀錄不會跟著學生走，只在原來那台。</li>
+        <li>是不是用 Safari 開，而不是主畫面圖示（或反過來）？兩邊的紀錄可能分開。</li>
+        <li>是不是用了<b>私密瀏覽</b>，或有人清除了 Safari 的網站資料？清掉就找不回來。</li>
+      </ol></div>
+    </details>
+
+    <details class="more" id="t-lock">
+      <summary>🔑 課文點讀沒有鎖／要重新鎖／忘記密碼</summary>
+      <div class="body"><ol>
+        <li>輸入過密碼的 iPad 會記住，所以看起來「沒鎖」是正常的。</li>
+        <li>要重鎖：老師設定 →「🔒 鎖上課文」。</li>
+        <li>忘記密碼：請設定網站的老師提供，密碼不會寫在任何地方。</li>
+      </ol></div>
+    </details>
+
+    <details class="more" id="t-gear">
+      <summary>⚙️ 打不開老師設定</summary>
+      <div class="body"><ol>
+        <li>要<b>按住不放</b> 2 秒，手指不要移動；只點一下不會開。</li>
+        <li>乘法題答錯會清空，再算一次就好。</li>
+      </ol></div>
+    </details>
+
+    <!-- ═══════════ 第 2 層：速查 ═══════════ -->
+    <div class="layer" id="ref">第 2 部分・速查（可以列印）</div>
+
+    <h2 id="levels">🎚️ 等級怎麼選<a class="top" href="#top">↑ 回上面</a></h2>
+    <div class="note"><b>先全部設等級 2</b>，做完 2～3 組再看下面調整。改等級只要按住 ⚙️ 換一下，之前的紀錄不會不見。</div>
+    <div class="decide">
+      <div><h4>⬇️ 降到 1</h4>一直按 💡、亂點、答錯就生氣或哭；或<b>獨立答對</b>常低於 5 成；或看不懂題目。</div>
+      <div><h4>➡️ 留在 2</h4>偶爾用 💡、星星多半 2 顆；獨立答對約 5～8 成。</div>
+      <div><h4>⬆️ 升到 3</h4>幾乎不用 💡、自己一直往下點；星星多半 3 顆，獨立答對 8 成以上。</div>
+    </div>
+    <div class="example">例：小明等級 2，認識生字連兩組 3 顆星、都沒按 💡 → 升等級 3。<br>小華等級 2，每題都先按 💡、語詞獨立答對 40% → 降等級 1，兩週後再看。</div>
+    <p style="font-size:16px" class="muted">「獨立答對」在 ⚙️ →「📊 學習紀錄」裡看，見 <a href="#scores">成績怎麼看</a>。可以只換單一學生，也可以某一課先降、做熟了再升。</p>
+    <div class="tbl-wrap">
+      <table class="tbl">
+        <thead><tr><th></th><th>等級 1 大量支持</th><th>等級 2 部分支持</th><th>等級 3 少量支持</th></tr></thead>
+        <tbody>
+          <tr><td>每組題數／選項</td><td>4 個／2 個</td><td>6 個／3 個</td><td>9 個／4 個</td></tr>
+          <tr><td>念題目</td><td>自動念</td><td>點 🔊 才念</td><td>點 🔊 才念</td></tr>
+          <tr><td>答錯時</td><td>錯一次就標出答案</td><td>先提示，再錯才標出</td><td>先提示，再錯才標出</td></tr>
+          <tr><td>💡 提示按鈕</td><td>有</td><td>有</td><td>沒有</td></tr>
+          <tr><td>自己造句</td><td>填空句框＋例句</td><td>填空句框</td><td>寫整句</td></tr>
+          <tr><td>其他</td><td></td><td></td><td>多翻牌記憶遊戲</td></tr>
+          <tr><td>單課小考</td><td>8 題</td><td>12 題</td><td>15 題</td></tr>
+        </tbody>
+      </table>
     </div>
 
-    <!-- ─────────────────────────────── -->
-    <h2 id="teacher">⚙️ 老師這樣用</h2>
-    <p>按住右上角 ⚙️ 2 秒 → 回答乘法題，就能：</p>
-    <div class="card">
-      <ul>
-        <li><b>批改造句</b>：學生在「句型練習」自己造的句子，意思通順按 ✓、要重寫按 ✗，也可以按 ✏️ 直接修改。</li>
-        <li><b>看小考成績</b>：分數和「要加強的練習站」。</li>
-        <li><b>看學習紀錄</b>：每課每站的完成度、獨立答對率、朗讀分數（可作 IEP 參考）。</li>
-        <li><b>調整</b>：等級、注音、自動念題目、音效、朗讀速度。</li>
-      </ul>
+    <h2 id="stations">📋 各站速查<a class="top" href="#top">↑ 回上面</a></h2>
+    <div class="tbl-wrap">
+      <table class="tbl st">
+        <tbody>
+          <tr class="group"><td colspan="4">🎯 本課先完成</td></tr>
+          <tr><td>✏️ 認識生字<br><small>字卡→聽音選字→找部首</small></td><td>認得字形、讀音、部首</td><td>聽音選字一直猜；部首選成聲旁</td><td class="line">「先看左邊（上面）是什麼部件，它跟意思有關。」</td></tr>
+          <tr><td>🧩 學會語詞<br><small>詞卡→配對→看意思選語詞</small></td><td>語詞的意思和用法</td><td>配對很快但亂點；看意思選不出來</td><td class="line">「先點圖卡聽一次，想想你什麼時候會用這個詞。」</td></tr>
+          <tr><td>🔗 短語短句<br><small>認識結構→排一排→選出對的</small></td><td>詞語怎麼組成短句</td><td>排序只排對前半；每次都同一個位置錯</td><td class="line">「先找『誰』，再找『做什麼』。」</td></tr>
+          <tr><td>🧱 句型練習<br><small>認識→排句子→選後半句→選連接詞→自己造句</small></td><td>學會本課句型的連接詞和意思關係</td><td>連接詞選錯（意思相反）；造句格子空白很久</td><td class="line">「前面說了什麼？後面是相反、還是接著做？」造句卡住：「先說給我聽，再按 🎤。」</td></tr>
+          <tr><td>📖 讀懂課文<br><small>事件排順序→回答問題</small></td><td>抓課文大意和順序</td><td>排順序靠猜；問題答案都選最長的</td><td class="line">「打開課文點讀，找找看這件事在第幾段。」</td></tr>
+          <tr class="group"><td colspan="4">🌟 加練挑戰</td></tr>
+          <tr><td>🔍 形近字<br><small>字族文→看語詞選字→組字→句子選字</small></td><td>分辨長得像的字（評量常考）、多音字</td><td>同一組字一直選反</td><td class="line">「這兩個字哪裡不一樣？那個部件是什麼意思？」</td></tr>
+          <tr><td>🏮 生字變成語<br><small>成語卡→補字→選成語→配對</small></td><td>本課生字的延伸成語（評量常考）</td><td>補字選同音字；意思和成語對不起來</td><td class="line">「看圖卡，故事是在說什麼？」</td></tr>
+          <tr><td>🕵️ 修辭小偵探<br><small>認識修辭→有沒有用→比成什麼</small></td><td>認出譬喻等修辭</td><td>看到「像」就說有譬喻</td><td class="line">「兩樣東西真的有像嗎？哪一樣被比成哪一樣？」</td></tr>
+          <tr><td>🎧 注音聽打<br><small>聽語詞→點注音鍵盤→選字</small></td><td>注音拼讀、聲調、同音字選字</td><td>聲調一直錯；選字選同音的別字</td><td class="line">「念慢一點，手跟著打拍子數聲調。」</td></tr>
+          <tr><td>👂 聽聽看<br><small>聽一句話→回答問題</small></td><td>聽覺理解（綜合）</td><td>一直重聽也答不出來</td><td class="line">「聽到『誰、在哪裡、做什麼』就記下來。」</td></tr>
+          <tr class="group"><td colspan="4">其他</td></tr>
+          <tr><td>🔁 錯題複習</td><td>間隔複習答錯的題目、重寫老師打 ✗ 的造句</td><td>同一題一直回來</td><td class="line">那一題老師直接一對一講解。</td></tr>
+          <tr><td>📝 單課小考</td><td>各站抽題、沒有提示，看真正學會多少</td><td>分數低的站</td><td>回去做那一站，等級可先降一級。</td></tr>
+          <tr><td>📖 課文點讀</td><td>點字、詞、句就念（要教室密碼）</td><td></td><td></td></tr>
+          <tr><td>🎙️ 朗讀挑戰</td><td>一段一段念，iPad 比對讀音打分數</td><td>一直 0 分（多半是 🎤 問題）</td><td>看 <a href="#t-mic">🎤 不能用</a>。</td></tr>
+        </tbody>
+      </table>
     </div>
-    <div class="note"><b>注意</b>：紀錄只在那一台 iPad 上，要在學生的 iPad 看。教室密碼只給班上使用。</div>
+    <p class="muted" style="font-size:16px">注音開關：關掉會藏語詞卡、成語卡、形近字卡、課文點讀、朗讀挑戰的注音；生字卡、多音字、注音題、注音聽打的答案一定顯示。</p>
 
-    <!-- ─────────────────────────────── -->
-    <h2 id="details">📎 想知道更多（點開看）</h2>
+    <h2 id="make">✍️ 造句批改（每天 3 分鐘）<a class="top" href="#top">↑ 回上面</a></h2>
+    <p><b>學生那邊發生什麼</b>：句型練習最後一步「自己造句」→ 電腦只檢查<b>結構</b>（連接詞、順序、每段有沒有寫、有沒有照抄例句）→ 通過後補標點、念一遍 → 學生自己判斷「通順嗎？」→ 按「👍 通順，送給老師」→ 畫面顯示「已經送出，等老師批改」。</p>
+    <div class="note"><b>電腦看不懂意思</b>：「雖然哈哈，卻哈哈啊啊」結構對也會送出，所以一定要老師批改。</div>
+    <ol class="check">
+      <li><b>打開</b>
+        <dl class="kv"><dt>按哪裡</dt><dd>按住 ⚙️ 2 秒 → 最上面「✍️ 學生造的句子（○ 句待批改）」。</dd></dl></li>
+      <li><b>看一句、按一個</b>
+        <dl class="kv">
+          <dt>✓</dt><dd>意思通順，結束。</dd>
+          <dt>✗</dt><dd>要重寫。學生下次打開「🔁 錯題複習」會<b>先</b>看到這句，用同一個句型重寫；重寫完變「已重寫」，新句子也會出現在列表裡等批改。</dd>
+          <dt>✏️</dt><dd>老師在旁邊時直接改字 → 儲存（算通過，原句會留著）→ 按 🔊 念給學生聽。</dd>
+        </dl></li>
+      <li><b>順便看小字</b>
+        <dl class="kv"><dt>會看到</dt><dd>「自己改了 ○ 次」「結構試了 ○ 次」——改過的次數多代表學生有在自我檢查；結構一直試不過，表示句型還不熟，回到前面的步驟。</dd></dl></li>
+    </ol>
+    <p class="muted" style="font-size:16px">等級 1、2 是填空句框，「先……再……」「一邊……一邊……」「時而」「不但（沒）」「不僅」的句框會多一格「誰？」，要先寫主詞。</p>
 
-    <details class="more" id="d-stations">
-      <summary>每一站在做什麼</summary>
-      <div class="body">
-        <div class="tbl-wrap">
-          <table class="tbl">
-            <tbody>
-              <tr class="group"><td colspan="2">🎯 本課先完成</td></tr>
-              <tr><td>✏️ 認識生字</td><td>字卡 → 聽音選字 → 找部首</td></tr>
-              <tr><td>🧩 學會語詞</td><td>詞卡 → 配對 → 看意思選語詞（等級 3 多翻牌）</td></tr>
-              <tr><td>🔗 短語短句</td><td>認識結構 → 排一排 → 選出順序對的</td></tr>
-              <tr><td>🧱 句型練習</td><td>認識句型 → 排句子 → 選後半句 → 選連接詞 → 自己造句</td></tr>
-              <tr><td>📖 讀懂課文</td><td>事件排順序 → 回答問題</td></tr>
-              <tr class="group"><td colspan="2">🌟 加練挑戰</td></tr>
-              <tr><td>🔍 形近字</td><td>讀字族文 → 看語詞選字 → 組字 → 句子選字（含多音字）</td></tr>
-              <tr><td>🏮 生字變成語</td><td>成語卡 → 補字 → 選成語 → 配對</td></tr>
-              <tr><td>🕵️ 修辭小偵探</td><td>認識修辭 → 有沒有用 → 比成什麼</td></tr>
-              <tr><td>🎧 注音聽打</td><td>聽語詞 → 點注音鍵盤 → 選字</td></tr>
-              <tr><td>👂 聽聽看</td><td>聽一句話 → 回答問題</td></tr>
-              <tr class="group"><td colspan="2">其他</td></tr>
-              <tr><td>🔁 錯題複習</td><td>答錯的題目、老師打 ✗ 的造句，再做一次</td></tr>
-              <tr><td>📝 單課小考</td><td>各站抽題考一次，沒有提示</td></tr>
-              <tr><td>📖 課文點讀</td><td>點字、詞、句就念（要教室密碼）</td></tr>
-              <tr><td>🎙️ 朗讀挑戰</td><td>一段一段念，iPad 打分數（要教室密碼）</td></tr>
-            </tbody>
-          </table>
-        </div>
-      </div>
-    </details>
+    <h2 id="scores">📊 成績怎麼看（寫 IEP 用）<a class="top" href="#top">↑ 回上面</a></h2>
+    <p>都在 ⚙️ 老師設定裡，要在<b>學生自己的 iPad</b> 上看。</p>
+    <div class="tbl-wrap">
+      <table class="tbl">
+        <thead><tr><th>看什麼</th><th>在哪裡</th><th>怎麼算</th></tr></thead>
+        <tbody>
+          <tr><td>小考分數</td><td>📝 單課小考成績</td><td>答對題數 ÷ 總題數（沒有提示，錯一次就算錯）。每課留最近 3 次，括號是當時的等級。</td></tr>
+          <tr><td>要加強的站</td><td>📝 單課小考成績</td><td>最近一次小考中，<b>答對不到 6 成</b>的練習站。</td></tr>
+          <tr><td>錯題練習中</td><td>📝 單課小考成績</td><td>還沒學會的錯題數。錯題照 <b>當天 → 1 天 → 3 天 → 7 天</b> 再出現，連續答對 4 次就學會、移除；答錯回到當天。</td></tr>
+          <tr><td>獨立答對</td><td>📊 學習紀錄 → 點開一課</td><td><b>沒用 💡、第一次就答對</b>的比例（各組平均）。最能看出「自己會」的程度。</td></tr>
+          <tr><td>星星</td><td>📊 學習紀錄</td><td>每組依獨立答對：9 成以上 3 顆、6 成以上 2 顆、完成就 1 顆；留最高的。</td></tr>
+          <tr><td>朗讀分數</td><td>📊 學習紀錄 → 🎙️ 朗讀挑戰</td><td>每個字念對 1 分、聲調不對 0.5 分、沒念到 0 分；每段留最高分再平均。語音辨識有誤差，<b>只供參考</b>。</td></tr>
+          <tr><td>造句</td><td>✍️ 學生造的句子</td><td>老師 ✓／✗ 的結果、自己改了幾次、結構試了幾次。</td></tr>
+        </tbody>
+      </table>
+    </div>
+    <h3>IEP 可以這樣寫（照抄改數字）</h3>
+    <div class="example">
+      ・在第 4 課單課小考（等級 2，12 題，無提示）得 75 分；「形近字」答對不到 6 成，列為下階段加強重點。<br>
+      ・「認識生字」獨立答對率（未使用提示、第一次即答對）由第 1 課 55% 提升至第 4 課 85%，已由等級 2 調升為等級 3。<br>
+      ・能使用「雖然……卻……」句框自行造句，10 句中 8 句經教師批改意思通順，2 句經提示後能自行修改。<br>
+      ・課文朗讀（語音辨識參考）平均 82 分，聲調錯誤集中於三聲。
+    </div>
 
-    <details class="more" id="levels">
-      <summary>三個等級差在哪裡</summary>
-      <div class="body">
-        <div class="tbl-wrap">
-          <table class="tbl">
-            <thead><tr><th></th><th>等級 1</th><th>等級 2</th><th>等級 3</th></tr></thead>
-            <tbody>
-              <tr><th>每組／選項</th><td>4 個／2 個</td><td>6 個／3 個</td><td>9 個／4 個</td></tr>
-              <tr><th>念題目</th><td>自動念</td><td>點了才念</td><td>點了才念</td></tr>
-              <tr><th>答錯時</th><td>直接標出答案</td><td>先提示再標出</td><td>先提示再標出</td></tr>
-              <tr><th>💡 提示</th><td>有</td><td>有</td><td>沒有</td></tr>
-              <tr><th>自己造句</th><td>填空＋例句</td><td>填空</td><td>寫整句</td></tr>
-              <tr><th>小考題數</th><td>8 題</td><td>12 題</td><td>15 題</td></tr>
-            </tbody>
-          </table>
-        </div>
-      </div>
-    </details>
+    <h2 id="device">📱 設備與隱私<a class="top" href="#top">↑ 回上面</a></h2>
+    <ul>
+      <li><b>一台 iPad ＝ 一個學生的紀錄</b>。不用登入，資料不上傳、不離開那台 iPad，網站也不收集個人資料。</li>
+      <li>換 iPad、清除 Safari 網站資料、用私密瀏覽 → 紀錄<b>看不到也救不回來</b>。學生共用 iPad 的話紀錄會混在一起。</li>
+      <li>設定（等級、注音等）也是每台各自的，可以每個學生不一樣。</li>
+      <li>學期末要重來：⚙️ 最下面「清除這台 iPad 的學習紀錄」（會清掉錯題、小考、造句，<b>無法復原</b>，先抄下要的成績）。</li>
+      <li>教室密碼只給班上使用，課文全文有著作權。</li>
+    </ul>
 
-    <details class="more" id="d-make">
-      <summary>自己造句怎麼檢查</summary>
-      <div class="body">
-        <ul>
-          <li>電腦檢查<b>連接詞、順序、每段有沒有寫、有沒有照抄例句</b>，通過後補標點、念一遍。</li>
-          <li>「先……再……」「一邊……一邊……」這類句型，前面要先寫「誰」。</li>
-          <li>電腦<b>判斷不了意思</b>，所以會問學生「通順嗎？」，也請老師批改。</li>
-        </ul>
-      </div>
-    </details>
+    <p class="muted" style="font-size:15px;margin-top:24px">特殊教育輔助教材，非出版社官方產品；內容依康軒版國語五上整理改寫，僅供教學使用。</p>
 
-    <details class="more" id="d-review">
-      <summary>錯題複習怎麼排</summary>
-      <div class="body">
-        <ul>
-          <li>答對一次就隔久一點：<b>當天 → 1 天 → 3 天 → 7 天</b>，連對 4 次就學會了；答錯回到當天。</li>
-          <li>老師打 ✗ 的造句會先出現。</li>
-        </ul>
-      </div>
-    </details>
-
-    <details class="more" id="d-test">
-      <summary>單課小考怎麼出題</summary>
-      <div class="body">
-        <ul>
-          <li>每次從各站<b>重新隨機抽題</b>，沒有提示；答錯會標出答案，並放進錯題複習。</li>
-        </ul>
-      </div>
-    </details>
-
-    <details class="more" id="d-score">
-      <summary>朗讀挑戰怎麼評分</summary>
-      <div class="body">
-        <ul>
-          <li>念對 1 分、聲調不對 0.5 分、沒念到 0 分，每段留最高分。語音辨識有誤差，<b>僅供參考</b>。</li>
-        </ul>
-      </div>
-    </details>
-
-    <details class="more" id="d-zhuyin">
-      <summary>注音開關管哪些地方</summary>
-      <div class="body">
-        <ul>
-          <li><b>關掉會隱藏</b>：語詞卡、成語卡、形近字卡、課文點讀、朗讀挑戰。</li>
-          <li><b>一定顯示</b>：生字卡、多音字、注音題、注音聽打的答案。</li>
-        </ul>
-      </div>
-    </details>
-
-    <details class="more" id="d-stars">
-      <summary>星星怎麼算</summary>
-      <div class="body">
-        <ul>
-          <li>沒用提示、第一次就答對的比例：<b>90% 以上 3 顆、60% 以上 2 顆</b>，完成就有 1 顆。</li>
-        </ul>
-      </div>
-    </details>
-
-    <!-- ─────────────────────────────── -->
-    <h2 id="faq">❓ 遇到問題</h2>
-
-    <details class="more">
-      <summary>沒有聲音</summary>
-      <div class="body"><ul>
-        <li>檢查靜音開關和音量；先點一下畫面再按 🔊。</li>
-      </ul></div>
-    </details>
-
-    <details class="more">
-      <summary>🎤 不能用</summary>
-      <div class="body"><ul>
-        <li>允許麥克風（設定 → Safari → 麥克風），並連上網路；也可以用鍵盤上的 🎤。</li>
-      </ul></div>
-    </details>
-
-    <details class="more">
-      <summary>看不到新版</summary>
-      <div class="body"><ul>
-        <li>把主畫面的 App <b>完全關掉</b>（往上滑掉）再打開；更新後最多約 10 分鐘。</li>
-      </ul></div>
-    </details>
-
-    <details class="more">
-      <summary>紀錄不見了</summary>
-      <div class="body"><ul>
-        <li>紀錄只存在這台 iPad 的這個瀏覽器；換 iPad、清除 Safari 資料或私密瀏覽都會看不到。</li>
-      </ul></div>
-    </details>
-
-    <details class="more">
-      <summary>課文點讀沒有鎖／忘記密碼</summary>
-      <div class="body"><ul>
-        <li>輸入過密碼的 iPad 會記住；要重鎖：老師設定 →「🔒 鎖上課文」。忘記密碼請老師重新設定。</li>
-      </ul></div>
-    </details>
-
-    <p class="muted" style="font-size:15px;margin-top:24px">特殊教育輔助教材，非出版社官方產品；內容依康軒版國語五上整理改寫，僅供教學使用。網站不收集個人資料。</p>
-
+    <a class="btn btn-ghost back noprint" href="javascript:window.print()">🖨️ 列印這頁</a>
     <a class="btn btn-primary back" href="./">← 回到首頁</a>
     <a class="btn btn-ghost back" href="../">🏫 資源班教材總覽</a>
   </main>
   <script>
-    // 連到收合段落（#d-review 等）時自動展開並捲過去
+    // 連到問題診斷（#t-sound 等）時自動展開並捲過去；舊連結 #d-xxx 轉到新位置
     (function () {
-      function openTarget(id) {
+      var OLD = { 'd-stations': 'stations', 'd-make': 'make', 'd-review': 'scores', 'd-test': 'scores', 'd-score': 'scores', 'd-stars': 'scores', 'd-zhuyin': 'stations', start: 'setup', student: 'lesson', teacher: 'make', faq: 'trouble', details: 'stations' };
+      function go(id) {
+        id = OLD[id] || id;
         var el = id && document.getElementById(id);
-        if (!el || el.tagName !== 'DETAILS') return false;
-        el.open = true;
+        if (!el) return false;
+        if (el.tagName === 'DETAILS') {
+          el.open = true;
+          el.classList.add('flash'); setTimeout(function () { el.classList.remove('flash'); }, 1200);
+        }
         el.scrollIntoView({ behavior: 'smooth', block: 'start' });
-        el.classList.add('flash'); setTimeout(function () { el.classList.remove('flash'); }, 1200);
         return true;
       }
       document.addEventListener('click', function (e) {
         var a = e.target.closest('a[href^="#"]');
         if (!a) return;
         var id = a.getAttribute('href').slice(1);
-        if (openTarget(id)) { e.preventDefault(); history.replaceState(null, '', '#' + id); }
+        if (go(id)) { e.preventDefault(); history.replaceState(null, '', '#' + (OLD[id] || id)); }
       });
-      if (location.hash) setTimeout(function () { openTarget(location.hash.slice(1)); }, 50);
+      if (location.hash) setTimeout(function () { go(location.hash.slice(1)); }, 50);
+      // 列印時把問題診斷全部展開
+      window.addEventListener('beforeprint', function () { document.querySelectorAll('details').forEach(function (d) { d.open = true; }); });
     })();
   </script>
 </body>
