@@ -249,12 +249,12 @@
   }
 
   // 收題模式（單課小考用）：CAPTURE 是陣列時，各站的選擇題不畫出來，只把題目收集起來
-  var CAPTURE = null;
+  var CAPTURE = null, CAPTURE_ASK = '';
 
   // 選擇題：item = { prompt(), say, options[正解在第 0 個], kai, long, hint, after }
   // api.result(it, indep, promptEl)：答完一題時通知（錯題複習、單課小考用）
   function runQuiz(stage, items, api) {
-    if (CAPTURE) { items.forEach(function (it) { CAPTURE.push(it); }); return; }
+    if (CAPTURE) { items.forEach(function (it) { if (!it.ask) it.ask = CAPTURE_ASK; CAPTURE.push(it); }); return; }
     var c = api.cfg, i = 0;
     function show() {
       stopSpeak(); stage.innerHTML = '';
@@ -319,8 +319,10 @@
         return b;
       })());
       var promptEl = h('div', { class: 'prompt' }, it.prompt());
-      append(stage, qbar(i, items.length), promptEl, optBox, hintSlot, tools, fb);
-      if (c.autoRead && it.say) speak(it.say);
+      // 小考、錯題複習：題目是從各站抽出來的，每題上面要說這題要做什麼（例如「找部首：這個字的部首是哪一個？」）
+      var askEl = it.ask ? h('div', { class: 'q-ask' }, h('span', { style: 'flex:1' }, it.ask), sayBtn(it.ask)) : null;
+      append(stage, qbar(i, items.length), askEl, promptEl, optBox, hintSlot, tools, fb);
+      if (c.autoRead) speak((it.ask ? it.ask + '。' : '') + (it.say || ''));
     }
     show();
   }
@@ -519,7 +521,10 @@
   // ════════════════════════════════════════════════
   var HALF_PUNCT = { ',': '，', '.': '。', '?': '？', '!': '！', ';': '；', ':': '：' };
   function cleanSentence(s) {
-    return String(s || '').replace(/[,.?!;:]/g, function (m) { return HALF_PUNCT[m]; })
+    return String(s || '')
+      // iPad 鍵盤、語音輸入常多打的點（·•・．‧）：在句尾或標點前的去掉，句中的保留（例如人名「比爾‧蓋茲」）
+      .replace(/[·•・．‧]+(?=[\s,.?!;:，。？！；：、]|$)/g, '')
+      .replace(/[,.?!;:]/g, function (m) { return HALF_PUNCT[m]; })
       .replace(/\s+/g, '').replace(/([，。？！；：、])\1+/g, '$1').replace(/^[，。？！；：、]+/, '');
   }
   function hanCount(s) { return (String(s).match(/[㐀-鿿]/g) || []).length; }
@@ -1510,7 +1515,7 @@
     var api = {
       cfg: c,
       record: function (indep) { stats.total++; if (indep) stats.indep++; },
-      result: function (it, indep, el) { if (!indep) addMistake(lid, mid, it, el); },
+      result: function (it, indep, el) { if (!indep) addMistake(lid, mid, it, el, steps[si] && steps[si].title); },
       next: function () { si++; if (si < steps.length) show(); else finish(); }
     };
     function show() {
@@ -1553,14 +1558,15 @@
   var DAY = 86400000;
   function mistakes() { state.mistakes = state.mistakes || []; return state.mistakes; }
   function snapText(el) { return el ? el.textContent.replace(/[🔊\s]/g, '') : ''; }
-  function addMistake(lid, mid, it, el) {
+  function addMistake(lid, mid, it, el, ask) {
     if (!it || !it.options) return;
+    ask = it.ask || ask || '';
     var id = [lid, mid, it.options[0], it.say || '', snapText(el).slice(0, 60)].join('|');
     var list = mistakes(), m = list.find(function (x) { return x.id === id; });
-    if (m) { m.box = 0; m.due = Date.now(); m.n++; m.last = today(); save(); return; }
+    if (m) { m.box = 0; m.due = Date.now(); m.n++; m.last = today(); if (ask && !m.snap.ask) m.snap.ask = ask; save(); return; }
     list.push({
       id: id, lid: lid, mid: mid, box: 0, due: Date.now(), n: 1, first: today(), last: today(),
-      snap: { html: el ? el.innerHTML : '', say: it.say || '', options: it.options.slice(0, 8), fixed: it.fixed || null, zyOf: it.zyOf || null, kai: !!it.kai, long: !!it.long, hint: it.hint || '', after: it.after || '' }
+      snap: { ask: ask, html: el ? el.innerHTML : '', say: it.say || '', options: it.options.slice(0, 8), fixed: it.fixed || null, zyOf: it.zyOf || null, kai: !!it.kai, long: !!it.long, hint: it.hint || '', after: it.after || '' }
     });
     if (list.length > 300) list.splice(0, list.length - 300);
     save();
@@ -1573,7 +1579,7 @@
   function itemFromSnap(m) {
     var s = m.snap;
     return {
-      _mk: m.id, say: s.say, options: s.options, fixed: s.fixed, zyOf: s.zyOf, kai: s.kai, long: s.long, hint: s.hint, after: s.after,
+      _mk: m.id, ask: s.ask || (MODULES[m.mid] ? MODULES[m.mid].name : ''), say: s.say, options: s.options, fixed: s.fixed, zyOf: s.zyOf, kai: s.kai, long: s.long, hint: s.hint, after: s.after,
       prompt: function () {
         var d = h('div'); d.innerHTML = s.html;
         d.querySelectorAll('[data-say]').forEach(function (b) {
@@ -1642,10 +1648,14 @@
       CAPTURE = got;
       try {
         M.units(L, c).forEach(function (u) {
-          M.steps(L, u, c).forEach(function (st) { if (st.kind === 'quiz') st.run(h('div'), { cfg: c, record: function () { }, next: function () { } }); });
+          M.steps(L, u, c).forEach(function (st) {
+            if (st.kind !== 'quiz') return;
+            CAPTURE_ASK = st.title;   // 這一步的說明，例如「找部首：這個字的部首是哪一個？」
+            st.run(h('div'), { cfg: c, record: function () { }, next: function () { } });
+          });
         });
       } catch (e) { /* 這一站收題失敗就略過 */ }
-      CAPTURE = null;
+      CAPTURE = null; CAPTURE_ASK = '';
       // 同一題（答案＋題目朗讀）只留一個
       var seen = {};
       got = got.filter(function (it) { var k = it.options[0] + '|' + (it.say || ''); if (seen[k]) return false; seen[k] = 1; return true; });
