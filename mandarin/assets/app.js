@@ -117,7 +117,7 @@
   }
   function stopSpeak() { if (synth) synth.cancel(); }
   function sayBtn(text, label) {
-    var b = h('button', { class: 'say', type: 'button', 'aria-label': '朗讀：' + (label || text) }, '🔊');
+    var b = h('button', { class: 'say', type: 'button', 'aria-label': '朗讀：' + (label || text), 'data-say': text }, '🔊');
     b.addEventListener('click', function (e) { e.stopPropagation(); speak(text, b); });
     return b;
   }
@@ -248,8 +248,13 @@
     return b;
   }
 
+  // 收題模式（單課小考用）：CAPTURE 是陣列時，各站的選擇題不畫出來，只把題目收集起來
+  var CAPTURE = null;
+
   // 選擇題：item = { prompt(), say, options[正解在第 0 個], kai, long, hint, after }
+  // api.result(it, indep, promptEl)：答完一題時通知（錯題複習、單課小考用）
   function runQuiz(stage, items, api) {
+    if (CAPTURE) { items.forEach(function (it) { CAPTURE.push(it); }); return; }
     var c = api.cfg, i = 0;
     function show() {
       stopSpeak(); stage.innerHTML = '';
@@ -283,7 +288,9 @@
           solved = true;
           b.classList.remove('reveal'); b.classList.add('right');
           btns.forEach(function (x) { x.disabled = true; });
-          sfx.right(); api.record(wrong === 0 && !hinted);
+          var indep = wrong === 0 && !hinted;
+          sfx.right(); api.record(indep);
+          if (api.result) api.result(it, indep, promptEl);
           append(fb, h('div', { class: 'praise' }, pick(PRAISE)));
           if (it.after) speak(it.after);
           append(fb, nextBtn(i < items.length - 1 ? '下一題 →' : '完成 →', function () { i++; if (i < items.length) show(); else api.next(); }));
@@ -311,7 +318,8 @@
         });
         return b;
       })());
-      append(stage, qbar(i, items.length), h('div', { class: 'prompt' }, it.prompt()), optBox, hintSlot, tools, fb);
+      var promptEl = h('div', { class: 'prompt' }, it.prompt());
+      append(stage, qbar(i, items.length), promptEl, optBox, hintSlot, tools, fb);
       if (c.autoRead && it.say) speak(it.say);
     }
     show();
@@ -319,6 +327,7 @@
 
   // 排順序：item = { chips[正確順序], prefill, vertical, say, conn }
   function runOrder(stage, items, api) {
+    if (CAPTURE) return;
     var c = api.cfg, i = 0;
     function show() {
       stopSpeak(); stage.innerHTML = '';
@@ -370,6 +379,7 @@
   // 配對（翻開版）：pairs = [{ a:語詞, b:意思 }]
   // perRound：每回幾對（不給就依等級，並平均分回）
   function runMatch(stage, pairs, api, noun, perRound) {
+    if (CAPTURE) return;
     var c = api.cfg, rounds = balanced(pairs, perRound || c.pairs), r = 0;
     function show() {
       stopSpeak(); stage.innerHTML = '';
@@ -420,6 +430,7 @@
 
   // 翻牌記憶（等級 3）
   function runMemory(stage, pairs, api, noun) {
+    if (CAPTURE) return;
     var c = api.cfg, rounds = balanced(pairs, c.pairs), r = 0;
     function show() {
       stopSpeak(); stage.innerHTML = '';
@@ -464,6 +475,7 @@
 
   // 字卡／詞卡：每張都點過才能下一步（等級 3 可直接下一步）
   function runCards(stage, items, api, build) {
+    if (CAPTURE) return;
     var c = api.cfg, seen = 0;
     var grid = h('div', { class: items.length && build.wide ? '' : 'card-grid', style: build.wide ? 'display:grid;gap:14px' : '' });
     var status = h('p', { class: 'muted', style: 'text-align:center;margin:12px 0 0' });
@@ -584,6 +596,7 @@
     return b;
   }
   function runMake(stage, p, L, api) {
+    if (CAPTURE) return;
     var c = api.cfg, frame = c.level < 3, parts = patParts(p), tries = 0, done = false;
     var model = (p.models || [])[0] || (p.origin || [])[0] || '';
     var inputs = [];
@@ -706,7 +719,7 @@
                 hint: '提示：「' + hintW + '」的空格',
                 after: ch.cue,
                 prompt: function () {
-                  var b = h('button', { class: 'listen-btn', type: 'button', 'aria-label': '聽題目' }, '🔊');
+                  var b = h('button', { class: 'listen-btn', type: 'button', 'aria-label': '聽題目', 'data-say': ch.cue }, '🔊');
                   b.addEventListener('click', function () { speak(ch.cue, b); });
                   return h('div', {}, b, c.level === 1 ? h('div', { class: 'sentence', style: 'margin-top:10px' }, blanked(hintW)) : h('div', { class: 'sub' }, '點喇叭可以再聽一次'));
                 }
@@ -1079,7 +1092,7 @@
             // 提示：先說這題的重點（語詞或句型），再給剛剛聽到的句子
             hint: (it.focus ? '這題的重點是「' + it.focus + '」。' : '') + '剛剛說的是：「' + it.listen + '」', after: it.listen,
             prompt: function () {
-              var b = h('button', { class: 'listen-btn', type: 'button', 'aria-label': '先聽一聽' }, '🔊');
+              var b = h('button', { class: 'listen-btn', type: 'button', 'aria-label': '先聽一聽', 'data-say': it.listen }, '🔊');
               b.addEventListener('click', function () { speak(it.listen, b); });
               return h('div', {}, b, h('div', { class: 'sub' }, '先聽一聽'),
                 c.level === 1 ? h('div', { class: 'sentence', style: 'margin-top:8px' }, it.listen) : null,
@@ -1156,6 +1169,7 @@
   var CAND_N = { 1: 3, 2: 5, 3: 8 };  // 選字時列出幾個同音字
   function zyNorm(z) { return z.indexOf('˙') >= 0 ? '˙' + z.replace('˙', '') : z; }
   function runZhuyin(stage, items, api, lid) {
+    if (CAPTURE) return;
     var c = api.cfg, i = 0;
     function show() {
       stopSpeak(); stage.innerHTML = '';
@@ -1358,6 +1372,8 @@
     append(main, h('div', { class: 'hero' },
       h('div', { class: 'row' }, h('h1', {}, '國語五上學習樂園'), sayBtn('國語五上學習樂園。選一課開始學習。')),
       h('p', {}, '康軒版・五年級上學期　選一課開始學習。　', h('a', { href: 'guide.html' }, '📘 使用說明'))));
+    var dueAll = dueMistakes().length;
+    if (dueAll) append(main, h('a', { class: 'review-banner', href: '#/review' }, '🔁 今天有 ' + dueAll + ' 題錯題要複習', h('span', { class: 'spacer' }), '開始複習 →'));
     var grid = h('div', { class: 'lesson-grid' });
     LESSON_LIST.forEach(function (l, n) {
       var L = LESSONS[l.id], no = '第 ' + (n + 1) + ' 課';
@@ -1429,6 +1445,27 @@
     MODULE_ORDER.filter(function (m) { return !MODULES[m].core; }).forEach(function (mid) { append(ex, station(mid, false)); });
     append(main, ex);
 
+    // 複習與小考
+    var dueN = dueMistakes(lid).length, allN = mistakes().filter(function (m) { return m.lid === lid; }).length;
+    var tests = (state.progress[lid] && state.progress[lid].tests) || [], lastT = tests[tests.length - 1];
+    var revGo = h('button', { class: 'btn go', type: 'button' }, dueN ? '開始複習 →' : '看看錯題');
+    revGo.addEventListener('click', function () { location.hash = '#/review/' + lid; });
+    var testGo = h('button', { class: 'btn go', type: 'button' }, lastT ? '再考一次 →' : '開始考試 →');
+    testGo.addEventListener('click', function () { location.hash = '#/test/' + lid; });
+    append(main, h('div', { class: 'section-label' }, '🔁 複習與小考'),
+      h('div', { class: 'stations' },
+        h('div', { class: 'station', style: '--mc:var(--c-review)' },
+          dueN ? h('span', { class: 'badge-next' }, dueN + ' 題要複習') : null,
+          h('div', { class: 'row' }, h('div', { class: 'icon' }, '🔁'), h('h3', { style: 'flex:1' }, '錯題複習'), sayBtn('錯題複習，把答錯的題目再做一次')),
+          h('div', { class: 'desc' }, '答錯的題目會自動放到這裡，隔幾天再複習一次'),
+          h('div', { class: 'status' }, allN ? '練習中 ' + allN + ' 題' + (dueN ? '・今天要複習 ' + dueN + ' 題' : '・今天都複習完了') : '目前沒有錯題'),
+          revGo),
+        h('div', { class: 'station', style: '--mc:var(--c-test)' },
+          h('div', { class: 'row' }, h('div', { class: 'icon' }, '📝'), h('h3', { style: 'flex:1' }, '單課小考'), sayBtn('單課小考，從各站抽題考一次')),
+          h('div', { class: 'desc' }, '從各站抽題混在一起考，像定期評量'),
+          h('div', { class: 'status' }, lastT ? '上次 ' + lastT.d + '：' + lastT.score + ' 分' : '還沒考過'),
+          testGo)));
+
     var strokeUrl = 'https://gsyan888.github.io/html5_fun/html5_stroke_parts/html5_stroke_parts.html?by=gsyan&words=' + encodeURIComponent(L.chars.map(function (x) { return x.c; }).join(''));
     var LK = (window.LESSON_LINKS || {})[lid] || {};
     var hasR = hasReading(lid), lock = READINGS[lid] ? '' : '🔒 ';
@@ -1473,6 +1510,7 @@
     var api = {
       cfg: c,
       record: function (indep) { stats.total++; if (indep) stats.indep++; },
+      result: function (it, indep, el) { if (!indep) addMistake(lid, mid, it, el); },
       next: function () { si++; if (si < steps.length) show(); else finish(); }
     };
     function show() {
@@ -1505,6 +1543,166 @@
     show();
   }
   function btnTo(text, cls, fn) { var b = h('button', { class: 'btn btn-block ' + cls, type: 'button' }, text); b.addEventListener('click', fn); return b; }
+
+  // ════════════════════════════════════════════════
+  //  錯題複習（間隔重複）：答錯或用了提示的選擇題存成「快照」，
+  //  隔一段時間再出現：答對一次就隔久一點（今天 → 1 天 → 3 天 → 7 天），連續答對 4 次就學會了；答錯回到今天。
+  //  只存在這台 iPad。
+  // ════════════════════════════════════════════════
+  var BOX_DAYS = [0, 1, 3, 7];
+  var DAY = 86400000;
+  function mistakes() { state.mistakes = state.mistakes || []; return state.mistakes; }
+  function snapText(el) { return el ? el.textContent.replace(/[🔊\s]/g, '') : ''; }
+  function addMistake(lid, mid, it, el) {
+    if (!it || !it.options) return;
+    var id = [lid, mid, it.options[0], it.say || '', snapText(el).slice(0, 60)].join('|');
+    var list = mistakes(), m = list.find(function (x) { return x.id === id; });
+    if (m) { m.box = 0; m.due = Date.now(); m.n++; m.last = today(); save(); return; }
+    list.push({
+      id: id, lid: lid, mid: mid, box: 0, due: Date.now(), n: 1, first: today(), last: today(),
+      snap: { html: el ? el.innerHTML : '', say: it.say || '', options: it.options.slice(0, 8), fixed: it.fixed || null, zyOf: it.zyOf || null, kai: !!it.kai, long: !!it.long, hint: it.hint || '', after: it.after || '' }
+    });
+    if (list.length > 300) list.splice(0, list.length - 300);
+    save();
+  }
+  function dueMistakes(lid) {
+    var now = Date.now();
+    return mistakes().filter(function (m) { return (!lid || m.lid === lid) && m.due <= now; });
+  }
+  // 快照還原成題目：🔊 按鈕依 data-say 重新接上朗讀
+  function itemFromSnap(m) {
+    var s = m.snap;
+    return {
+      _mk: m.id, say: s.say, options: s.options, fixed: s.fixed, zyOf: s.zyOf, kai: s.kai, long: s.long, hint: s.hint, after: s.after,
+      prompt: function () {
+        var d = h('div'); d.innerHTML = s.html;
+        d.querySelectorAll('[data-say]').forEach(function (b) {
+          b.classList.remove('speaking');
+          b.addEventListener('click', function (e) { e.stopPropagation(); speak(b.getAttribute('data-say'), b); });
+        });
+        return d;
+      }
+    };
+  }
+  function renderReview(lid) {
+    var c = cfg(), crumbs = [{ text: '首頁', href: '#/' }];
+    if (lid) crumbs.push({ text: '第 ' + parseInt(lid, 10) + ' 課', href: '#/lesson/' + lid });
+    crumbs.push({ text: '錯題複習' });
+    var main = shell(crumbs, 'var(--c-review)');
+    var due = shuffle(dueMistakes(lid)), all = mistakes().filter(function (m) { return !lid || m.lid === lid; });
+    append(main, h('div', { class: 'task-head' }, h('div', { class: 'task-title' }, h('span', { class: 'icon' }, '🔁'),
+      h('h2', { style: 'flex:1' }, '錯題複習' + (lid ? '・第 ' + parseInt(lid, 10) + ' 課' : '')), sayBtn('錯題複習。把之前答錯的題目再做一次。'))));
+    if (!due.length) {
+      var next = all.reduce(function (t, m) { return Math.min(t, m.due); }, Infinity);
+      append(main, h('div', { class: 'card', style: 'text-align:center' }, h('div', { style: 'font-size:56px' }, '🎉'),
+        h('h2', {}, all.length ? '今天的錯題都複習完了！' : '目前沒有錯題'),
+        h('p', { class: 'muted' }, all.length ? '還有 ' + all.length + ' 題在練習中，' + (isFinite(next) ? Math.max(1, Math.ceil((next - Date.now()) / DAY)) + ' 天後會再出現。' : '') : '做練習時答錯的題目，會自動放到這裡。'),
+        h('div', { class: 'tools' }, btnTo(lid ? '🏠 回到本課' : '🏠 回首頁', 'btn-primary', function () { location.hash = lid ? '#/lesson/' + lid : '#/'; }))));
+      return;
+    }
+    var batch = due.slice(0, Math.max(5, c.group + 2));
+    var stage = h('div', { class: 'stage' }), stats = { total: 0, indep: 0 }, learned = 0;
+    append(main, h('div', { class: 'now' }, h('div', { style: 'flex:1' }, h('div', { class: 'lbl' }, '☑ 現在要做什麼'),
+      h('div', { class: 'txt' }, '把之前答錯的題目再做一次（這次 ' + batch.length + ' 題，還有 ' + (due.length - batch.length) + ' 題）。'))), stage);
+    runQuiz(stage, batch.map(itemFromSnap), {
+      cfg: c,
+      record: function (indep) { stats.total++; if (indep) stats.indep++; },
+      result: function (it, indep) {
+        var list = mistakes(), k = list.findIndex(function (x) { return x.id === it._mk; });
+        if (k < 0) return;
+        var m = list[k];
+        if (indep) {
+          m.box++;
+          if (m.box >= BOX_DAYS.length) { list.splice(k, 1); learned++; }
+          else m.due = Date.now() + BOX_DAYS[m.box] * DAY - 3600000;   // 提早一小時，隔天上課就會出現
+        } else { m.box = 0; m.due = Date.now(); m.n++; }
+        m.last = today(); save();
+      },
+      next: function () {
+        var stars = stats.total && stats.indep / stats.total >= 0.9 ? 3 : stats.indep / stats.total >= 0.6 ? 2 : 1;
+        celebrate(stars, stats, function (overlay) {
+          var acts = h('div', { class: 'acts' });
+          if (learned) append(acts, h('p', { class: 'muted', style: 'margin:0' }, '🏅 有 ' + learned + ' 題已經學會了，不會再出現。'));
+          if (dueMistakes(lid).length) append(acts, btnTo('🔁 再複習下一批', 'btn-primary', function () { overlay.remove(); renderReview(lid); }));
+          append(acts, btnTo(lid ? '🏠 回到本課' : '🏠 回首頁', 'btn-ghost', function () { overlay.remove(); location.hash = lid ? '#/lesson/' + lid : '#/'; }));
+          return acts;
+        });
+      }
+    });
+  }
+
+  // ════════════════════════════════════════════════
+  //  單課小考：從各站的選擇題各抽幾題，混在一起考（像定期評量）。
+  //  沒有提示按鈕、答錯一次就標出正確答案；考完看分數和各站答對率，答錯的題目自動放進錯題複習。
+  // ════════════════════════════════════════════════
+  function collectQuiz(L, c) {
+    var bank = {};
+    MODULE_ORDER.forEach(function (mid) {
+      var M = MODULES[mid], got = [];
+      CAPTURE = got;
+      try {
+        M.units(L, c).forEach(function (u) {
+          M.steps(L, u, c).forEach(function (st) { if (st.kind === 'quiz') st.run(h('div'), { cfg: c, record: function () { }, next: function () { } }); });
+        });
+      } catch (e) { /* 這一站收題失敗就略過 */ }
+      CAPTURE = null;
+      // 同一題（答案＋題目朗讀）只留一個
+      var seen = {};
+      got = got.filter(function (it) { var k = it.options[0] + '|' + (it.say || ''); if (seen[k]) return false; seen[k] = 1; return true; });
+      if (got.length) bank[mid] = got.map(function (it) { it._mid = mid; return it; });
+    });
+    return bank;
+  }
+  function renderTest(lid) {
+    var L = LESSONS[lid], base = cfg();
+    var c = Object.assign({}, base, { hint: false, wrongLimit: 1 });   // 考試：沒有提示，答錯一次就標出答案
+    var main = shell([{ text: '首頁', href: '#/' }, { text: '第 ' + L.no + ' 課', href: '#/lesson/' + lid }, { text: '單課小考' }], 'var(--c-test)');
+    var bank = collectQuiz(L, c), mids = Object.keys(bank);
+    var target = { 1: 8, 2: 12, 3: 15 }[c.level] || 12;
+    // 各站輪流抽，盡量每站都有
+    var pools = {}; mids.forEach(function (m) { pools[m] = shuffle(bank[m]); });
+    var picked = [];
+    while (picked.length < target && mids.some(function (m) { return pools[m].length; })) {
+      shuffle(mids).forEach(function (m) { if (picked.length < target && pools[m].length) picked.push(pools[m].pop()); });
+    }
+    var intro = h('div', { class: 'card', style: 'text-align:center' },
+      h('div', { style: 'font-size:56px' }, '📝'),
+      h('div', { class: 'row', style: 'justify-content:center' }, h('h2', {}, '第 ' + L.no + ' 課 單課小考'), sayBtn('單課小考。一共' + picked.length + '題。這次沒有提示，答錯的話會告訴你正確答案。')),
+      h('p', { class: 'muted' }, '一共 ' + picked.length + ' 題，題目從各個練習站抽出來。', h('br'), '這次沒有提示；答錯會標出正確答案，考完會放進錯題複習。'));
+    append(main, intro, h('div', { style: 'margin-top:16px' }, nextBtn('開始考試 →', start)));
+    function start() {
+      main.innerHTML = '';
+      var stage = h('div', { class: 'stage' }), stats = { total: 0, indep: 0 }, per = {};
+      append(main, h('div', { class: 'task-head' }, h('div', { class: 'task-title' }, h('span', { class: 'icon' }, '📝'), h('h2', { style: 'flex:1' }, '第 ' + L.no + ' 課 單課小考'))), stage);
+      runQuiz(stage, picked, {
+        cfg: c,
+        record: function (indep) { stats.total++; if (indep) stats.indep++; },
+        result: function (it, indep, el) {
+          var p = per[it._mid] = per[it._mid] || { n: 0, ok: 0 }; p.n++; if (indep) p.ok++;
+          if (!indep) addMistake(lid, it._mid, it, el);
+        },
+        next: function () {
+          var score = stats.total ? Math.round(stats.indep / stats.total * 100) : 0;
+          var pr = state.progress; pr[lid] = pr[lid] || {};
+          pr[lid].tests = (pr[lid].tests || []).concat([{ d: today(), score: score, n: stats.total, lv: c.level, per: per }]).slice(-20);
+          save();
+          var stars = score >= 90 ? 3 : score >= 60 ? 2 : 1;
+          celebrate(stars, stats, function (overlay) {
+            var acts = h('div', { class: 'acts' });
+            var tb = h('tbody');
+            mids.filter(function (m) { return per[m]; }).forEach(function (m) {
+              append(tb, h('tr', {}, h('td', {}, MODULES[m].icon + ' ' + MODULES[m].name), h('td', {}, per[m].ok + '／' + per[m].n)));
+            });
+            append(acts, h('div', { class: 'test-score' }, h('b', {}, score + ' 分')),
+              h('table', { class: 'records' }, h('thead', {}, h('tr', {}, h('th', {}, '練習站'), h('th', {}, '答對'))), tb));
+            if (stats.indep < stats.total) append(acts, btnTo('🔁 馬上複習答錯的題目', 'btn-primary', function () { overlay.remove(); location.hash = '#/review/' + lid; }));
+            append(acts, btnTo('🏠 回到本課', 'btn-ghost', function () { overlay.remove(); location.hash = '#/lesson/' + lid; }));
+            return acts;
+          });
+        }
+      });
+    }
+  }
 
   function celebrate(stars, stats, actsFn) {
     sfx.win();
@@ -1596,12 +1794,35 @@
           h('p', { class: 'muted', style: 'margin:0 0 8px' }, '課文點讀、朗讀挑戰需要教室密碼。這台 iPad 目前' + (unlocked ? '已解鎖。' : '尚未解鎖。')), lockBtn));
       }
       append(body, h('section', {}, h('h3', {}, '學習紀錄'), recordsTable()));
+      append(body, h('section', {}, h('h3', {}, '單課小考成績'), testList()));
       append(body, h('section', {}, h('h3', {}, '學生造的句子'), madeList()));
       var reset = h('button', { class: 'btn btn-ghost danger', type: 'button', style: 'margin-top:16px' }, '清除這台 iPad 的學習紀錄');
-      reset.addEventListener('click', function () { if (window.confirm('確定要清除全部學習紀錄嗎？這個動作無法復原。')) { state.progress = {}; save(); draw(); } });
+      reset.addEventListener('click', function () { if (window.confirm('確定要清除全部學習紀錄嗎？（含錯題、小考成績、造的句子）這個動作無法復原。')) { state.progress = {}; state.mistakes = []; save(); draw(); } });
       append(body, reset);
     }
     draw();
+  }
+  // 老師設定：單課小考的成績（每課最近幾次）與錯題數
+  function testList() {
+    var tb = h('tbody'), any = false;
+    Object.keys(LESSONS).sort().forEach(function (lid) {
+      var t = (state.progress[lid] && state.progress[lid].tests) || [];
+      var mk = mistakes().filter(function (m) { return m.lid === lid; }).length;
+      if (!t.length && !mk) return;
+      any = true;
+      var weak = '';
+      var lastT = t[t.length - 1];
+      if (lastT && lastT.per) {
+        weak = Object.keys(lastT.per).filter(function (m) { var p = lastT.per[m]; return p.n && p.ok / p.n < 0.6; })
+          .map(function (m) { return MODULES[m] ? MODULES[m].name : m; }).join('、');
+      }
+      append(tb, h('tr', {}, h('td', {}, '第' + parseInt(lid, 10) + '課'),
+        h('td', {}, t.slice(-3).map(function (x) { return x.d + ' ' + x.score + '分（等級' + x.lv + '）'; }).join('、') || '—'),
+        h('td', {}, weak || '—'), h('td', {}, mk ? mk + ' 題' : '—')));
+    });
+    if (!any) return h('p', { class: 'muted', style: 'margin:0' }, '還沒有小考或錯題紀錄。');
+    return h('div', { style: 'overflow-x:auto' }, h('table', { class: 'records' },
+      h('thead', {}, h('tr', {}, h('th', {}, '課次'), h('th', {}, '最近小考'), h('th', {}, '要加強（答對不到 6 成）'), h('th', {}, '錯題練習中'))), tb));
   }
   // 老師設定：學生在「句型練習 → 自己造句」寫的句子（新的在上面）
   function madeList() {
@@ -1975,6 +2196,8 @@
     if (p[0] === 'read' && READINGS[p[1]]) return renderReader(p[1]);
     if (p[0] === 'score' && READINGS[p[1]]) return renderScore(p[1]);
     if ((p[0] === 'read' || p[0] === 'score') && hasReading(p[1])) return renderUnlock(p[0], p[1]);
+    if (p[0] === 'review') return renderReview(LESSONS[p[1]] ? p[1] : null);
+    if (p[0] === 'test' && LESSONS[p[1]]) return renderTest(p[1]);
     if (p[0] === 'lesson' && LESSONS[p[1]]) {
       if (p[2] === 'm' && MODULES[p[3]]) return renderModule(p[1], p[3], p[4] != null ? parseInt(p[4], 10) : null);
       return renderLesson(p[1]);

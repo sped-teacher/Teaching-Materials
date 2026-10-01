@@ -24,6 +24,8 @@
   --c-reading: #B04A6A;
   --c-lookalikes: #6A5AB0;
   --c-idioms: #A8553A;
+  --c-review: #3A8C8C;
+  --c-test: #4B5BA6;
   --c-listening: #2C7F8C;
   --c-rhetoric: #7A5C2E;
   --c-zhuyinGame: #85A5A1;
@@ -478,3 +480,11 @@ h3 { font-size: 21px; }
 .mic-btn { width: 54px; height: 54px; font-size: 24px; }
 .made-card { margin-top: 10px; text-align: center; }
 .made-text { font-family: var(--kai); font-size: 28px; line-height: 1.7; }
+
+/* 錯題複習、單課小考 */
+.review-banner {
+  display: flex; align-items: center; gap: 10px; margin: 0 0 16px; padding: 14px 18px; border-radius: 16px;
+  background: var(--card); border: 2px solid var(--c-review); border-left: 10px solid var(--c-review);
+  color: var(--ink); text-decoration: none; font-size: 20px; font-weight: 700;
+}
+.test-score { text-align: center; font-size: 44px; color: var(--c-test); margin: 4px 0 8px; }
