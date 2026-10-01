@@ -275,10 +275,15 @@
       });
       if (it.long) btns.forEach(function (b) { b.style.width = '100%'; });
 
+      // 提示可以分層（hints：[{ text, on }]，由少到多）：每按一次 💡 或答錯一次，就往下一層
+      var tiers = it.hints || (it.hint ? [{ text: it.hint, on: it.onHint }] : []), tier = 0;
       function showHint() {
-        if (!it.hint || hintSlot.firstChild) return false;
-        append(hintSlot, h('div', { class: 'hintbox' }, '💡', h('span', { style: 'flex:1' }, it.hint), sayBtn(it.hint)));
-        if (c.autoRead) speak(it.hint);
+        if (tier >= tiers.length) return false;
+        var t = tiers[tier++];
+        if (t.on) t.on();  // 例如：在課文上畫出關鍵句
+        hintSlot.innerHTML = '';
+        append(hintSlot, h('div', { class: 'hintbox' }, '💡', h('span', { style: 'flex:1' }, t.text), sayBtn(t.text)));
+        if (c.autoRead || it.hints) speak(t.text);
         return true;
       }
       function reveal() { btns[opts.indexOf(answer)].classList.add('reveal'); showHint(); }
@@ -291,6 +296,7 @@
           var indep = wrong === 0 && !hinted;
           sfx.right(); api.record(indep);
           if (api.result) api.result(it, indep, promptEl);
+          if (it.onRight) it.onRight();
           append(fb, h('div', { class: 'praise' }, pick(PRAISE)));
           if (it.after) speak(it.after);
           append(fb, nextBtn(i < items.length - 1 ? '下一題 →' : '完成 →', function () { i++; if (i < items.length) show(); else api.next(); }));
@@ -355,10 +361,17 @@
         if (e.chip.disabled) return;
         if (e.idx === pos) {
           place(e); pos++; localMiss = 0; sfx.tap();
+          askBox.innerHTML = '';  // 排好了，上一題的引導問題拿掉
           if (pos === entries.length) done();
         } else {
           totalMiss++; localMiss++;
           e.chip.classList.remove('shake'); void e.chip.offsetWidth; e.chip.classList.add('shake'); sfx.wrong();
+          // 排錯時，用課文地圖說明為什麼還不是這張
+          if (it.parts) {
+            var want = it.parts[pos], got = it.parts[e.idx];
+            say2(got.at > want.at ? '這件事在「' + got.tag + '」，前面還有「' + want.tag + '」的事喔。'
+              : '這件也在「' + got.tag + '」裡。想一想，哪一件要先發生？');
+          }
           if (localMiss >= c.wrongLimit) entries[pos].chip.classList.add('reveal');
         }
       }
@@ -371,9 +384,41 @@
       var prefill = Math.min(it.prefill || 0, entries.length - 1);
       entries.slice(0, prefill).forEach(function (e) { place(e); pos++; });
       shuffle(entries.slice(prefill)).forEach(function (e) { pool.appendChild(e.wrap); });
+      // 💡 提示（由少到多，每課通用）：有 parts（每張在課文地圖的哪一格）時
+      //   第 1 次：下一件在課文地圖的哪一格、第幾段（回課文找）
+      //   第 2 次：因果連結（剛排好的那件事，接下來因為這樣發生什麼）
+      //   第 3 次：亮出下一張（示範）
+      var tools = null, askBox = h('div'), hintAt = -1, hintN = 0;
+      function say2(msg) {
+        askBox.innerHTML = '';
+        append(askBox, h('div', { class: 'hintbox' }, '💡', h('span', { style: 'flex:1' }, msg), sayBtn(msg)));
+        speak(msg);
+      }
+      if (c.hint) {
+        var hb = h('button', { class: 'btn btn-ghost', type: 'button' }, '💡 提示');
+        hb.addEventListener('click', function () {
+          if (pos >= entries.length) return;
+          totalMiss++;  // 用了提示就不算「獨立答對」
+          if (hintAt !== pos) { hintAt = pos; hintN = 0; }
+          hintN++;
+          var p = it.parts && it.parts[pos];
+          if (p && hintN === 1) {
+            if (it.onPart) it.onPart(p.at);  // 課文地圖上那一格亮起來
+            say2('看看課文地圖亮起來的那一格：下一件事在「' + p.tag + '」（' + p.range + '）。點它可以看課文。');
+            return;
+          }
+          if (p && hintN === 2) {
+            say2(pos > 0 ? '剛剛排好的是：「' + entries[pos - 1].t.replace(/。$/, '') + '」。因為這樣，接下來發生了什麼事？' : '故事是因為什麼事開始的？先找「原因」。');
+            return;
+          }
+          entries[pos].chip.classList.add('reveal');
+          if (p) say2('看發亮的那一張，就是下一件事。讀讀看，想想為什麼是它。');
+        });
+        tools = h('div', { class: 'tools' }, hb);
+      }
       append(stage, qbar(i, items.length),
         h('p', { class: 'muted', style: 'margin:0 0 8px' }, vertical ? '依照發生的先後，一張一張點下去。' : '依照正確的順序，一個一個點下去。'),
-        slots, pool, fb);
+        slots, pool, askBox, tools, fb);
     }
     show();
   }
@@ -935,25 +980,147 @@
     },
 
     reading: {
-      name: '讀懂課文', icon: '📖', desc: '事件排順序、抓重點', core: true,
+      name: '讀懂課文', icon: '📖', core: true,
+      // 說明依各課文體不同（R.task：這一課的主要活動）；還沒有課文地圖的課標「待更新」
+      desc: function (L) {
+        var R = L.reading || {}, U = R.unit || '段';
+        if (!R.map) return '排順序、回答問題';
+        return '看課文地圖、一' + U + '一' + U + '讀、' + (R.task || (R.decode ? '詩句解碼' : R.sort ? '分類' : '排順序')) + '、回答問題';
+      },
+      pending: function (L) { return !(L.reading && L.reading.map); },
       units: function () { return [{ key: 'reading', items: [] }]; },
       steps: function (L, unit, c) {
-        var R = L.reading, idx = R.eventsByLevel[c.level] || R.eventsByLevel[3];
+        var R = L.reading, idx = R.eventsByLevel[c.level] || R.eventsByLevel[3], U = R.unit || '段';
         var nq = { 1: 3, 2: 4, 3: 5 }[c.level] || 5;
-        return [
-          step('排順序：課文的事情，哪一件先發生？', 'quiz', function (stage, api) {
+        var guided = [];
+        // ── 帶著讀：先看課文地圖（示範），再一段一段讀、選出這段在說什麼（引導），最後才自己排順序、回答問題 ──
+        if (R.map) guided.push(step('看課文地圖：這一課分成幾個部分？點每一格聽一聽。', 'cards', function (stage, api) {
+          var seen = 0, total = R.map.length;
+          var go = nextBtn('我看懂了，開始一' + U + '一' + U + '讀 →', api.next);
+          go.disabled = true;
+          var boxes = R.map.map(function (m, k) {
+            var range = rangeText(R, m.paras);
+            var box = h('div', { class: 'rmap-box', role: 'button', tabindex: '0' },
+              h('div', { class: 'rmap-head' }, h('span', { class: 'rmap-tag' }, m.tag), h('b', {}, m.title), h('span', { class: 'rmap-range' }, range)),
+              h('div', { class: 'rmap-sum' }, m.sum));
+            var open = function () {
+              speak(m.tag + '。' + m.title + '。' + m.sum);
+              if (!box.classList.contains('seen')) { box.classList.add('seen'); seen++; if (seen >= total) go.disabled = false; }
+            };
+            box.addEventListener('click', open);
+            box.addEventListener('keydown', function (e) { if (e.key === 'Enter') open(); });
+            return box;
+          });
+          append(stage, R.mapNote ? h('div', { class: 'note', style: 'text-align:left;margin-bottom:12px' }, R.mapNote) : null,
+            h('div', { class: 'rmap' }, mapRows(R.map, boxes, 'rmap')), h('div', { style: 'margin-top:14px' }, go));
+        }));
+        if (R.paras) guided.push(step('一' + U + '一' + U + '讀：讀完這一' + U + '，選出它在說什麼。', 'quiz', function (stage, api) {
+          var sums = R.paras.map(function (p) { return p.sum; });
+          runQuiz(stage, R.paras.map(function (p) {
+            var el = null;
+            return {
+              long: true, options: [p.sum].concat(shuffle(sums.filter(function (s) { return s !== p.sum; }))),
+              // 提示：直接在課文上用螢光筆畫出關鍵句（等級 1 一開始就畫好）
+              hint: '看課文裡用螢光筆畫起來的句子。', after: p.sum,
+              onHint: function () { if (el) el.classList.add('show-key'); },
+              prompt: function () { el = readingParaEl(L.id, p, c.level === 1); return el; }
+            };
+          }), api);
+        }));
+        var theme = R.theme ? [step('想一想主旨：作者想告訴我們什麼？', 'quiz', function (stage, api) {
+          runQuiz(stage, [{
+            say: '作者想告訴我們什麼？', long: true, options: R.theme.options, hint: R.theme.hint, after: R.theme.options[0],
+            prompt: function () { return h('div', { class: 'sentence' }, '讀完這一課，作者想告訴我們什麼道理？'); }
+          }], api);
+        })] : [];
+        // 分類（取代排順序）：卡片屬於哪一類；下面的分類表會一格一格填滿
+        //   提示由少到多：卡片裡的關鍵詞畫線＋想一想（cd.think 或 S.hint1）→ 課文地圖那一格亮起來、課文上畫出證據（S.hint2）→ 拿掉錯的選項
+        //   S.hint1、S.hint2 裡的 {kw}、{range} 會換成這張卡片的關鍵詞和段落
+        var sortStep = R.sort && R.map ? step('分類：' + R.sort.ask, 'quiz', function (stage, api) {
+          var S = R.sort, ids = S.byLevel[c.level] || S.byLevel[3];
+          // 只放這個等級的卡片會用到的類別（等級 1 可能只有兩類）
+          var used = S.groups.filter(function (g, k) { return ids.some(function (i) { return S.cards[i].g === k; }); });
+          var names = used.map(function (g) { return g.name; });
+          var isLong = names.some(function (n) { return n.length > 4; });
+          var mini = readingMiniMap(L.id, R), inner = h('div');
+          var cols = S.groups.map(function (g) {
+            return h('div', { class: 'sort-col', hidden: used.indexOf(g) < 0 }, h('h4', {}, g.name, h('small', {}, g.sub || R.map[g.at].title.split('：').pop())));
+          });
+          append(stage, mini.el, inner, h('div', { class: 'sort-board' }, cols));
+          runQuiz(inner, shuffle(ids.map(function (k) { return S.cards[k]; })).map(function (cd) {
+            var g = S.groups[cd.g], ps = R.map[g.at].paras, kwEl = null;
+            var range = rangeText(R, ps);
+            var fill = function (t) { return t.replace(/\{kw\}/g, cd.kw).replace(/\{range\}/g, range); };
+            return {
+              say: cd.t, options: [g.name], fixed: names, long: isLong, after: cd.t,
+              hints: [
+                { text: fill(cd.think || S.hint1 || '先看卡片裡畫線的詞「{kw}」。課文哪一個部分有說到它？可以點上面的課文地圖找找看。'), on: function () { if (kwEl) kwEl.classList.add('on'); } },
+                { text: fill(S.hint2 || '看課文地圖亮起來的那一格（{range}），螢光筆畫的地方說到了「{kw}」。這一格在說什麼？'), on: function () { mini.light(g.at, cd.keys); } }
+              ],
+              onRight: function () { cols[cd.g].appendChild(h('div', { class: 'sort-card' }, cd.t)); },
+              prompt: function () {
+                var at = cd.t.indexOf(cd.kw);
+                kwEl = h('span', { class: 'skw' + (c.level === 1 ? ' on' : '') }, cd.kw);
+                return h('div', {}, h('div', { class: 'sub' }, S.ask), h('div', { class: 'sentence' }, cd.t.slice(0, at), kwEl, cd.t.slice(at + cd.kw.length)));
+              }
+            };
+          }), api);
+        }) : null;
+        // 詩句解碼（詩用，取代排順序）：詩裡的說法，真實世界裡是什麼？
+        //   提示由少到多：想相同點（它像什麼） → 上下文線索畫底線 → 拿掉錯的選項
+        var decodeStep = R.decode ? step('詩句解碼：' + R.decode.ask, 'quiz', function (stage, api) {
+          var D = R.decode, ids = D.byLevel[c.level] || D.byLevel[3];
+          var means = D.items.map(function (d) { return d.meaning; });
+          runQuiz(stage, ids.map(function (k) {
+            var d = D.items[k], pz = (R.paras || []).find(function (x) { return x.no === d.para; }), el = null;
+            return {
+              say: '詩裡說「' + d.kw + '」，其實是什麼？', long: true, after: d.meaning,
+              options: [d.meaning].concat(means.filter(function (m) { return m !== d.meaning; })),
+              hints: [
+                { text: d.like },
+                { text: '再讀讀畫底線的詩句：「' + d.ctx + '」。它是在什麼時候出現的？', on: function () { if (el) el.classList.add('show-ctx'); } }
+              ],
+              prompt: function () {
+                el = h('div', { class: 'show-key' + (c.level === 1 ? ' show-ctx' : '') },
+                  pz ? readingParaEl(L.id, { no: d.para, text: pz.text, keys: d.keys, keys2: d.ctxKeys }, true) : null);
+                return h('div', {}, h('div', { class: 'sentence' }, '詩裡說「', h('mark', { class: 'kw-mark' }, d.kw), '」，其實是什麼？'), el);
+              }
+            };
+          }), api);
+        }) : null;
+        return guided.concat([
+          decodeStep || sortStep || step('排順序：課文的事情，哪一件先發生？', 'quiz', function (stage, api) {
             var chips = idx.map(function (k) { return R.events[k]; });
-            runOrder(stage, [{ chips: chips, prefill: c.prefill, vertical: true, say: '' }], api);
+            // 每張卡片屬於課文地圖的哪一格：提示由少到多（地圖哪一格 → 因果 → 示範），排錯時回饋也用它
+            var parts = R.eventParts && R.map ? idx.map(function (k) {
+              var m = R.map[R.eventParts[k]], ps = m.paras;
+              return { at: R.eventParts[k], tag: m.tag, range: rangeText(R, ps) };
+            }) : null;
+            // 畫面上放一份小課文地圖：提示時那一格會亮起來，點一格可以看那幾段課文（回課文找）
+            var mini = R.map ? readingMiniMap(L.id, R) : null, inner = h('div');
+            append(stage, mini && mini.el, inner);
+            runOrder(inner, [{ chips: chips, parts: parts, prefill: c.prefill, vertical: true, say: '', onPart: mini && mini.light }], api);
           }),
           step('想一想：選出正確的答案。', 'quiz', function (stage, api) {
-            runQuiz(stage, R.questions.slice(0, nq).map(function (q) {
+            var mini = R.map ? readingMiniMap(L.id, R) : null, inner = h('div');
+            append(stage, mini && mini.el, inner);
+            runQuiz(inner, R.questions.slice(0, nq).map(function (q) {
+              var pz = q.para && R.paras ? R.paras.find(function (x) { return x.no === q.para; }) : null;
+              var ev = null;
               return {
-                say: q.q, long: true, options: q.options, hint: q.hint, after: q.options[0],
-                prompt: function () { return h('div', { class: 'sentence' }, q.q); }
+                say: q.q, long: true, options: q.options, after: q.options[0],
+                // 有標答案段落：提示時在題目下面打開那一段，用螢光筆畫出答案句
+                hint: pz ? '答案在第 ' + q.para + ' ' + U + '，看螢光筆畫起來的句子。' : q.hint,
+                onHint: pz ? function () { if (ev) { ev.hidden = false; ev.firstChild.classList.add('show-key'); } } : null,
+                prompt: function () {
+                  if (!pz) return h('div', { class: 'sentence' }, q.q);
+                  ev = h('div', { class: 'q-evidence', hidden: true }, readingParaEl(L.id, { no: q.para, text: pz.text, keys: q.keys }, false));
+                  return h('div', {}, h('div', { class: 'sentence' }, q.q), ev);
+                }
               };
             }), api);
           })
-        ];
+        ]).concat(theme);
       }
     },
 
@@ -1471,13 +1638,14 @@
     var nextCore = core.find(function (m) { return !st[m].complete; });
     var station = function (mid, locked) {
       var M = MODULES[mid], s = st[mid];
+      var desc = typeof M.desc === 'function' ? M.desc(L) : M.desc, todo = M.pending && M.pending(L);
       var label = s.complete ? '再玩一次' : s.done ? '繼續' : '開始';
       var go = h('button', { class: 'btn go', type: 'button', disabled: locked }, locked ? '🔒 先完成上一站' : label + ' →');
       go.addEventListener('click', function () { location.hash = '#/lesson/' + lid + '/m/' + mid; });
       return h('div', { class: 'station' + (locked ? ' locked' : ''), style: '--mc:var(--c-' + mid + ')' },
         mid === nextCore && !locked ? h('span', { class: 'badge-next' }, '下一步') : null,
-        h('div', { class: 'row' }, h('div', { class: 'icon' }, M.icon), h('h3', { style: 'flex:1' }, M.name), sayBtn(M.name + '，' + M.desc)),
-        h('div', { class: 'desc' }, M.desc),
+        h('div', { class: 'row' }, h('div', { class: 'icon' }, M.icon), h('h3', { style: 'flex:1' }, M.name, todo ? h('span', { class: 'badge-todo' }, '待更新') : null), sayBtn(M.name + '，' + desc)),
+        h('div', { class: 'desc' }, desc),
         h('div', { class: 'status' }, starsEl(s.stars), h('span', {}, s.complete ? '已完成' : '第 ' + s.done + '／' + s.total + ' 組')),
         go);
     };
@@ -1995,6 +2163,104 @@
   //  資料由 tools/make_reader.py 產生（注音查教育部辭典，老師校正寫在 tools/texts/fixes.json）
   // ════════════════════════════════════════════════
   var READINGS = window.READINGS || {};
+
+  // 讀懂課文：畫面上方的小課文地圖。點一格會展開那一部分的大意和課文；light(i) 讓第 i 格亮起來並展開
+  function readingMiniMap(lid, R) {
+    var open = -1, lightKeys = null, detail = h('div', { class: 'mmap-detail', hidden: true });
+    var boxes = R.map.map(function (m, k) {
+      var b = h('button', { type: 'button', class: 'mmap-box', 'aria-label': m.tag + '：' + m.title }, h('b', {}, m.tag), h('span', {}, m.title));
+      b.addEventListener('click', function () { toggle(k); });
+      return b;
+    });
+    function toggle(k, force) {
+      if (open === k && !force) { open = -1; detail.hidden = true; boxes[k].classList.remove('on'); return; }
+      boxes.forEach(function (b, j) { b.classList.toggle('on', j === k); });
+      open = k;
+      var m = R.map[k], ps = m.paras, text = [];
+      ps.forEach(function (no) { var x = (R.paras || []).find(function (pp) { return pp.no === no; }); if (x) text = text.concat(x.text); });
+      var range = ps.length > 1 ? ps[0] + '～' + ps[ps.length - 1] : String(ps[0]);
+      detail.innerHTML = '';
+      append(detail, h('div', { class: 'mmap-sum' }, h('b', {}, m.tag + '：'), m.sum), text.length ? readingParaEl(lid, { no: range, text: text, keys: lightKeys }, !!lightKeys) : null);
+      detail.hidden = false;
+    }
+    var el = h('div', { class: 'mmap' },
+      h('div', { class: 'mmap-label' }, '🗺️ 課文地圖（點一格可以看那幾' + (R.unit || '段') + '課文）'),
+      h('div', { class: 'mmap-row' + (R.map.length > 5 ? ' wrap' : '') }, mapRows(R.map, boxes, 'mmap')),
+      detail);
+    return {
+      el: el,
+      // keys：要用螢光筆畫出的證據（分類時用）
+      light: function (k, keys) {
+        boxes.forEach(function (b, j) { b.classList.toggle('lit', j === k); });
+        lightKeys = keys || null;
+        toggle(k, true);
+        lightKeys = null;
+      }
+    };
+  }
+
+  // 「第 2～3 段」（詩用「節」）
+  function rangeText(R, ps) {
+    var u = R.unit || '段';
+    return ps.length > 1 ? '第 ' + ps[0] + '～' + ps[ps.length - 1] + ' ' + u : '第 ' + ps[0] + ' ' + u;
+  }
+
+  // 課文地圖的排法：一般一格接一格（箭頭）；branch 的格子（說明文的「分說」）並排成一組
+  function mapRows(map, boxes, cls) {
+    var out = [], grp = null;
+    map.forEach(function (m, k) {
+      if (m.branch) {
+        if (!grp) { grp = h('div', { class: cls + '-branch' }); if (out.length) out.push(h('span', { class: cls + '-arrow', 'aria-hidden': 'true' }, cls === 'rmap' ? '↓' : '→')); out.push(grp); }
+        grp.appendChild(boxes[k]);
+        return;
+      }
+      grp = null;
+      if (out.length) out.push(h('span', { class: cls + '-arrow', 'aria-hidden': 'true' }, cls === 'rmap' ? '↓' : '→'));
+      out.push(boxes[k]);
+    });
+    return out;
+  }
+
+  // 讀懂課文「一段一段讀」：顯示課文第 p.no 段（p.text 是課文段落的索引）；
+  // 關鍵句先標好 rkey，外框加上 show-key 才會出現螢光筆（等級 1 一開始就出現，其他等級按提示或答錯才出現）。
+  // 課文還沒解鎖時，只顯示段落編號和解鎖提示。
+  function readingParaEl(lid, p, showKey) {
+    var R = READINGS[lid], LR = (LESSONS[lid] && LESSONS[lid].reading) || {};
+    var head = h('div', { class: 'sub', style: 'margin:0 0 6px' }, '第 ' + p.no + ' ' + (LR.unit || '段'));
+    if (!R) {
+      return h('div', {}, head, h('div', { class: 'note', style: 'text-align:left' }, '🔒 課文還沒解鎖。請老師到「📖 課文點讀」輸入教室密碼，這裡就會出現課文。'));
+    }
+    var all = [];
+    R.sections.forEach(function (sec) { sec.paras.forEach(function (pa) { all.push(pa); }); });
+    var box = h('div', { class: 'rpara' + (LR.poem ? ' poem' : '') }), say = '';
+    p.text.forEach(function (ti) {
+      var pa = all[ti] || [], full = pa.map(function (t) { return t[0]; }).join('');
+      // 要畫螢光筆的字（keys 可以有好幾句，對應正確答案裡的每個重點）
+      // keys2：上下文線索（畫底線，外框加上 show-ctx 才出現）
+      var mark = {}, mark2 = {}, at = 0;
+      (p.keys || (p.key ? [p.key] : [])).forEach(function (k) {
+        var ks = full.indexOf(k);
+        for (var x = ks; ks >= 0 && x < ks + k.length; x++) mark[x] = true;
+      });
+      (p.keys2 || []).forEach(function (k) {
+        var ks = full.indexOf(k);
+        for (var x = ks; ks >= 0 && x < ks + k.length; x++) mark2[x] = true;
+      });
+      var line = h('p', { class: 'reader-p' });
+      pa.forEach(function (tok) {
+        var w = tok[0], zs = tok[1] ? tok[1].split(' ') : [];
+        Array.from(w).forEach(function (ch, i) {
+          var el = zs[i] ? h('span', { class: 'rc' }, withZy(ch, zs[i])) : h('span', { class: 'rc punct' }, ch);
+          if (mark[at]) el.classList.add('rkey');
+          if (mark2[at]) el.classList.add('rkey2');
+          line.appendChild(el); at++;
+        });
+        say += tok[2] && tok[2].length === w.length ? tok[2] : w;
+      });
+      box.appendChild(line);
+    });
+    return h('div', { class: showKey ? 'show-key' : '' }, h('div', { class: 'row', style: 'justify-content:center;gap:8px' }, head, sayBtn(say, '第 ' + p.no + ' 段')), box);
+  }
 
   // ── 教室密碼：課文全文加密存放（data/reading.enc.js），輸入密碼後才在這台裝置解開 ──
   // 解開後的金鑰記在這台裝置（localStorage），之後不用再輸入；老師設定頁可以「鎖上」。

@@ -512,3 +512,53 @@ h3 { font-size: 21px; }
 .teacher .fold-body details.fold > summary { font-size: 16px; padding: 10px 12px; }
 .records td.nw { white-space: nowrap; }
 .made-tbl td { vertical-align: top; }
+
+/* ── 讀懂課文：課文地圖、一段一段讀 ── */
+.rmap { display: flex; flex-direction: column; align-items: stretch; gap: 4px; max-width: 640px; margin: 0 auto; }
+.rmap-box { background: var(--card); border: 2px solid var(--line); border-radius: 16px; padding: 12px 16px; cursor: pointer; transition: border-color .2s, background .2s; }
+.rmap-box.seen { border-color: var(--c-reading); background: #FBF2F5; }
+.rmap-head { display: flex; flex-wrap: wrap; align-items: center; gap: 8px; font-size: 20px; }
+.rmap-tag { background: var(--c-reading); color: #fff; border-radius: 999px; padding: 2px 12px; font-size: 16px; font-weight: 700; }
+.rmap-range { margin-left: auto; color: var(--muted); font-size: 15px; }
+.rmap-sum { margin-top: 6px; font-size: 19px; line-height: 1.7; }
+.rmap-arrow { text-align: center; color: var(--muted); font-size: 22px; line-height: 1; }
+.rpara { text-align: left; background: var(--soft); border: 1px solid var(--line); border-radius: 14px; padding: 10px 14px; max-height: 46vh; overflow-y: auto; }
+.rpara .reader-p { font-family: var(--kai); font-size: 26px; line-height: 2; margin: 4px 0; text-indent: 2em; }
+.rpara .rc { text-indent: 0; }
+.show-key .rpara .rkey { background: #FFF07A; box-shadow: 0 0 0 2px #FFF07A; border-radius: 3px; transition: background .4s; }
+/* 讀懂課文：畫面上方的小課文地圖 */
+.mmap { background: var(--card); border: 1px solid var(--line); border-radius: 14px; padding: 8px 10px; margin-bottom: 12px; }
+.mmap-label { font-size: 15px; color: var(--muted); margin-bottom: 6px; }
+.mmap-row { display: flex; flex-wrap: wrap; align-items: center; gap: 4px; }
+.mmap-arrow { color: var(--muted); }
+.mmap-box { display: inline-flex; flex-direction: column; align-items: flex-start; gap: 0; padding: 4px 10px; border: 2px solid var(--line); border-radius: 12px; background: var(--soft); font-size: 15px; line-height: 1.4; text-align: left; }
+.mmap-box b { color: var(--c-reading); font-size: 14px; }
+.mmap-box.on { border-color: var(--c-reading); background: #FBF2F5; }
+.mmap-box.lit { box-shadow: 0 0 0 3px #FFF07A; border-color: #E8C400; }
+.mmap-detail { margin-top: 8px; }
+.mmap-sum { font-size: 17px; line-height: 1.7; margin-bottom: 6px; }
+.mmap-detail .rpara { max-height: 32vh; }
+.q-evidence { margin-top: 10px; }
+
+/* 說明文「總—分—總」：分說的格子並排 */
+.rmap-branch { display: grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap: 8px; }
+.rmap-branch .rmap-range { margin-left: 0; width: 100%; }
+.mmap-branch { display: flex; flex-direction: column; gap: 4px; }
+
+/* 分類：卡片裡的關鍵詞（提示時畫線）、分類表 */
+.skw.on { border-bottom: 4px solid var(--c-reading); background: #FFF07A; }
+.sort-board { display: grid; grid-template-columns: repeat(auto-fit, minmax(160px, 1fr)); gap: 8px; margin-top: 16px; }
+.sort-col { border: 2px dashed var(--line); border-radius: 14px; padding: 8px; min-height: 70px; }
+.sort-col h4 { margin: 0 0 6px; font-size: 18px; text-align: center; }
+.sort-col h4 small { display: block; color: var(--muted); font-weight: 400; font-size: 14px; }
+.sort-card { background: #EAF6EC; border: 2px solid #5BAE6A; border-radius: 10px; padding: 6px 8px; font-size: 16px; line-height: 1.5; margin-top: 6px; }
+
+/* 詩：一行一行排，不縮排 */
+.rpara.poem .reader-p { text-indent: 0; margin: 0; line-height: 1.9; }
+/* 上下文線索：畫底線（show-ctx 才出現） */
+.show-ctx .rpara .rkey2 { border-bottom: 4px solid var(--c-reading); }
+.kw-mark { background: #FFF07A; padding: 0 4px; border-radius: 4px; }
+.mmap-row.wrap { row-gap: 6px; }
+
+/* 讀懂課文還沒改成新版的課 */
+.badge-todo { display: inline-block; margin-left: 8px; padding: 1px 10px; border-radius: 999px; background: #EEE; color: #777; font-size: 14px; font-weight: 700; vertical-align: middle; }
