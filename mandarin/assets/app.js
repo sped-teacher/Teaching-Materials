@@ -2174,8 +2174,8 @@
   //  積木顏色全站固定：紅 v＝做什麼、藍 n＝誰／什麼、紫 r＝後來怎樣、綠 a＝樣子、橘 q＝數量
   // ════════════════════════════════════════════════
   var BLK_COLOR = { v: '紅', n: '藍', r: '紫', a: '綠', q: '橘' };
-  var ASK3 = { n: '圖裡有誰？', r: '他們有什麼反應？', v: '用哪一個紅色積木連起來？' };  // 三個問題（通用版）
-  var ASK_ORDER = ['n', 'r', 'v'];  // 想的順序：先看圖找人，再看反應，最後選連接的積木
+  var ASK3 = { n: '圖裡有誰？有什麼？', r: '他們有什麼反應？', a: '它是什麼樣子？', v: '用哪一個紅色積木連起來？', q: '有多少？' };  // 問自己的問題（通用版）
+  var ASK_ORDER = ['n', 'r', 'a', 'v', 'q'];  // 想的順序：先看圖找人／東西，再看反應、樣子，最後選連接的積木
   function blockSteps(L, p, c) {
     var B = p.blocks, bank = p.bank, lv = c.level, scenes = p.scenes || [];
     var slots = [];  // 要選的格子（不是字串的）
@@ -2246,7 +2246,7 @@
     // 選了和圖不符的詞時要說的話：這個詞自己的說明（p.missWord）→ 這張圖的說明（sc.miss）→ 通用的問句
     var missText = function (sc, k, w) {
       return (p.missWord || {})[w] || (sc.miss || {})[k] ||
-        ((k === 'n' ? '再看一次圖：圖裡有「' + w + '」嗎？' : '再看一次圖：圖裡的人是在「' + w + '」嗎？') + (sc.q && sc.q[k] ? sc.q[k] : ''));
+        (({ n: '再看一次圖：圖裡有「' + w + '」嗎？', a: '再看一次圖：圖裡的東西是「' + w + '」的嗎？' })[k] || '再看一次圖：圖裡的人是在「' + w + '」嗎？') + (sc.q && sc.q[k] ? sc.q[k] : '');
     };
     // 三個問題卡：自己問自己（active：現在在想哪一題；got：已經想好的詞）
     var askCard = function (sc, active, got) {
@@ -2382,7 +2382,9 @@
       var wb = bankEl(), inner = h('div');
       append(stage, wb.el, inner);
       var bases = p.practice.slice();
-      runQuiz(inner, slots.map(function (at, n) {
+      var items = slots.slice();
+      while (items.length < 3) items.push(slots[items.length % slots.length]);
+      runQuiz(inner, items.map(function (at, n) {
         var base = bases[n % bases.length], k = B[at].k, right = base[at];
         var wrongs = [];
         slots.forEach(function (i) { if (B[i].k !== k) bank[B[i].k].forEach(function (x) { if (!x.x) wrongs.push(x.w); }); });
@@ -2399,7 +2401,8 @@
       }), api);
     }));
     else list.push(step('找對的積木：看圖，哪一塊積木放進去最對？', 'quiz', function (stage, api) {
-      var rot = ['r', 'n', 'v'];
+      var rot = ASK_ORDER.filter(function (k) { return slotOf(k) >= 0; });
+      rot = rot.slice(1).concat(rot.slice(0, 1));  // 第一題先空第二塊（例如反應、樣子），比較好想
       runQuiz(stage, scenes.map(function (sc, n) {
         var k = rot[n % rot.length], at = slotOf(k), right = sc.ans[at];
         var wrongs = k === 'v'
