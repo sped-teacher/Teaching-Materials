@@ -2166,11 +2166,11 @@
   var READINGS = window.READINGS || {};
 
   // ════════════════════════════════════════════════
-  //  短語短句「積木」鷹架（p.blocks）：我做 → 我們一起做 → 你做；每組固定 4 步、約 10 分鐘
+  //  短語短句「積木」鷹架（p.blocks）：我做 → 我們一起做 → 你做；每組 3 步、約 8 分鐘
   //  ① 認識積木：老師放聲思考（配圖），最後自己換一塊積木、看見意思跟著變（怎麼選都對）；課本例子配圖
-  //  ② 一起想：看圖，用「三個問題」一塊一塊想（等級 1 一張圖、等級 2 兩張；等級 3 不做）
-  //  ③ 找對的積木：等級 1 看顏色（詞庫）；等級 2、3 看圖，選項同顏色、要想意思
-  //  ④ 看圖自己想：自己選積木造短語（等級 1 一張圖、2、3 兩張；等級 3 只看圖）；做完可以加玩骰子「合理嗎？」
+  //  ② 一起想：看圖，「三個問題」一直在、一題選一塊、選項只有和圖有關的（等級 3 不做）
+  //  ③ 看圖自己想：做的事和 ② 一樣（看圖組出整個短語），只是引導撤掉：問題藏在 💡、整個詞庫、一次組完
+  //     （等級 1 一張圖、2、3 兩張；等級 3 只看圖）；做完可以加玩骰子「合理嗎？」
   //  積木顏色全站固定：紅 v＝做什麼、藍 n＝誰／什麼、紫 r＝後來怎樣、綠 a＝樣子、橘 q＝數量
   // ════════════════════════════════════════════════
   var BLK_COLOR = { v: '紅', n: '藍', r: '紫', a: '綠', q: '橘' };
@@ -2223,20 +2223,6 @@
       var b = h('button', { type: 'button', class: 'bchip' + (lv === 1 ? ' blk-' + k : ' plain') }, x.e && lv < 3 ? h('i', {}, x.e) : null, x.w);
       b.addEventListener('click', function () { onTap(b); });
       return b;
-    };
-    // 詞庫：每種顏色一排；light(k) 讓那一排亮起來（提示用）
-    var bankEl = function () {
-      var cols = {};
-      var el = h('div', { class: 'wbank' }, h('div', { class: 'wbank-title' }, '🧰 詞庫（積木的顏色＝詞的種類）'),
-        slots.map(function (i) {
-          var k = B[i].k;
-          return (cols[k] = h('div', { class: 'wbank-col blk-' + k },
-            h('div', { class: 'wbank-head' }, BLK_COLOR[k] + '色：' + B[i].name),
-            h('div', { class: 'wbank-words' }, bank[k].filter(function (x) { return !x.x; }).map(function (x) {
-              return h('span', { class: 'wbank-w' }, x.e ? h('i', {}, x.e) : null, x.w);
-            }))));
-        }));
-      return { el: el, light: function (k) { Object.keys(cols).forEach(function (kk) { cols[kk].classList.toggle('lit', kk === k); }); } };
     };
     // 情境圖＋說明（等級 3 只看圖，說明要按 🔊 才聽）
     var sceneEl = function (sc, hideText) {
@@ -2320,7 +2306,7 @@
 
     // ② 一起想：看圖，照三個問題一塊一塊選（引導練習）
     if (scenes.length && p.guided && lv < 3) list.push(step('一起想：看圖，問自己三個問題，一塊一塊選積木。', 'quiz', function (stage, api) {
-      var ids = lv === 1 ? p.guided.slice(0, 1) : p.guided, q = 0;
+      var ids = p.guided, q = 0;
       function show() {
         stopSpeak(); stage.innerHTML = '';
         var sc = scenes[ids[q]], parts = B.map(function (b) { return typeof b === 'string' ? b : ''; });
@@ -2375,52 +2361,7 @@
       show();
     }));
 
-    // ③ 找對的積木
-    //   等級 1：看顏色（錯的選項是別種顏色的詞）；提示：詞庫那一排亮起來 → 老師想一想 → 拿掉錯的
-    //   等級 2、3：看圖（錯的選項是同顏色、但意思不對的詞）；提示：問自己那一題 → 放進去念念看 → 拿掉錯的
-    if (lv === 1 || !scenes.length) list.push(step('找對的積木：這一格要放什麼顏色的積木？', 'quiz', function (stage, api) {
-      var wb = bankEl(), inner = h('div');
-      append(stage, wb.el, inner);
-      var bases = p.practice.slice();
-      var items = slots.slice();
-      while (items.length < 3) items.push(slots[items.length % slots.length]);
-      runQuiz(inner, items.map(function (at, n) {
-        var base = bases[n % bases.length], k = B[at].k, right = base[at];
-        var wrongs = [];
-        slots.forEach(function (i) { if (B[i].k !== k) bank[B[i].k].forEach(function (x) { if (!x.x) wrongs.push(x.w); }); });
-        var shown = base.map(function (w, i) { return i === at ? '＿' : w; }).join('');
-        var ex = shuffle(bank[k].filter(function (x) { return !x.x && x.w !== right; })).slice(0, 2).map(function (x) { return x.w; });
-        return {
-          say: shown, options: [right].concat(shuffle(wrongs)), after: base.join(''),
-          hints: [
-            { text: '這一格是' + colorOf(at) + '積木，要放「' + B[at].name + '」。看看詞庫裡' + colorOf(at) + '的那一排。', on: function () { wb.light(k); } },
-            { text: '老師想一想：「' + shown + '」，這裡要放「' + B[at].name + '」。' + colorOf(at) + '的詞有' + ex.join('、') + '……選項裡哪一個也在' + colorOf(at) + '那一排？' }
-          ],
-          prompt: function () { return row(base, at); }
-        };
-      }), api);
-    }));
-    else list.push(step('找對的積木：看圖，哪一塊積木放進去最對？', 'quiz', function (stage, api) {
-      var rot = ASK_ORDER.filter(function (k) { return slotOf(k) >= 0; });
-      rot = rot.slice(1).concat(rot.slice(0, 1));  // 第一題先空第二塊（例如反應、樣子），比較好想
-      runQuiz(stage, scenes.map(function (sc, n) {
-        var k = rot[n % rot.length], at = slotOf(k), right = sc.ans[at];
-        var wrongs = k === 'v'
-          ? bank.v.filter(function (x) { var t = sc.ans.slice(); t[at] = x.w; return x.w !== right && judge(t).st === 'bad'; }).map(function (x) { return x.w; })
-          : ((sc.no || {})[k] || []).slice();
-        var shown = sc.ans.map(function (w, i) { return i === at ? '＿' : w; }).join('');
-        return {
-          say: sc.say + '。' + shown, long: true, options: [right].concat(shuffle(wrongs)), after: sc.ans.join(''),
-          hints: [
-            { text: '問自己：' + ((sc.q || {})[k] || ASK3[k]) },
-            { text: '把每個選項放進「' + shown + '」念念看：哪一個跟圖一樣，念起來也通順？' }
-          ],
-          prompt: function () { return h('div', {}, sceneEl(sc, lv === 3), row(sc.ans, at)); }
-        };
-      }), api);
-    }));
-
-    // ④ 看圖自己想：自己選積木造短語；提示：三個問題 → 哪一塊要換 → 放好一塊；做完可以玩骰子
+    // ③ 看圖自己想：自己選積木造短語；提示：三個問題 → 哪一塊要換 → 放好一塊；做完可以玩骰子
     if (scenes.length && p.own) list.push(step('看圖自己想：看圖，自己選積木造一個短語。', 'quiz', function (stage, api) {
       var q = 0, own = lv === 1 ? p.own.slice(0, 1) : p.own;
       function show() {
