@@ -562,3 +562,84 @@ h3 { font-size: 21px; }
 
 /* 讀懂課文還沒改成新版的課 */
 .badge-todo { display: inline-block; margin-left: 8px; padding: 1px 10px; border-radius: 999px; background: #EEE; color: #777; font-size: 14px; font-weight: 700; vertical-align: middle; }
+
+/* ── 短語積木：顏色固定（紅＝做什麼、藍＝誰／什麼、紫＝後來怎樣、綠＝樣子、橘＝數量）── */
+.blk-v { --bk: #D2553F; --bkbg: #FDECE8; }
+.blk-n { --bk: #2F6DB0; --bkbg: #E6EFFA; }
+.blk-r { --bk: #7A4FB5; --bkbg: #F1EAFB; }
+.blk-a { --bk: #2E8B57; --bkbg: #E7F5EC; }
+.blk-q { --bk: #C77A12; --bkbg: #FCF1E1; }
+.blk-row { display: inline-flex; flex-wrap: wrap; gap: 6px; justify-content: center; align-items: flex-end; margin: 6px 0; }
+.blk { display: inline-flex; flex-direction: column; align-items: center; min-width: 64px; padding: 4px 10px 6px; border: 3px solid var(--bk, transparent); background: var(--bkbg, transparent); border-radius: 14px; transition: box-shadow .2s, transform .2s; }
+.blk small { font-size: 13px; color: var(--bk, var(--muted)); font-weight: 700; line-height: 1.2; }
+.blk b { font-family: var(--kai); font-size: 30px; font-weight: 400; line-height: 1.3; }
+.blk-row.big .blk b { font-size: 36px; }
+.blk.blank { border-style: dashed; background: #fff; }
+.blk.blank b { color: var(--bk); }
+.blk-glue { min-width: 0; padding: 4px 2px 6px; }
+.blk.lit, .blk.cur { box-shadow: 0 0 0 4px #FFF07A; transform: translateY(-3px); }
+.blk[role=button] { cursor: pointer; }
+.blk-row.pop { animation: pop .35s ease; }
+@keyframes pop { 0% { transform: scale(.94); } 60% { transform: scale(1.05); } 100% { transform: scale(1); } }
+.think-txt { display: flex; gap: 8px; align-items: flex-start; text-align: left; background: #FFFBEA; border-radius: 12px; padding: 0; font-size: 19px; line-height: 1.7; margin-top: 10px; }
+.think-txt:not(:empty) { padding: 10px 12px; }
+.blk-examples { margin-top: 8px; }
+.bchips { display: flex; flex-wrap: wrap; gap: 10px; justify-content: center; margin: 12px 0; }
+.bchip { display: inline-flex; align-items: center; gap: 6px; font-family: var(--kai); font-size: 26px; padding: 8px 16px; border: 3px solid var(--bk); background: var(--bkbg); color: var(--ink); border-radius: 14px; cursor: pointer; }
+.bchip i { font-style: normal; font-size: 24px; }
+.bchip.picked { box-shadow: 0 0 0 4px #FFF07A; }
+.bchip:disabled:not(.picked) { opacity: .45; }
+.wbank { background: var(--card); border: 1px solid var(--line); border-radius: 14px; padding: 8px 10px; margin-bottom: 10px; }
+.wbank-title { font-size: 15px; color: var(--muted); margin-bottom: 4px; }
+.wbank-col { border-left: 6px solid var(--bk); padding: 4px 8px; margin: 4px 0; border-radius: 6px; transition: background .2s, box-shadow .2s; }
+.wbank-col.lit { background: var(--bkbg); box-shadow: 0 0 0 3px #FFF07A; }
+.wbank-head { font-size: 15px; font-weight: 700; color: var(--bk); }
+.wbank-words { display: flex; flex-wrap: wrap; gap: 4px 12px; font-family: var(--kai); font-size: 21px; }
+.wbank-w i { font-style: normal; margin-right: 2px; }
+.made-list { margin-top: 14px; display: flex; flex-wrap: wrap; gap: 6px; align-items: center; font-size: 16px; }
+.made-chip { background: #EAF6EC; border: 2px solid #5BAE6A; border-radius: 999px; padding: 2px 12px; font-family: var(--kai); font-size: 20px; }
+.own-box { display: inline-flex; gap: 6px; align-items: center; }
+.own-word { font-size: 20px; padding: 8px 10px; border: 2px dashed var(--bk, #2F6DB0); border-radius: 12px; width: 210px; }
+.dice.roll { animation: roll .5s ease; }
+@keyframes roll { 0% { transform: rotate(0); } 50% { transform: rotate(-12deg) scale(1.08); } 100% { transform: rotate(0); } }
+.judge-s { font-size: 34px; margin-top: 8px; }
+
+/* 短語積木：情境圖、三個問題、課本例子配圖 */
+.scene { text-align: center; margin-bottom: 8px; }
+.scene .pic { margin: 0 auto 6px; }
+.scene-say { font-size: 20px; line-height: 1.7; max-width: 560px; }
+.ask3 { background: #FFFBEA; border: 1px solid #F1E2A6; border-radius: 14px; padding: 8px 12px; margin: 8px 0; text-align: left; }
+.ask3-title { font-size: 15px; color: var(--muted); margin-bottom: 4px; }
+.ask3-q { display: flex; align-items: center; gap: 8px; padding: 6px 8px; border-radius: 10px; font-size: 19px; border-left: 6px solid var(--bk); margin: 4px 0; background: #fff; }
+.ask3-q small { color: var(--bk); font-size: 14px; font-weight: 700; margin-left: 4px; }
+.ask3-q.on { box-shadow: 0 0 0 3px #FFF07A; background: var(--bkbg); }
+.ask3-q.done { opacity: .75; }
+.ask3-q b { color: var(--bk); font-family: var(--kai); font-size: 22px; }
+.ask3-n { display: inline-grid; place-items: center; width: 26px; height: 26px; border-radius: 50%; background: var(--bk); color: #fff; font-weight: 700; font-size: 15px; flex: none; }
+.ex-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 10px; margin-top: 6px; }
+.ex-card { border: 1px solid var(--line); border-radius: 14px; padding: 8px; background: #fff; }
+.ex-card .pic { margin: 0 auto; }
+.ex-card .blk b { font-size: 24px; }
+.ex-card .blk { min-width: 48px; }
+.ex-say { font-size: 17px; color: var(--muted); line-height: 1.6; }
+.bchip.plain { border-color: var(--line); background: var(--card); }
+.bchip.wrong { opacity: .45; }
+.bchip.reveal { box-shadow: 0 0 0 4px var(--reveal-soft, #FFE08A); }
+.dice-game { margin-top: 12px; border-top: 2px dashed var(--line); padding-top: 10px; }
+[hidden] { display: none !important; }
+.ex-card .blk-row { flex-wrap: nowrap; gap: 3px; }
+.ex-card .blk { min-width: 0; padding: 2px 5px 4px; border-width: 2px; border-radius: 10px; }
+.ex-card .blk b { font-size: 21px; }
+.ex-card .blk small { font-size: 11px; }
+.ex-card > .row { flex-direction: column; gap: 2px; }
+.ex-grid { grid-template-columns: 1fr; }
+.ex-card { display: grid; grid-template-columns: 150px 1fr; gap: 10px; align-items: center; text-align: left; }
+.ex-card .pic { width: 150px; }
+.ex-card > .row { flex-direction: row; justify-content: flex-start !important; gap: 6px; }
+.ex-card .blk b, .ex-card .blk small { white-space: nowrap; }
+.ex-card .ex-say { font-size: 18px; }
+.ex-card .blk-row { justify-content: flex-start; }
+.try-box { border-top: 2px dashed var(--line); margin-top: 10px; padding-top: 10px; }
+.swap-cmp { display: flex; flex-direction: column; align-items: center; gap: 0; margin: 6px 0; }
+.swap-arrow { font-size: 20px; line-height: 1; }
+.bchip.plain { border: 2px solid #C9BFAE; background: #fff; }

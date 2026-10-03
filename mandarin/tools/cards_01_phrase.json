@@ -1,0 +1,13 @@
+{
+  "lesson": "01",
+  "cards": [
+    { "name": "短語_引起世人的關注", "scene": "A young girl standing on a small stage holding up a white mosquito net, giving a talk; a big crowd of many different people from around the world (different skin colors and clothes) looking at her with great interest, some leaning forward; a small globe beside the stage." },
+    { "name": "短語_造成房屋的倒塌", "scene": "An earthquake: the ground cracking and shaking, a small house has collapsed into a pile of broken walls and roof pieces; a family standing safely to the side looking shocked." },
+    { "name": "短語_面臨人生的抉擇", "scene": "A child standing at a fork in a country road, one path leading to a school and the other to a playground, hand on chin, thinking hard about which way to go." },
+    { "name": "短語_促進城市的發展", "scene": "A cheerful busy city getting better: a new metro train arriving at a bright station, new tall buildings, shops, trees, and happy people walking; cranes building in the background." },
+    { "name": "情境_同學拍手", "scene": "Inside a bright classroom: a girl has just finished singing at the front of the class, smiling and bowing; all her classmates sitting at their desks are clapping their hands happily and cheering." },
+    { "name": "情境_老師誇獎", "scene": "A kind smiling teacher gently patting a happy boy on the head and giving a thumbs-up; the boy holds a test paper marked with a big red circle (no numbers or letters on the paper)." },
+    { "name": "情境_阿公修車", "scene": "A grandfather kneeling on the ground with a wrench, fixing the chain of a child's bicycle; a grateful young boy standing beside him watching and smiling." },
+    { "name": "情境_小狗戴帽子", "scene": "In a park, a small cute puppy wearing a funny big party hat is walking proudly; many people nearby (kids and adults) all turn their heads to look at the puppy in surprise." }
+  ]
+}
