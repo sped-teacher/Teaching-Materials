@@ -1592,9 +1592,13 @@
       h('p', {}, '康軒版・五年級上學期　選一課開始學習。　', h('a', { href: 'guide.html' }, '📘 使用說明'))));
     var dueAll = reviewCount();
     if (dueAll) append(main, h('a', { class: 'review-banner', href: '#/review' }, '🔁 今天有 ' + dueAll + ' 題錯題要複習', h('span', { class: 'spacer' }), '開始複習 →'));
-    var grid = h('div', { class: 'lesson-grid' });
+    // 第 1～6 課＝期中考範圍、第 7～12 課＝期末考範圍，各用一個大框框起來
+    var groups = [
+      { title: '📝 期中考範圍', sub: '第 1～6 課', grid: h('div', { class: 'lesson-grid' }) },
+      { title: '📝 期末考範圍', sub: '第 7～12 課', grid: h('div', { class: 'lesson-grid' }) }
+    ];
     LESSON_LIST.forEach(function (l, n) {
-      var L = LESSONS[l.id], no = '第 ' + (n + 1) + ' 課';
+      var L = LESSONS[l.id], no = '第 ' + (n + 1) + ' 課', grid = groups[n < 6 ? 0 : 1].grid;
       if (!L) {
         var hasRead = hasReading(l.id);
         append(grid, h('div', { class: 'lesson-tile off' }, h('span', { class: 'no' }, no), h('span', { class: 't' }, l.title),
@@ -1612,7 +1616,10 @@
       tile.addEventListener('keydown', function (e) { if (e.key === 'Enter') location.hash = '#/lesson/' + l.id; });
       append(grid, tile);
     });
-    append(main, grid);
+    groups.forEach(function (g) {
+      append(main, h('section', { class: 'exam-group' },
+        h('div', { class: 'exam-head' }, h('h2', {}, g.title), h('span', {}, g.sub), sayBtn(g.title + '，' + g.sub)), g.grid));
+    });
   }
 
   function ringSvg(pct) {

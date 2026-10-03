@@ -643,3 +643,10 @@ h3 { font-size: 21px; }
 .swap-cmp { display: flex; flex-direction: column; align-items: center; gap: 0; margin: 6px 0; }
 .swap-arrow { font-size: 20px; line-height: 1; }
 .bchip.plain { border: 2px solid #C9BFAE; background: #fff; }
+
+/* 首頁：期中考、期末考範圍各一個大框 */
+.exam-group { border: 2px solid var(--line); border-radius: 20px; padding: 12px 14px 16px; margin-bottom: 18px; background: rgba(255,255,255,.35); }
+.exam-head { display: flex; align-items: center; gap: 10px; margin: 0 0 10px; }
+.exam-head h2 { margin: 0; font-size: 22px; }
+.exam-head span { color: var(--muted); font-size: 17px; }
+.exam-head .say { margin-left: auto; }
