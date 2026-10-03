@@ -877,7 +877,9 @@
 
     // 短語短句：看結構（詞性上色）→ 排短語 → 選出順序正確的短語
     phrases: {
-      name: '短語短句', icon: '🔗', desc: '認識短語短句、排一排、選一選', core: true,
+      name: '短語短句', icon: '🔗', core: true,
+      // 有積木鷹架的課：示範 → 看圖一起想 → 看圖自己想；其他課還是舊的排一排、選一選
+      desc: function (L) { return (L.phrases || []).some(function (p) { return p.blocks; }) ? '看老師示範、看圖組積木、自己造短語' : '認識短語短句、排一排、選一選'; },
       units: function (L) { return (L.phrases || []).map(function (p) { return { key: p.id, items: [p], label: p.model.join('') }; }); },
       steps: function (L, unit, c) {
         var p = unit.items[0];
