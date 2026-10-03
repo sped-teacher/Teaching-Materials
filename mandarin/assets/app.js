@@ -2180,6 +2180,10 @@
   var ASK_ORDER = ['n', 'r', 'a', 'v', 'q'];  // 想的順序：先看圖找人／東西，再看反應、樣子，最後選連接的積木
   function blockSteps(L, p, c) {
     var B = p.blocks, bank = p.bank, lv = c.level, scenes = p.scenes || [];
+    // 一進來就在背景先載好這一組要用的圖（示範圖、課本例子、情境圖），到後面的步驟就會直接出現
+    if (!CAPTURE) [p.pic].concat(p.examplePics || [], scenes.map(function (sc) { return sc.pic; })).forEach(function (name) {
+      if (name) new Image().src = 'images/lesson' + L.id + '/' + encodeURIComponent(name) + '.webp';
+    });
     var slots = [];  // 要選的格子（不是字串的）
     B.forEach(function (b, i) { if (typeof b !== 'string') slots.push(i); });
     var slotOf = function (k) { return B.findIndex(function (b) { return b.k === k; }); };
