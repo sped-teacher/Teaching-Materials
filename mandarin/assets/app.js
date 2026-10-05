@@ -1726,9 +1726,23 @@
     var nowSay = h('button', { class: 'say', type: 'button', 'aria-label': '朗讀：現在要做什麼' }, '🔊');
     nowSay.addEventListener('click', function () { speak(nowTxt.textContent, nowSay); });
     var stage = h('div', { class: 'stage' });
+    // 步驟選單：老師示範過一次，就可以直接點下一步（或跳回前面）
+    var seen = {}, tabs = h('div', { class: 'step-tabs', hidden: steps.length < 2 });
+    function drawTabs() {
+      tabs.innerHTML = '';
+      steps.forEach(function (s, k) {
+        var name = s.title.split('：')[0];
+        if (name.length > 8) name = name.slice(0, 8) + '…';
+        var b = h('button', { type: 'button', class: 'step-tab' + (k === si ? ' on' : '') + (seen[k] && k !== si ? ' done' : '') },
+          k === si ? '▶ ' : seen[k] ? '✓ ' : '', name);
+        b.addEventListener('click', function () { if (k !== si) { si = k; show(); } });
+        append(tabs, b);
+      });
+    }
     append(main, h('div', { class: 'task-head' },
       h('div', { class: 'task-title' }, h('span', { class: 'icon' }, M.icon), h('h2', { style: 'flex:1' }, M.name),
         units.length > 1 ? h('span', { class: 'unit-pill' }, (unit.label || '第 ' + (ui + 1) + '／' + units.length + ' 組')) : (unit.label ? h('span', { class: 'unit-pill' }, unit.label) : null)),
+      tabs,
       h('div', { class: 'progress' }, bar),
       h('div', { class: 'now' }, h('div', { style: 'flex:1' }, h('div', { class: 'lbl' }, '☑ 現在要做什麼　', stepEl), nowTxt), nowSay)), stage);
 
@@ -1741,6 +1755,7 @@
     };
     function show() {
       var s = steps[si];
+      stopSpeak(); seen[si] = true; drawTabs();
       nowTxt.textContent = s.title;
       stepEl.textContent = '第 ' + (si + 1) + '／' + steps.length + ' 步';
       bar.style.width = (si / steps.length * 100) + '%';
@@ -2468,14 +2483,14 @@
     function diceGame(box) {
       var parts = B.map(function (b) { return typeof b === 'string' ? b : ''; }), judged = false, score = { n: 0, ok: 0 };
       var top = h('div'), fb = h('div'), btns = h('div', { class: 'row', style: 'justify-content:center;gap:12px' });
-      var dice = h('button', { type: 'button', class: 'btn btn-ghost dice' }, '🎲 擲骰子');
+      var dice = h('button', { type: 'button', class: 'btn btn-ghost dice' }, '🎲 擲骰子'), tally = h('span', { class: 'muted dice-tally' });
       function roll() {
         var wantOk = Math.random() < 0.5;
         for (var tries = 0; tries < 200; tries++) {
           slots.forEach(function (i) { parts[i] = pick(bank[B[i].k]).w; });
           if (judge(parts).st === (wantOk ? 'ok' : 'bad')) break;
         }
-        judged = false; fb.innerHTML = '';
+        judged = false; fb.innerHTML = ''; dice.classList.remove('again');
         dice.classList.remove('roll'); void dice.offsetWidth; dice.classList.add('roll');
         top.innerHTML = ''; append(top, row(parts), h('div', { class: 'row', style: 'justify-content:center' }, h('div', { class: 'sentence judge-s' }, parts.join('')), sayBtn(parts.join(''))));
         btns.hidden = false;
@@ -2484,7 +2499,7 @@
       function decide(saysOk) {
         if (judged) return;
         judged = true;
-        // 判斷只有兩種：合理／怪怪的（少見說法也算合理）。答錯直接說哪裡不合，再給「再玩一次」
+        // 判斷只有兩種：合理／怪怪的（少見說法也算合理）。答錯直接說哪裡不合，再按骰子玩下一題
         var J = judge(parts), isOk = J.st !== 'bad', right = saysOk === isOk, s = parts.join(''), m;
         if (isOk) m = right ? '答對了！「' + s + '」很合理。' : '答錯了。「' + s + '」是合理的，再念一次聽聽看。';
         else {
@@ -2496,12 +2511,10 @@
         score.n++; if (right) score.ok++;
         right ? sfx.right() : sfx.wrong();
         btns.hidden = true;
-        var again = h('button', { type: 'button', class: 'btn btn-primary' }, '🎲 再玩一次');
-        again.addEventListener('click', roll);
+        tally.textContent = '玩了 ' + score.n + ' 題・答對 ' + score.ok + ' 題';
+        dice.classList.add('again');   // 提醒：按骰子再玩一題
         fb.innerHTML = '';
-        append(fb, h('div', { class: 'hintbox' }, right ? '✅' : '❌', h('span', { style: 'flex:1' }, m), sayBtn(m)),
-          h('div', { class: 'row', style: 'justify-content:center;gap:12px;margin-top:8px;flex-wrap:wrap' }, again,
-            h('span', { class: 'muted' }, '答對 ' + score.ok + '／' + score.n + '　玩夠了按下面的「完成」')));
+        append(fb, h('div', { class: 'hintbox' }, right ? '✅' : '❌', h('span', { style: 'flex:1' }, m), sayBtn(m)));
         speak(m);
       }
       var yes = h('button', { type: 'button', class: 'btn btn-primary' }, '👍 合理');
@@ -2512,7 +2525,7 @@
       btns.hidden = true; append(btns, yes, no);
       box.innerHTML = '';
       append(box, h('div', { class: 'dice-game' }, h('div', { class: 'sub' }, '擲骰子，念一念，這個短語合理嗎？想玩幾次都可以，玩夠了按「完成」。'),
-        h('div', { style: 'text-align:center;margin:6px 0' }, dice), top, btns, fb));
+        h('div', { class: 'row', style: 'justify-content:center;gap:12px;margin:6px 0;flex-wrap:wrap' }, dice, tally), top, btns, fb));
       roll();
     }
 

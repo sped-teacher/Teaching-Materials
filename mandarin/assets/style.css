@@ -157,6 +157,11 @@ h3 { font-size: 21px; }
 .task-title { display: flex; align-items: center; gap: 12px; }
 .task-title .icon { font-size: 28px; }
 .unit-pill { background: var(--card); border: 1px solid var(--line); border-radius: 999px; padding: 4px 14px; font-size: 16px; color: var(--muted); white-space: nowrap; }
+/* 步驟選單：老師可以直接跳到某一步 */
+.step-tabs { display: flex; flex-wrap: wrap; gap: 8px; margin: 10px 0 0; }
+.step-tab { font: inherit; font-size: 16px; min-height: 40px; padding: 4px 14px; border-radius: 999px; border: 1px solid var(--line); background: var(--card); color: var(--ink, inherit); cursor: pointer; }
+.step-tab.on { background: var(--soft); background: color-mix(in srgb, var(--mc, var(--accent)) 16%, #fff); border-color: var(--mc, var(--accent)); font-weight: 700; }
+.step-tab.done { color: var(--muted); }
 .progress { height: 10px; border-radius: 99px; background: #E7DFD0; overflow: hidden; margin: 12px 0; }
 .progress > i { display: block; height: 100%; background: var(--mc, var(--accent)); border-radius: 99px; transition: width .3s ease; }
 .now {
@@ -601,6 +606,8 @@ h3 { font-size: 21px; }
 .own-box { display: inline-flex; gap: 6px; align-items: center; }
 .own-word { font-size: 20px; padding: 8px 10px; border: 2px dashed var(--bk, #2F6DB0); border-radius: 12px; width: 210px; }
 .dice.roll { animation: roll .5s ease; }
+.dice.again { border-color: var(--accent); box-shadow: 0 0 0 3px color-mix(in srgb, var(--accent) 25%, transparent); }
+.dice-tally { font-size: 16px; }
 @keyframes roll { 0% { transform: rotate(0); } 50% { transform: rotate(-12deg) scale(1.08); } 100% { transform: rotate(0); } }
 .judge-s { font-size: 34px; margin-top: 8px; }
 
