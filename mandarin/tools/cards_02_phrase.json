@@ -1,0 +1,21 @@
+{
+  "lesson": "02",
+  "cards": [
+    { "name": "短語_深深的哀愁", "scene": "A man in a small helicopter looking down through the window at a beautiful green island whose mountains have bare brown scars from landslides and a grey polluted river; his face is very sad and worried, hand on his chest." },
+    { "name": "短語_淡淡的哀傷", "scene": "A girl sitting by a window on a cloudy afternoon, looking at a small wilted flower in a pot, with a slightly sad, quiet expression (not crying), soft grey-blue colors." },
+    { "name": "短語_甜甜的微笑", "scene": "A little girl smiling very sweetly with rosy cheeks, holding a lollipop, small hearts floating around her, warm pink colors." },
+    { "name": "短語_淺淺的思念", "scene": "A boy looking up at the moon at night from his balcony, gently thinking of his grandma; a soft thought bubble shows the grandma's smiling face; calm, gentle feeling." },
+    { "name": "情境_甜甜的微笑", "scene": "A kind grandmother smiling very gently and sweetly as she places a wrapped candy into a child's open hand; warm cozy living room." },
+    { "name": "情境_暖暖的陽光", "scene": "On a cold winter morning a child wrapped in a scarf sits by a big window, eyes closed and smiling, bathed in warm golden sunlight; frost on the window edge outside." },
+    { "name": "情境_深深的思念", "scene": "A child sitting on a bed holding a framed photo of two friends smiling together, looking at it with a sad, longing face; a moving box and a far-away train in the photo background." },
+    { "name": "情境_香香的麵包", "scene": "A bakery counter with a tray of freshly baked golden bread just out of the oven, wavy steam and smell lines floating up; a child sniffing happily with eyes closed." },
+    { "name": "短語_這是個昂貴而困難的計畫", "scene": "A photographer leaning out of a helicopter high above mountains holding a big camera, strong wind blowing his hair; next to the helicopter float big gold coins to show it costs a lot of money; looks dangerous and difficult." },
+    { "name": "短語_這是個溫馨而難忘的聚會", "scene": "A big family of three generations sitting around a round dining table full of food, everyone laughing together, warm orange lamp light." },
+    { "name": "短語_這是個艱苦而困難的挑戰", "scene": "A boy climbing a very steep rocky mountain path with a heavy backpack, sweating and breathing hard but not giving up." },
+    { "name": "短語_這是場豐富而精采的演講", "scene": "A friendly speaker on a stage pointing at a big colorful screen full of pictures (planets, animals, maps), the audience of children listening with excited faces." },
+    { "name": "情境_溫馨而難忘的聚會", "scene": "Chinese New Year's Eve dinner: a family of grandparents, parents and children sitting around a round table with many dishes and a hot pot, red decorations on the wall, everyone smiling happily." },
+    { "name": "情境_好玩而有趣的遊戲", "scene": "Children playing tag on a school playground at recess, one child chasing, the others running away and laughing loudly." },
+    { "name": "情境_精采而有趣的小說", "scene": "At night a child lying in bed under a reading lamp, holding a thick storybook, eyes wide with excitement; little imaginary pictures of a dragon and a castle rising from the open pages." },
+    { "name": "情境_感人而難忘的電影", "scene": "A class of children sitting in a dark classroom watching a movie on a projector screen showing a dog and a boy hugging; several children wiping tears from their eyes." }
+  ]
+}

@@ -1,0 +1,29 @@
+{
+  "lesson": "04",
+  "cards": [
+    { "name": "短語_一片黃澄澄的稻田", "scene": "A peaceful old-style painting look: farmers in straw hats working in a wide field of ripe golden rice under the evening sun." },
+    { "name": "短語_一顆紅通通的蘋果", "scene": "One shiny bright red apple with a green leaf on a wooden table." },
+    { "name": "短語_一個圓滾滾的皮球", "scene": "One round, plump bouncy rubber ball rolling on the grass, a puppy chasing it." },
+    { "name": "短語_一把綠油油的青菜", "scene": "A bunch of fresh, shiny bright green leafy vegetables tied together, with water drops on the leaves." },
+    { "name": "情境_黃澄澄的稻田", "scene": "Autumn countryside: a big rice field full of ripe golden yellow rice shining in the sunlight, a scarecrow in the middle, a child on the path looking at it." },
+    { "name": "情境_熱呼呼的牛奶", "scene": "Winter breakfast table: a mother hands a child a glass cup of hot milk with steam rising from it; the child holds it with both hands." },
+    { "name": "情境_胖嘟嘟的小豬", "scene": "On a farm, one very chubby round little pink piglet happily rolling in a mud puddle." },
+    { "name": "情境_綠油油的草地", "scene": "A spring park with a big lawn of bright shiny green grass; a family sitting on a picnic blanket on the grass." },
+    { "name": "短語_一串串飽滿的稻穗", "scene": "Close-up of many bunches of heavy, plump golden rice ears bending down on their stalks in a field." },
+    { "name": "短語_一朵朵美麗的鮮花", "scene": "A garden full of many beautiful fresh flowers of different colors blooming, butterflies around them." },
+    { "name": "短語_一個個英勇的士兵", "scene": "A row of brave toy soldiers in bright uniforms standing tall in a line, cartoon style, friendly faces, holding small flags (no weapons)." },
+    { "name": "短語_一隻隻可愛的小狗", "scene": "A group of many cute fluffy puppies of different colors sitting together in a basket, wagging their tails." },
+    { "name": "情境_閃亮的星星", "scene": "Children camping on a mountain at night lying outside their tent, pointing up at a sky full of many bright sparkling stars." },
+    { "name": "情境_金黃的落葉", "scene": "An autumn park path covered with many golden yellow fallen leaves; a child walking on them, leaves crunching under the feet." },
+    { "name": "情境_飽滿的葡萄", "scene": "A vineyard where many bunches of big, round, juicy purple grapes hang from the vines; a child reaching up to look." },
+    { "name": "情境_鮮紅的草莓", "scene": "A strawberry farm with many bright red, big strawberries growing in rows; a child holding a small basket picking them." },
+    { "name": "短語_刻畫農民樸實的生活", "scene": "An artist painting at an easel in the countryside; on the canvas a simple painting of farmers in plain clothes bending to work in a field; the real farmers are in the background." },
+    { "name": "短語_描寫鄉村悠閒的生活", "scene": "A writer sitting under a tree in a quiet village writing in a notebook, watching an old man slowly fishing and a cat napping; relaxed slow feeling." },
+    { "name": "短語_採摘菜園新鮮的蔬菜", "scene": "A child and grandma picking fresh tomatoes, cucumbers and lettuce from a vegetable garden into a basket." },
+    { "name": "短語_展現舞者優雅的舞步", "scene": "A ballet dancer on a stage doing a graceful turn on her toes, arms gently raised, flowing skirt." },
+    { "name": "情境_媽媽拿手的好菜", "scene": "Dinner time: a table full of home-cooked dishes; a mother in an apron proudly serving; a child tasting a bite slowly with a delighted face." },
+    { "name": "情境_小鳥好聽的歌聲", "scene": "Morning in a park: several small birds singing on a tree branch with music notes floating; a child stopped on the path, hand behind ear, listening carefully." },
+    { "name": "情境_山上美麗的風景", "scene": "On a school field trip, a class of children standing on a mountain viewing platform with a railing, looking at beautiful far mountains and a sea of clouds, amazed." },
+    { "name": "情境_弟弟可愛的笑容", "scene": "A little brother blowing out candles on a birthday cake, laughing happily; an older sister holding up a smartphone taking a photo of him." }
+  ]
+}

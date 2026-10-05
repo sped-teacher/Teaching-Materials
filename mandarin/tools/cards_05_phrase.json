@@ -1,0 +1,29 @@
+{
+  "lesson": "05",
+  "cards": [
+    { "name": "短語_像松樹般堅毅不拔", "scene": "A strong pine tree standing tall on a rocky cliff in a heavy snowstorm with strong wind, its branches covered in snow but not bending or breaking." },
+    { "name": "短語_像鋼鐵般堅固強韌", "scene": "A big strong steel bridge made of thick metal beams, with heavy trucks driving over it safely." },
+    { "name": "短語_像春風般溫柔", "scene": "A gentle spring breeze shown as soft swirling lines carrying cherry blossom petals past a smiling girl, her hair moving lightly." },
+    { "name": "短語_像煙火般燦爛", "scene": "Bright colorful fireworks bursting in the night sky over a city, families watching happily." },
+    { "name": "情境_像兔子般活潑可愛", "scene": "A little girl jumping and hopping around on green grass, laughing; a white rabbit hopping beside her in the same way." },
+    { "name": "情境_像太陽般溫暖明亮", "scene": "Winter morning in a bedroom: a smiling mother opens the curtains and bright warm sunlight pours in on a child waking up in bed and smiling." },
+    { "name": "情境_像獅子般勇敢強壯", "scene": "A brave firefighter in full gear rushing toward a burning house to rescue people, strong and fearless; no flames on any person." },
+    { "name": "情境_像棉花般柔軟舒服", "scene": "At night a child lying happily on a fluffy, freshly sun-dried quilt, sinking into it, very relaxed and comfortable; a few cotton balls drawn nearby." },
+    { "name": "短語_每一個商品都有商標", "scene": "A supermarket shelf with many different products (bottles, boxes, cans), each one has its own simple colorful logo symbol (shapes only, no letters); a child pointing at them." },
+    { "name": "短語_每一段旅程都有故事", "scene": "A family on different trips shown in three small scenes: at the beach, in the mountains, on a train, each with a happy memorable moment." },
+    { "name": "短語_每一次嘗試都有意義", "scene": "A child trying to make a paper airplane: several crumpled failed planes on the desk and one good plane flying, the child smiling." },
+    { "name": "短語_每一個蛋糕都有造型", "scene": "A bakery display with several cakes, each in a different fun shape: a bear, a car, a castle, a flower." },
+    { "name": "情境_每一本書都有封面", "scene": "A library bookshelf with many books facing forward, each book cover showing a different colorful picture (animals, space, ocean), no words." },
+    { "name": "情境_每一棵樹都有樹根", "scene": "A forest with many big trees; the ground is shown cut-away so you can see the roots of every tree spreading deep and gripping the soil." },
+    { "name": "情境_每一個學生都有書包", "scene": "After school, students lining up in a row at the school gate, every student wearing a backpack on their back." },
+    { "name": "情境_每一隻小鳥都有翅膀", "scene": "In a park, a flock of small birds spreading their wings and flying up together into the sky." },
+    { "name": "短語_每個商標都有一個特別的故事", "scene": "A child reading a picture book; above it float three simple logo symbols (a star, an apple, a bird), each with a little picture bubble showing a story behind it; no letters." },
+    { "name": "短語_每張畫作都有一種獨特的技法", "scene": "An art gallery wall with three paintings each in a very different style: one made of dots, one with thick swirling paint, one with simple flat shapes; a child looking closely." },
+    { "name": "短語_每件服裝都有一個巧妙的設計", "scene": "Three clothes on hangers each with a clever design: a raincoat that folds into a bag, a jacket with a hidden hood, a skirt with a secret pocket shaped like a fish." },
+    { "name": "短語_每次努力都有一份珍貴的收穫", "scene": "A child watering a small garden every day, then picking a big shiny tomato with a proud smile; sparkles around the tomato." },
+    { "name": "情境_每個同學都有一個可愛的笑容", "scene": "A class photo: many students standing in rows in front of the school, all smiling big cute smiles at the camera." },
+    { "name": "情境_每間教室都有一塊乾淨的黑板", "scene": "A classroom with a perfectly clean shiny green chalkboard; a student on duty holding an eraser, proud of cleaning it." },
+    { "name": "情境_每隻小狗都有一條蓬鬆的尾巴", "scene": "A dog park with many small dogs of different colors, each wagging a big fluffy tail." },
+    { "name": "情境_每個人都有一個美好的夢想", "scene": "Graduation ceremony: children on a stage, above each child a thought bubble showing their dream job: a doctor, a teacher, an astronaut, a chef." }
+  ]
+}
