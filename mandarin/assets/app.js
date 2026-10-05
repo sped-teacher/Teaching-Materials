@@ -1014,8 +1014,14 @@
             box.addEventListener('keydown', function (e) { if (e.key === 'Enter') open(); });
             return box;
           });
+          // 本課的課文詞語（收合）：讀課文時畫底線的詞，先在這裡看一遍
+          var tws = L.textWords || [];
+          var twList = tws.length ? h('details', { class: 'fold tw-list' }, h('summary', {}, '📒 課文詞語（' + tws.length + ' 個，課文裡畫底線的詞）'),
+            h('div', { class: 'fold-body' }, tws.map(function (x) {
+              return h('div', { class: 'tw-item' }, h('b', {}, x.w), h('span', { style: 'flex:1' }, x.meaning), sayBtn(x.w + '。' + x.meaning));
+            }))) : null;
           append(stage, R.mapNote ? h('div', { class: 'note', style: 'text-align:left;margin-bottom:12px' }, R.mapNote) : null,
-            h('div', { class: 'rmap' }, mapRows(R.map, boxes, 'rmap')), h('div', { style: 'margin-top:14px' }, go));
+            h('div', { class: 'rmap' }, mapRows(R.map, boxes, 'rmap')), twList, h('div', { style: 'margin-top:14px' }, go));
         }));
         if (R.paras) guided.push(step('一' + U + '一' + U + '讀：讀完這一' + U + '，選出它在說什麼。', 'quiz', function (stage, api) {
           var sums = R.paras.map(function (p) { return p.sum; });
@@ -2729,8 +2735,31 @@
     var all = [];
     R.sections.forEach(function (sec) { sec.paras.forEach(function (pa) { all.push(pa); }); });
     var box = h('div', { class: 'rpara' + (LR.poem ? ' poem' : '') }), say = '';
+    // 課文詞語：畫底線，點一下在段落下面出現意思（長的詞先找，不重疊）
+    var TW = ((LESSONS[lid] || {}).textWords || []).slice().sort(function (a, b) { return b.w.length - a.w.length; });
+    var twBox = h('div', { class: 'tw-box', hidden: true }), twOn = null;
+    function showTw(el, x) {
+      if (twOn) twOn.classList.remove('on');
+      if (twOn === el) { twOn = null; twBox.hidden = true; return; }
+      twOn = el; el.classList.add('on');
+      twBox.innerHTML = '';
+      append(twBox, h('b', {}, x.w), h('span', { style: 'flex:1' }, x.meaning), sayBtn(x.w + '。' + x.meaning));
+      twBox.hidden = false;
+      speak(x.w + '。' + x.meaning);
+    }
     p.text.forEach(function (ti) {
       var pa = all[ti] || [], full = pa.map(function (t) { return t[0]; }).join('');
+      var twAt = {}, used = {};
+      TW.forEach(function (x) {
+        for (var s = full.indexOf(x.w); s >= 0; s = full.indexOf(x.w, s + 1)) {
+          var free = true;
+          for (var q = s; q < s + x.w.length; q++) if (used[q]) free = false;
+          if (!free) continue;
+          for (q = s; q < s + x.w.length; q++) used[q] = true;
+          twAt[s] = x;
+        }
+      });
+      var wrap = null, left = 0;
       // 要畫螢光筆的字（keys 可以有好幾句，對應正確答案裡的每個重點）
       // keys2：上下文線索（畫底線，外框加上 show-ctx 才出現）
       var mark = {}, mark2 = {}, at = 0;
@@ -2749,13 +2778,20 @@
           var el = zs[i] ? h('span', { class: 'rc' }, withZy(ch, zs[i])) : h('span', { class: 'rc punct' }, ch);
           if (mark[at]) el.classList.add('rkey');
           if (mark2[at]) el.classList.add('rkey2');
-          line.appendChild(el); at++;
+          if (twAt[at]) {
+            var x = twAt[at];
+            wrap = h('span', { class: 'tw', role: 'button', tabindex: '0', 'aria-label': '課文詞語：' + x.w });
+            wrap.addEventListener('click', (function (wEl, xx) { return function (e) { e.stopPropagation(); showTw(wEl, xx); }; })(wrap, x));
+            line.appendChild(wrap); left = x.w.length;
+          }
+          if (left > 0) { wrap.appendChild(el); left--; } else line.appendChild(el);
+          at++;
         });
         say += tok[2] && tok[2].length === w.length ? tok[2] : w;
       });
       box.appendChild(line);
     });
-    return h('div', { class: showKey ? 'show-key' : '' }, h('div', { class: 'row', style: 'justify-content:center;gap:8px' }, head, sayBtn(say, '第 ' + p.no + ' 段')), box);
+    return h('div', { class: showKey ? 'show-key' : '' }, h('div', { class: 'row', style: 'justify-content:center;gap:8px' }, head, sayBtn(say, '第 ' + p.no + ' 段')), box, twBox);
   }
 
   // ── 教室密碼：課文全文加密存放（data/reading.enc.js），輸入密碼後才在這台裝置解開 ──

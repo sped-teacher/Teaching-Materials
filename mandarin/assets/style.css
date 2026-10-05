@@ -679,3 +679,19 @@ h3 { font-size: 21px; }
 @media (max-width: 640px) { .sw-word { font-size: 64px; } }
 
 .sw-pic { margin: 6px auto 4px; }
+
+/* ── 課文詞語：讀懂課文裡畫底線，點一下看意思 ── */
+.tw { border-bottom: 3px dotted var(--accent); cursor: pointer; border-radius: 4px; }
+.tw.on { background: var(--accent-soft); border-bottom-style: solid; }
+.tw-box { display: flex; align-items: center; gap: 10px; margin: 8px 0 0; padding: 10px 14px; border: 2px solid var(--accent); border-radius: 14px; background: var(--accent-soft); font-size: 18px; line-height: 1.6; text-align: left; }
+.tw-box[hidden] { display: none; }
+.tw-box b, .tw-item b { font-family: var(--kai); font-size: 24px; white-space: nowrap; }
+.tw-list { margin-top: 14px; }
+.tw-item { display: flex; align-items: center; gap: 12px; padding: 8px 0; border-bottom: 1px solid var(--line); font-size: 17px; line-height: 1.6; }
+.tw-item:last-child { border-bottom: 0; }
+details.tw-list { border: 1px solid var(--line); border-radius: 14px; background: var(--card); }
+details.tw-list > summary { cursor: pointer; list-style: none; padding: 12px 14px; font-size: 18px; font-weight: 700; display: flex; align-items: center; gap: 8px; }
+details.tw-list > summary::-webkit-details-marker { display: none; }
+details.tw-list > summary::after { content: '＋'; margin-left: auto; color: var(--muted); font-weight: 400; }
+details.tw-list[open] > summary::after { content: '－'; }
+details.tw-list .fold-body { padding: 0 14px 10px; }
