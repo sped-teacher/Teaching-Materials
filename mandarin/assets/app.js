@@ -1057,14 +1057,14 @@
           });
           append(stage, mini.el, inner, h('div', { class: 'sort-board' }, cols));
           runQuiz(inner, shuffle(ids.map(function (k) { return S.cards[k]; })).map(function (cd) {
-            var g = S.groups[cd.g], ps = R.map[g.at].paras, kwEl = null;
+            var g = S.groups[cd.g], at = cd.at != null ? cd.at : g.at, ps = R.map[at].paras, kwEl = null;   // cd.at：這張卡片在課文地圖的哪一格（同一類分在好幾格時用）
             var range = rangeText(R, ps);
             var fill = function (t) { return t.replace(/\{kw\}/g, cd.kw).replace(/\{range\}/g, range); };
             return {
               say: cd.t, options: [g.name], fixed: names, long: isLong, after: cd.t,
               hints: [
                 { text: fill(cd.think || S.hint1 || '先看卡片裡畫線的詞「{kw}」。課文哪一個部分有說到它？可以點上面的課文地圖找找看。'), on: function () { if (kwEl) kwEl.classList.add('on'); } },
-                { text: fill(S.hint2 || '看課文地圖亮起來的那一格（{range}），螢光筆畫的地方說到了「{kw}」。這一格在說什麼？'), on: function () { mini.light(g.at, cd.keys); } }
+                { text: fill(S.hint2 || '看課文地圖亮起來的那一格（{range}），螢光筆畫的地方說到了「{kw}」。這一格在說什麼？'), on: function () { mini.light(at, cd.keys); } }
               ],
               onRight: function () { cols[cd.g].appendChild(h('div', { class: 'sort-card' }, cd.t)); },
               prompt: function () {
@@ -1083,7 +1083,7 @@
           runQuiz(stage, ids.map(function (k) {
             var d = D.items[k], pz = (R.paras || []).find(function (x) { return x.no === d.para; }), el = null;
             return {
-              say: '詩裡說「' + d.kw + '」，其實是什麼？', long: true, after: d.meaning,
+              say: (D.q || '詩裡說「{kw}」，其實是什麼？').replace('{kw}', d.kw), long: true, after: d.meaning,
               options: [d.meaning].concat(means.filter(function (m) { return m !== d.meaning; })),
               hints: [
                 { text: d.like },
@@ -1092,7 +1092,8 @@
               prompt: function () {
                 el = h('div', { class: 'show-key' + (c.level === 1 ? ' show-ctx' : '') },
                   pz ? readingParaEl(L.id, { no: d.para, text: pz.text, keys: d.keys, keys2: d.ctxKeys }, true) : null);
-                return h('div', {}, h('div', { class: 'sentence' }, '詩裡說「', h('mark', { class: 'kw-mark' }, d.kw), '」，其實是什麼？'), el);
+                var qt = (D.q || '詩裡說「{kw}」，其實是什麼？').split('{kw}');
+                return h('div', {}, h('div', { class: 'sentence' }, qt[0], h('mark', { class: 'kw-mark' }, d.kw), qt[1] || ''), el);
               }
             };
           }), api);
