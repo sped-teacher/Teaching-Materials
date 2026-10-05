@@ -1,5 +1,5 @@
 """
-產生「注音聽打」題目的正確注音 data/quiz_zy.js（題目語詞在 data/links.js 的 quizWords）。
+產生「注音聽打」題目的正確注音 data/quiz_zy.js（題目語詞＝各課 data/lessonXX.js 的 words，和「認識語詞」一樣）。
 
   python tools/make_quiz_zy.py
 
@@ -29,11 +29,14 @@ def lesson_words():
 
 
 def main():
-    s = (ROOT / 'data' / 'links.js').read_text(encoding='utf-8')
     known = lesson_words()
     result, where = {}, {}
-    for m in re.finditer(r"quizWords: *\[([^\]]*)\]", s):
-        for w in re.findall(r"'([^']+)'", m.group(1)):
+    for f in sorted((ROOT / 'data').glob('lesson*.js')):
+        s = f.read_text(encoding='utf-8')
+        m = re.search(r"\r?\n  words: \[(.*?)\r?\n  \],", s, re.S)
+        if not m:
+            continue
+        for w in re.findall(r"\{ *w: *'([^']+)'", m.group(1)):
             if w in OVERRIDE:
                 z, src = OVERRIDE[w], '指定'
             elif w in known:

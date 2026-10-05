@@ -1378,7 +1378,7 @@
     }
   };
   // 注音聽打：聽語詞，用畫面上的注音鍵盤（標準大千式排列）打出每個字的注音、按聲調，再從同音字裡選出正確的字。
-  // 只能用點的（不接實體鍵盤），避免系統輸入法自動選字。題目是 LESSON_LINKS 的 quizWords，
+  // 只能用點的（不接實體鍵盤），避免系統輸入法自動選字。題目是各課的 words（和認識語詞一樣），
   // 正確注音在 data/quiz_zy.js，選字用的同音字表在 data/zy_cands.js（都由 tools/make_quiz_zy.py 產生）
   var LINKS = window.LESSON_LINKS || {}, QUIZ_ZY = window.QUIZ_ZY || {}, ZY_CANDS = window.ZY_CANDS || {};
   var ZY_ROWS = ['ㄅㄉˇˋㄓˊ˙ㄚㄞㄢㄦ', 'ㄆㄊㄍㄐㄔㄗㄧㄛㄟㄣ', 'ㄇㄋㄎㄑㄕㄘㄨㄜㄠㄤ', 'ㄈㄌㄏㄒㄖㄙㄩㄝㄡㄥ'];
@@ -1639,11 +1639,10 @@
 
   MODULES.zhuyinGame = {
     name: '語詞挑戰', icon: '🗣️', desc: '注音聽打、識字讀詞（看國字念出語詞）', core: false,
+    // 語詞和「認識語詞」一模一樣（L.words，依生字詞語解釋）；注音以 data/quiz_zy.js 為準
     units: function (L, c) {
-      var k = LINKS[L.id];
-      if (!k || !k.quizWords) return [];
-      var items = k.quizWords.filter(function (w) { return QUIZ_ZY[w]; }).map(function (w) { return { w: w, zy: QUIZ_ZY[w] }; });
-      return mkUnits(items, c.group + 2);
+      var items = (L.words || []).map(function (x) { return { w: x.w, zy: QUIZ_ZY[x.w] || x.zy }; });
+      return items.length ? mkUnits(items, c.group + 2) : [];
     },
     // 先選玩法：注音聽打（聽 → 打注音）或識字讀詞（看國字 → 念出來）；記住上次選的
     steps: function (L, unit) {

@@ -2,7 +2,7 @@
  * 各課的外部資源（從老師原本的「五上國語 綜合學習測驗」頁面搬過來）
  *   reads：課文點讀（可以有多個）
  *   score：朗讀挑戰（評分）
- *   quizWords：「注音聽打」（聽語詞、用注音鍵盤打出來再選字）的語詞；改完要執行 python tools/make_quiz_zy.py 產生注音與同音字表
+ *   （注音聽打、識字讀詞的語詞改用各課 lessonXX.js 的 words，和「認識語詞」一樣）
  * 做到新的一課時，網站會自動讀這裡的資料。
  */
 window.LESSON_LINKS = {
@@ -11,38 +11,26 @@ window.LESSON_LINKS = {
       { url: 'https://reurl.cc/276Y3n', text: '📖 課文 1～5 段點讀' },
       { url: 'https://reurl.cc/KEdeDy', text: '📖 課文 6～10 段點讀' }
     ],
-    score: { url: 'https://share.gemini.google/9ipjZwiXglT4', text: '🎙️ 朗讀挑戰（評分）' },
-    quizWords: ['蚊帳', '非洲', '瘧疾', '募集', '捐贈', '獎狀', '收藏', '雜誌', '基金會', '存錢', '寄信', '死去']
+    score: { url: 'https://share.gemini.google/9ipjZwiXglT4', text: '🎙️ 朗讀挑戰（評分）' }
   },
   '02': {
     reads: [{ url: 'https://reurl.cc/3yM9a8', text: '📖 課文點讀' }],
-    score: { url: 'https://share.gemini.google/0QnrmBJTZSbh', text: '🎙️ 朗讀挑戰（評分）' },
-    quizWords: ['德國', '似乎', '血液', '拍攝', '颱風', '記錄', '哀愁', '山巒', '縱谷', '臍帶', '人禍', '殘破', '檳榔', '降低', '汙水', '不斷']
+    score: { url: 'https://share.gemini.google/0QnrmBJTZSbh', text: '🎙️ 朗讀挑戰（評分）' }
   },
   '03': {
     reads: [{ url: 'https://reurl.cc/27lq09', text: '📖 課文點讀' }],
-    score: { url: 'https://share.gemini.google/Ag7iLtDrJGor', text: '🎙️ 朗讀挑戰（評分）' },
-    quizWords: ['陡峭', '強勁', '高聳', '充飢', '隱形', '尖銳', '冷箭', '堅韌', '虯鬚', '繁茂', '休止', '蔓生', '藉由', '豐富', '挫折']
+    score: { url: 'https://share.gemini.google/Ag7iLtDrJGor', text: '🎙️ 朗讀挑戰（評分）' }
   },
   '04': {
     reads: [{ url: 'https://reurl.cc/4YqvOD', text: '📖 課文點讀' }],
-    score: { url: 'https://share.gemini.google/X2PVyN89M6FI', text: '🎙️ 朗讀挑戰（評分）' },
-    quizWords: ['恆久', '黃澄澄', '稻穗', '養活', '來源', '藝術家', '樸實', '撿拾', '頭巾', '腰痠背痛', '樸素', '尊嚴', '任勞任怨', '慷慨', '滋潤']
+    score: { url: 'https://share.gemini.google/X2PVyN89M6FI', text: '🎙️ 朗讀挑戰（評分）' }
   },
   '05': {
     reads: [{ url: 'https://reurl.cc/KED6np', text: '📖 課文點讀' }],
-    score: { url: 'https://share.gemini.google/cpqW2npEx6br', text: '🎙️ 朗讀挑戰（評分）' },
-    quizWords: ['商譽', '服務', '關聯', '核准', '申請', '智慧財產局', '黑松', '註冊', '企業', '堅毅不拔', '歷經', '英文', '銷售', '霸主', '項目']
+    score: { url: 'https://share.gemini.google/cpqW2npEx6br', text: '🎙️ 朗讀挑戰（評分）' }
   },
   '06': {
     reads: [{ url: 'https://reurl.cc/p8XDQZ', text: '📖 課文點讀' }],
-    score: { url: 'https://share.gemini.google/i0uxIaQ3jLO4', text: '🎙️ 朗讀挑戰（評分）' },
-    quizWords: ['娛樂', '汽船', '口哨', '經典', '框架', '劇情', '父母', '負責', '判斷力', '共鳴', '脫穎而出', '榮獲', '細膩', '效果', '團隊', '精益求精', '樣貌', '感官', '增加']
+    score: { url: 'https://share.gemini.google/i0uxIaQ3jLO4', text: '🎙️ 朗讀挑戰（評分）' }
   },
-  '07': { quizWords: ['逆風', '可憐', '物競天擇', '好逸惡勞', '鄰居', '脈絡', '精緻', '脆弱', '噴嚏', '忙碌', '興味盎然', '精疲力盡'] },
-  '08': { quizWords: ['巴基斯坦', '女性', '恐怖', '組織', '霸占', '廣播', '控制', '受傷', '攻擊', '受教權', '威脅', '康復', '武器', '震撼', '恐懼'] },
-  '09': { quizWords: ['維持', '奮戰', '崎嶇', '拳擊', '癌症', '銅牌', '屢屢', '減少', '給予', '幼芽', '椰子', '即使', '腐爛', '衝擊', '鍛造', '鍛鍊'] },
-  '10': { quizWords: ['唐朝', '恬淡', '日暮', '柴扉', '完畢', '簡陋', '傍晚', '確定', '閒適', '幽人', '官職', '吟唱', '空曠'] },
-  '11': { quizWords: ['達駭', '疤痕', '鐵罐', '咚咚', '碰運氣', '傾盆', '營火', '崇拜', '棄置', '奄奄一息', '小心翼翼', '祈禱', '吼聲', '喉嚨'] },
-  '12': { quizWords: ['劇烈', '暈船', '黃昏', '船艙', '途中', '野獸', '渾身', '擱淺', '礁岩', '木筏', '倒塌', '烤爐', '躍躍欲試'] }
 };
