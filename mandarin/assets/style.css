@@ -723,3 +723,4 @@ details.tw-list .fold-body { padding: 0 14px 10px; }
 .read-line .rd-miss { color: #D2553F; text-decoration: underline wavy #D2553F; }
 .read-heard { font-size: 16px; min-height: 1.4em; }
 .mic-read.listening { background: #D2553F; }
+.sc-pair.three { grid-template-columns: auto 1fr 1fr 1fr; } .sc-c { border-left: 6px solid #7A4FB5; } @media (max-width: 560px) { .sc-pair.three { grid-template-columns: 1fr; } }
