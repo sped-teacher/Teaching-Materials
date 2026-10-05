@@ -2184,7 +2184,7 @@
   // ════════════════════════════════════════════════
   var BLK_COLOR = { v: '紅', n: '藍', r: '紫', a: '綠', q: '橘' };
   var ASK3 = { n: '圖裡有誰？有什麼？', r: '他們有什麼反應？', a: '它是什麼樣子？', v: '用哪一個紅色積木連起來？', q: '有多少？' };  // 問自己的問題（通用版）
-  var ASK_ORDER = ['n', 'r', 'a', 'v', 'q'];  // 想的順序：先看圖找人／東西，再看反應、樣子，最後選連接的積木
+  var ASK_ORDER = ['n', 'r', 'v', 'a', 'q'];  // 想的順序：先看圖判斷主體（人／東西、反應、動作），再選樣子、數量
   function blockSteps(L, p, c) {
     var B = p.blocks, bank = p.bank, lv = c.level, scenes = p.scenes || [];
     // 一進來就在背景先載好這一組要用的圖（示範圖、課本例子、情境圖），到後面的步驟就會直接出現
@@ -2379,7 +2379,9 @@
       var q = 0, own = lv === 1 ? p.own.slice(0, 1) : p.own;
       function show() {
         stopSpeak(); stage.innerHTML = '';
-        var sc = scenes[own[q]], parts = B.map(function (b) { return typeof b === 'string' ? b : ''; }), cur = slots[0];
+        // 照想的順序：先選圖的主體（藍／紅），再選樣子、數量；學生也可以自己點別塊
+        var order = ASK_ORDER.map(slotOf).filter(function (i) { return i >= 0; });
+        var sc = scenes[own[q]], parts = B.map(function (b) { return typeof b === 'string' ? b : ''; }), cur = order[0];
         var tier = 0, first = true, top = h('div'), card = h('div'), pickBox = h('div'), fb = h('div', { class: 'feedback' });
         var full = function () { return slots.every(function (i) { return parts[i]; }); };
         function draw() {
@@ -2395,11 +2397,12 @@
           var k = B[cur].k;
           // 等級 1 只放和圖有關的詞，選項少一點
           var words = bank[k].filter(function (x) { return !x.x && (lv > 1 || k === 'v' || (sc.fit[k] || []).indexOf(x.w) >= 0 || ((sc.no || {})[k] || []).indexOf(x.w) >= 0); });
-          append(pickBox, h('div', { class: 'sub' }, '點一塊積木，再選' + colorOf(cur) + '的詞：' + B[cur].name),
+          var none = slots.every(function (i) { return !parts[i]; });
+          append(pickBox, h('div', { class: 'sub' }, (none ? '先看圖，圖裡主要是什麼？選' : '選') + colorOf(cur) + '的詞：' + B[cur].name),
             h('div', { class: 'bchips' }, words.map(function (x) {
               var b = chipEl(k, x, function () {
                 parts[cur] = x.w; fb.innerHTML = '';
-                var nxt = slots.find(function (j) { return !parts[j]; });
+                var nxt = order.find(function (j) { return !parts[j]; });
                 if (nxt != null) cur = nxt;
                 draw();
               });
@@ -2425,20 +2428,19 @@
           }
           if (first) { api.record(false); first = false; }
           sfx.wrong();
+          // 先看和圖符不符（從主體開始），再看搭配合不合理
+          var miss = order.find(function (i) { var f = sc.fit[B[i].k]; return f && f.indexOf(parts[i]) < 0; });
+          if (miss != null) { cur = miss; draw(); return say('和圖不一樣喔。' + missText(sc, B[miss].k, parts[miss])); }
           if (J.st === 'bad') return say(J.why, '🤔');
-          if (J.st === 'rare') { var alt = altOf(parts); return say('「' + t + '」這樣說比較少見。' + (alt ? '換成「' + alt + '」，大家會更常這樣說。' : '換一塊積木試試看！'), '💬'); }
-          // 合理，但和圖不一樣：指出哪一塊
-          var miss = slots.find(function (i) { var f = sc.fit[B[i].k]; return f && f.indexOf(parts[i]) < 0; });
-          var k = B[miss].k;
-          cur = miss; draw();
-          say('「' + t + '」是合理的短語，可是和圖不一樣。' + missText(sc, k, parts[miss]));
+          var alt = altOf(parts);
+          say('「' + t + '」這樣說比較少見。' + (alt ? '換成「' + alt + '」，大家會更常這樣說。' : '換一塊積木試試看！'), '💬');
         }
         // 💡 提示：① 三個問題 → ② 指出要換哪一塊 → ③ 幫你放好一塊
         var hb = h('button', { class: 'btn btn-ghost', type: 'button' }, '💡 提示');
         hb.addEventListener('click', function () {
           first && api.record(false); first = false; tier++;
           if (tier === 1) { card.innerHTML = ''; append(card, askCard(sc, null)); return say('照順序問自己三個問題，一題選一塊積木。'); }
-          var wrongAt = slots.find(function (i) { return parts[i] !== sc.ans[i] && !(sc.fit[B[i].k] && sc.fit[B[i].k].indexOf(parts[i]) >= 0); });
+          var wrongAt = order.find(function (i) { return parts[i] !== sc.ans[i] && !(sc.fit[B[i].k] && sc.fit[B[i].k].indexOf(parts[i]) >= 0); });
           if (wrongAt == null) return say('積木都可以了，按「✅ 我造好了」。');
           cur = wrongAt; draw();
           if (tier === 2) return say('看亮起來的那一塊：' + ((sc.q || {})[B[wrongAt].k] || ASK3[B[wrongAt].k]));
@@ -2485,7 +2487,12 @@
         // 判斷只有兩種：合理／怪怪的（少見說法也算合理）。答錯直接說哪裡不合，再給「再玩一次」
         var J = judge(parts), isOk = J.st !== 'bad', right = saysOk === isOk, s = parts.join(''), m;
         if (isOk) m = right ? '答對了！「' + s + '」很合理。' : '答錯了。「' + s + '」是合理的，再念一次聽聽看。';
-        else m = right ? '答對了！' + J.why : '答錯了。這個短語怪怪的：' + J.why;
+        else {
+          // 骰子不能換積木，拿掉「換一個……試試」這類的話，只留解釋
+          var why = J.why.replace(/，?[^，。！？]*換[^，。！？]*[。！？]?/g, '').trim();
+          why = why ? why.replace(/[^。！？]$/, '$&。') : '這幾塊積木放在一起怪怪的。';
+          m = right ? '答對了！' + why : '答錯了。這個短語怪怪的：' + why;
+        }
         score.n++; if (right) score.ok++;
         right ? sfx.right() : sfx.wrong();
         btns.hidden = true;
