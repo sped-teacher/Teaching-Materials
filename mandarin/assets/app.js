@@ -931,7 +931,7 @@
     },
 
     sentences: {
-      name: '句型練習', icon: '🧱', desc: '認識句型、排句子、選連接詞、自己造句', core: true,
+      name: '句型練習', icon: '🧱', desc: '看老師示範、把兩件事接起來（問關係、🎤 念一遍）、自己造句', core: true,
       units: function (L, c) {
         return L.sentences.filter(function (s) { return !s.flex || c.level === 3; })
           .map(function (s) { return { key: s.id, items: [s], label: s.pattern + (s.flex ? '（挑戰）' : '') }; })
