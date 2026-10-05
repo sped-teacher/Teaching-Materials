@@ -2464,7 +2464,7 @@
 
     // 骰子：擲出明確的組合（約一半合理、一半怪怪的），學生判斷「合理嗎？」
     function diceGame(box) {
-      var parts = B.map(function (b) { return typeof b === 'string' ? b : ''; }), judged = false;
+      var parts = B.map(function (b) { return typeof b === 'string' ? b : ''; }), judged = false, score = { n: 0, ok: 0 };
       var top = h('div'), fb = h('div'), btns = h('div', { class: 'row', style: 'justify-content:center;gap:12px' });
       var dice = h('button', { type: 'button', class: 'btn btn-ghost dice' }, '🎲 擲骰子');
       function roll() {
@@ -2482,11 +2482,19 @@
       function decide(saysOk) {
         if (judged) return;
         judged = true;
-        var J = judge(parts), right = saysOk === (J.st === 'ok'), m;
-        if (J.st === 'ok') m = right ? '對！「' + parts.join('') + '」很合理。' : '再念一次：「' + parts.join('') + '」，其實是通順的喔！';
-        else m = (right ? '你發現了！' : '再想一想：') + J.why;
+        // 判斷只有兩種：合理／怪怪的（少見說法也算合理）。答錯直接說哪裡不合，再給「再玩一次」
+        var J = judge(parts), isOk = J.st !== 'bad', right = saysOk === isOk, s = parts.join(''), m;
+        if (isOk) m = right ? '答對了！「' + s + '」很合理。' : '答錯了。「' + s + '」是合理的，再念一次聽聽看。';
+        else m = right ? '答對了！' + J.why : '答錯了。這個短語怪怪的：' + J.why;
+        score.n++; if (right) score.ok++;
         right ? sfx.right() : sfx.wrong();
-        fb.innerHTML = ''; append(fb, h('div', { class: 'hintbox' }, right ? '👍' : '🤔', h('span', { style: 'flex:1' }, m), sayBtn(m)));
+        btns.hidden = true;
+        var again = h('button', { type: 'button', class: 'btn btn-primary' }, '🎲 再玩一次');
+        again.addEventListener('click', roll);
+        fb.innerHTML = '';
+        append(fb, h('div', { class: 'hintbox' }, right ? '✅' : '❌', h('span', { style: 'flex:1' }, m), sayBtn(m)),
+          h('div', { class: 'row', style: 'justify-content:center;gap:12px;margin-top:8px;flex-wrap:wrap' }, again,
+            h('span', { class: 'muted' }, '答對 ' + score.ok + '／' + score.n + '　玩夠了按下面的「完成」')));
         speak(m);
       }
       var yes = h('button', { type: 'button', class: 'btn btn-primary' }, '👍 合理');
