@@ -1553,68 +1553,64 @@
     show();
   }
   // ════════════════════════════════════════════════
-  //  識字讀詞：看語詞念出來（看國字／國字＋注音／看注音），用瀏覽器語音辨識比對讀音
-  //  （和朗讀挑戰一樣：同音字算對，聲調不對會提醒）。辨識不穩時，老師可以按「老師聽過：念對了」。
+  //  識字讀詞：看國字念出語詞（不給注音），用瀏覽器語音辨識比對讀音，電腦自己判斷
+  //  （和朗讀挑戰一樣：同音字算對，聲調不對會提醒）。提示只有「🖼️ 看圖」，看了就不算獨立答對。
   // ════════════════════════════════════════════════
-  var SAY_MODES = {
-    han: { name: '看國字念', tip: '看國字，按 🎤 念出這個語詞。' },
-    both: { name: '看國字和注音念', tip: '看國字和注音，按 🎤 念出這個語詞。' },
-    zy: { name: '看注音念', tip: '看注音，按 🎤 念出這個語詞。' }
-  };
-  function runSayWord(stage, items, api, lid, mode) {
+  function runSayWord(stage, items, api, lid) {
     if (CAPTURE) return;
-    var c = api.cfg, i = 0, M = SAY_MODES[mode];
+    var i = 0;
     function show() {
       stopSpeak(); stage.innerHTML = '';
-      var it = items[i], zs = it.zy.split(' '), chars = Array.from(it.w), tries = 0, heardDemo = false, solved = false, rec = null;
+      var it = items[i], zs = it.zy.split(' '), chars = Array.from(it.w), tries = 0, usedPic = false, solved = false, rec = null;
       var targets = chars.map(function (ch, k) { return { c: ch, zy: zs[k] || '', bare: bareZy(zs[k] || '') }; });
-      var word = h('div', { class: 'sw-word' + (mode === 'zy' ? ' zy-only' : '') });
+      var word = h('div', { class: 'sw-word' });
       function drawWord(res) {
         word.innerHTML = '';
         chars.forEach(function (ch, k) {
-          var cls = 'sw-c' + (res ? (res[k] === 'ok' ? ' ok' : res[k] === 'tone' ? ' tone' : ' miss') : '');
-          if (mode === 'zy') append(word, h('span', { class: cls + ' sw-zy' }, zyColumn(zs[k])));   // 注音直排（跟課本一樣）
-          else append(word, h('span', { class: cls }, mode === 'both' ? withZy(ch, zs[k], true) : ch));
+          append(word, h('span', { class: 'sw-c' + (res ? (res[k] === 'ok' ? ' ok' : res[k] === 'tone' ? ' tone' : ' miss') : '') }, ch));
         });
       }
       drawWord();
       var heard = h('div', { class: 'sw-heard muted' }, '　');
       var fb = h('div', { class: 'feedback' }), tools = h('div', { class: 'tools' });
       var mic = h('button', { class: 'btn btn-primary sw-mic', type: 'button' }, '🎤 按我，念出來');
-      var demo = h('button', { class: 'btn btn-ghost', type: 'button', hidden: true }, '🔊 聽示範');
-      demo.addEventListener('click', function () { heardDemo = true; speak(it.w, demo); });
-      // 老師在旁邊聽：辨識不準或沒有麥克風時用
-      var tOk = h('button', { class: 'btn btn-ghost sw-teacher', type: 'button' }, '✓ 老師聽過：念對了');
-      tOk.addEventListener('click', function () { if (!solved) pass(targets.map(function () { return 'ok'; })); });
+      // 圖片提示：有這個語詞的圖才出現按鈕
+      var picBox = h('div', { class: 'zg-pic sw-pic' });
+      var picBtn = h('button', { class: 'btn btn-ghost', type: 'button', hidden: true }, '🖼️ 看圖提示');
+      var img = new Image();
+      img.alt = '「' + it.w + '」的圖';
+      img.onload = function () { picBox.appendChild(img); if (!solved) picBtn.hidden = false; };
+      img.src = 'images/lesson' + lid + '/' + encodeURIComponent(it.w) + '.webp';
+      picBtn.addEventListener('click', function () { usedPic = true; picBox.classList.add('on'); picBtn.hidden = true; });
+      function next() { i++; if (i < items.length) show(); else api.next(); }
       function pass(res) {
-        solved = true; drawWord(res); mic.hidden = true; demo.hidden = true; tOk.hidden = true;
-        var indep = tries === 0 && !heardDemo;
-        api.record(indep); sfx.right();
+        solved = true; drawWord(res); mic.hidden = true; picBtn.hidden = true;
+        api.record(tries === 0 && !usedPic); sfx.right();
         var toneAt = res.map(function (r, k) { return r === 'tone' ? chars[k] : null; }).filter(Boolean);
         var m = pick(PRAISE) + (toneAt.length ? '「' + toneAt.join('、') + '」的聲調再注意一下。' : '');
+        picBox.classList.add('on');
         fb.innerHTML = '';
         append(fb, h('div', { class: 'row', style: 'justify-content:center' }, h('div', { class: 'praise' }, m), sayBtn(it.w)),
-          h('div', { class: 'sw-done' }, withZy(it.w, it.zy, true)), picEl(lid, it.w),
-          nextBtn(i < items.length - 1 ? '下一個 →' : '完成 →', function () { i++; if (i < items.length) show(); else api.next(); }));
+          nextBtn(i < items.length - 1 ? '下一個 →' : '完成 →', next));
         speak(it.w);
       }
       function miss(res, t) {
         tries++; sfx.wrong();
         drawWord(res);
-        demo.hidden = false;
-        var m = t ? '我聽到「' + t + '」。紅色的字再念一次，可以先按「🔊 聽示範」。' : '沒有聽清楚，靠近一點、大聲一點再念一次。';
+        var m = t ? '我聽到「' + t + '」。紅色的字再念一次。' : '沒有聽清楚，靠近一點、大聲一點再念一次。';
+        if (!picBtn.hidden) m += '想不起來可以按「🖼️ 看圖提示」。';
         fb.innerHTML = '';
         append(fb, h('div', { class: 'hintbox' }, '💡', h('span', { style: 'flex:1' }, m), sayBtn(m)));
         if (tries >= 3) append(fb, btnTo('先跳過，下一個 →', 'btn-ghost', function () {
           if (rec) { try { rec.abort(); } catch (e) { } }
           if (!solved) { solved = true; api.record(false); }
-          i++; if (i < items.length) show(); else api.next();
+          next();
         }));
       }
       mic.addEventListener('click', function () {
         if (solved) return;
         if (rec) { rec.stop(); return; }
-        if (!SR_CLASS) { toast('這個瀏覽器不能用語音辨識，請老師聽完按「念對了」'); return; }
+        if (!SR_CLASS) { toast('這個瀏覽器不能用語音辨識，請改用 Safari 或 Chrome'); return; }
         stopSpeak();
         var got = '';
         rec = new SR_CLASS(); rec.lang = 'zh-TW'; rec.interimResults = true; rec.continuous = false; rec.maxAlternatives = 1;
@@ -1634,49 +1630,47 @@
         try { rec.start(); mic.classList.add('listening'); mic.textContent = '👂 請念……（念完會自動停）'; heard.textContent = '　'; } catch (err) { rec = null; }
       });
       window.addEventListener('hashchange', function () { if (rec) { try { rec.abort(); } catch (e) { } } }, { once: true });
-      append(tools, demo, tOk);
-      append(stage, qbar(i, items.length), h('p', { class: 'muted', style: 'margin:0 0 8px' }, M.tip),
-        h('div', { class: 'card sw-card' }, word, heard, h('div', { style: 'text-align:center' }, mic)), fb, tools);
+      append(tools, picBtn);
+      append(stage, qbar(i, items.length),
+        h('div', { class: 'card sw-card' }, word, picBox, heard, h('div', { style: 'text-align:center' }, mic)), fb, tools);
     }
     show();
   }
 
   MODULES.zhuyinGame = {
-    name: '語詞挑戰', icon: '🗣️', desc: '注音聽打、識字讀詞（看語詞念念看）', core: false,
+    name: '語詞挑戰', icon: '🗣️', desc: '注音聽打、識字讀詞（看國字念出語詞）', core: false,
     units: function (L, c) {
       var k = LINKS[L.id];
       if (!k || !k.quizWords) return [];
       var items = k.quizWords.filter(function (w) { return QUIZ_ZY[w]; }).map(function (w) { return { w: w, zy: QUIZ_ZY[w] }; });
       return mkUnits(items, c.group + 2);
     },
-    // 先選玩法：注音聽打（聽 → 打注音）或識字讀詞（看 → 念出來，三種看法）；記住上次選的
+    // 先選玩法：注音聽打（聽 → 打注音）或識字讀詞（看國字 → 念出來）；記住上次選的
     steps: function (L, unit) {
       return [step('語詞挑戰：選一種玩法，再開始。', 'quiz', function (stage, api) {
         if (CAPTURE) return;
-        var last = state.settings.wordMode || 'type';
+        var last = state.settings.wordMode === 'type' ? 'type' : state.settings.wordMode ? 'say' : 'type';
+        var TIP = {
+          type: '注音聽打：聽語詞，用下面的注音鍵盤打出每個字的注音、按聲調，再選出正確的字。',
+          say: '識字讀詞：看國字，按 🎤 念出這個語詞。'
+        };
         function go(m) {
           state.settings.wordMode = m; save();
           stage.innerHTML = '';
-          // 上面「現在要做什麼」換成這個玩法的說明
-          var now = document.querySelector('.now .txt');
-          if (now) now.textContent = m === 'type' ? '注音聽打：聽語詞，用下面的注音鍵盤打出每個字的注音、按聲調，再選出正確的字。' : '識字讀詞：' + SAY_MODES[m].tip;
+          var now = document.querySelector('.now .txt');   // 上面「現在要做什麼」換成這個玩法的說明
+          if (now) now.textContent = TIP[m];
           if (m === 'type') runZhuyin(stage, shuffle(unit.items), api, L.id);
-          else runSayWord(stage, shuffle(unit.items), api, L.id, m);
+          else runSayWord(stage, shuffle(unit.items), api, L.id);
         }
         function opt(m, icon, title, sub) {
           var b = h('button', { type: 'button', class: 'mode-opt' + (m === last ? ' on' : '') }, h('span', { class: 'mode-ic' }, icon), h('b', {}, title), h('small', {}, sub));
           b.addEventListener('click', function () { go(m); });
           return b;
         }
-        append(stage,
-          h('div', { class: 'mode-group' }, h('div', { class: 'sub' }, '🎧 聽語詞，打出注音'),
-            h('div', { class: 'mode-opts' }, opt('type', '⌨️', '注音聽打', '聽語詞，點注音鍵盤打出來，再選字'))),
-          h('div', { class: 'mode-group' }, h('div', { class: 'sub' }, '🗣️ 識字讀詞：看語詞，念出來'),
-            h('div', { class: 'mode-opts' },
-              opt('han', '字', '看國字念', '只有國字'),
-              opt('both', '字ㄅ', '看國字和注音念', '國字旁邊有注音'),
-              opt('zy', 'ㄅ', '看注音念', '只有注音'))),
-          SR_CLASS ? null : h('p', { class: 'muted', style: 'font-size:15px' }, '這個瀏覽器不能語音辨識；識字讀詞可以由老師聽，按「念對了」。'));
+        append(stage, h('div', { class: 'mode-opts' },
+            opt('type', '🎧', '注音聽打', '聽語詞，點注音鍵盤打出來，再選字'),
+            opt('say', '🗣️', '識字讀詞', '看國字，念出這個語詞')),
+          SR_CLASS ? null : h('p', { class: 'muted', style: 'font-size:15px' }, '這個瀏覽器不能語音辨識，識字讀詞請改用 Safari 或 Chrome。'));
       })];
     }
   };

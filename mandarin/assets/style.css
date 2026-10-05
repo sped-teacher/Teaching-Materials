@@ -668,7 +668,6 @@ h3 { font-size: 21px; }
 .mode-opt small { font-size: 15px; color: var(--muted); }
 .sw-card { text-align: center; padding: 20px 14px; }
 .sw-word { display: flex; justify-content: center; flex-wrap: wrap; gap: 6px; font-family: var(--kai); font-size: 88px; line-height: 1.2; margin: 6px 0; }
-.sw-word.zy-only { font-family: var(--font); font-size: 46px; gap: 22px; letter-spacing: 2px; }
 .sw-c { border-radius: 12px; padding: 0 6px; border: 3px solid transparent; }
 .sw-c.ok { border-color: var(--good, #2E8B6E); }
 .sw-c.tone { border-color: #E0A030; }
@@ -677,9 +676,6 @@ h3 { font-size: 21px; }
 .sw-mic { font-size: 22px; min-height: 64px; padding: 0 28px; border-radius: 999px; }
 .sw-mic.listening { background: #2E8B6E; border-color: #2E8B6E; animation: swPulse 1.2s ease-in-out infinite; }
 @keyframes swPulse { 50% { box-shadow: 0 0 0 10px rgba(46, 139, 110, .18); } }
-.sw-done { font-family: var(--kai); font-size: 40px; text-align: center; margin: 6px 0; }
-.sw-teacher { font-size: 16px; }
-@media (max-width: 640px) { .sw-word { font-size: 64px; } .sw-word.zy-only { font-size: 34px; } }
-.sw-word.zy-only { gap: 28px; }
-.sw-zy .zy-v { font-size: 44px; color: var(--ink, #2B2B2B); font-weight: 500; }
-@media (max-width: 640px) { .sw-zy .zy-v { font-size: 34px; } }
+@media (max-width: 640px) { .sw-word { font-size: 64px; } }
+
+.sw-pic { margin: 6px auto 4px; }
