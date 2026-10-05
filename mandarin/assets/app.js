@@ -938,6 +938,7 @@
       },
       steps: function (L, unit, c) {
         var p = unit.items[0];
+        if (p.combine) return combineSteps(L, p, c);  // 有句子合併資料的：用句子合併鷹架
         var list = [
           step('認識句型：聽一聽「' + p.pattern + '」怎麼用。', 'intro', function (stage, api) {
             var card = h('div', { class: 'card pattern-card' },
@@ -2302,6 +2303,178 @@
   //  資料由 tools/make_reader.py 產生（注音查教育部辭典，老師校正寫在 tools/texts/fixes.json）
   // ════════════════════════════════════════════════
   var READINGS = window.READINGS || {};
+
+  // ════════════════════════════════════════════════
+  //  句型練習「句子合併」鷹架（p.combine）：每一題都照三步驟想
+  //    1 找兩件事 → 2 問關係（自己問自己）→ 3 接起來，念一遍
+  //  ① 老師示範（放聲思考）＋換你試試（只要把連接詞放進去，怎麼點都對）
+  //  ② 句子合併：兩個簡單句，先回答關係問題，再放連接詞、念一遍；有反例（不能用這個句型）練習分辨
+  //  ③ 自己造句：想自己的生活，先說再寫（沿用句型框和老師批改）
+  // ════════════════════════════════════════════════
+  var RELS = {
+    turn: { icon: '↩️', name: '轉彎', q: '後面發生的事，和你本來想的一樣嗎？', yes: '不一樣', no: '一樣', check: '我的後半句，跟本來想的不一樣嗎？有轉彎嗎？', idea: '有沒有一件「本來以為……結果卻不一樣」的事？' },
+    cond: { icon: '🔑', name: '條件', q: '前面做到了，後面就一定會發生嗎？', yes: '會', no: '不一定', check: '前面做到了，後面就一定會發生嗎？', idea: '做到什麼事，就一定會有一個結果？' },
+    more: { icon: '➕', name: '再多一件', q: '後面是不是再多一件、更厲害的事？', yes: '是', no: '不是', check: '我的後半句，是再多一件、更厲害的事嗎？', idea: '你或家人會做的兩件事，後面那件更厲害？' }
+  };
+  function combineSteps(L, p, c) {
+    var C = p.combine, R = RELS[C.rel], lv = c.level, conn = p.conn;
+    var joinOf = function (pr) { return conn[0] + pr.a + '，' + conn[1] + pr.b + '。'; };
+    // 三步驟卡（on：現在在第幾步）
+    var stepsCard = function (on) {
+      var items = [['1', '找兩件事'], ['2', '問關係：' + R.q], ['3', '接起來，念一遍']];
+      return h('div', { class: 'ask3' }, h('div', { class: 'ask3-title' }, '🤔 照三個步驟想：'),
+        items.map(function (it, k) {
+          return h('div', { class: 'ask3-q blk-' + ['n', 'r', 'v'][k] + (on === k ? ' on' : '') }, h('span', { class: 'ask3-n' }, it[0]), h('span', { style: 'flex:1' }, it[1]), sayBtn(it[1]));
+        }));
+    };
+    // 兩張句子卡（a、b）
+    var cardsEl = function (pr) {
+      return h('div', { class: 'sc-pair' },
+        h('div', { class: 'sc-emoji' }, pr.e || ''),
+        h('div', { class: 'sc-card sc-a' }, h('small', {}, '第一件事'), h('b', {}, pr.a + '。'), sayBtn(pr.a)),
+        h('div', { class: 'sc-card sc-b' }, h('small', {}, '第二件事'), h('b', {}, pr.b + '。'), sayBtn(pr.b)));
+    };
+    // 合併的句子：slots 是兩個連接詞的位置（空的顯示 ＿＿）
+    var joinEl = function (pr, got) {
+      var cw = function (k) { return h('span', { class: 'sc-conn' + (got[k] ? ' filled conn-' + (k ? 'b' : 'a') : '') }, got[k] || '＿＿'); };
+      return h('div', { class: 'sentence sc-join' }, cw(0), pr.a, '，', cw(1), pr.b, '。');
+    };
+    // 念一遍：老師的示範念法＋學生自己念（等級 1 先自動念一次）
+    var readAloud = function (sentence, onDone) {
+      var done = h('button', { type: 'button', class: 'btn btn-primary' }, '🗣️ 我念好了');
+      done.addEventListener('click', function () { done.disabled = true; onDone(); });
+      if (lv === 1) speak(sentence);
+      return h('div', { class: 'read-box' }, h('div', { class: 'sub' }, '自己大聲念一遍，聽聽看順不順。'),
+        h('div', { class: 'row', style: 'justify-content:center' }, h('div', { class: 'sentence' }, colorConn(sentence, conn)), sayBtn(sentence, '聽老師念')), done);
+    };
+    var list = [];
+
+    // ① 老師示範：一步一步放聲思考；最後換你試試（點連接詞就會放到對的位置）
+    list.push(step('認識句型：看看老師怎麼想，把兩件事接起來。', 'intro', function (stage, api) {
+      var D = C.demo, k = -1, txt = h('div', { class: 'think-txt' });
+      var pairEl = cardsEl(D), card = h('div'), joinBox = h('div');
+      var go = nextBtn('我知道了，開始練習 →', api.next);
+      go.disabled = lv !== 3;
+      var btn = h('button', { class: 'btn btn-primary', type: 'button' }, '▶ 聽老師怎麼想');
+      append(card, stepsCard(-1));
+      btn.addEventListener('click', function () {
+        if (k >= D.think.length - 1) return;
+        k++;
+        var t = D.think[k], at = t.at;
+        pairEl.classList.toggle('lit', at === 'ab');
+        card.innerHTML = ''; append(card, stepsCard({ ab: 0, q: 1, c: 2, all: 2 }[at]));
+        if (at === 'c' || at === 'all') { joinBox.innerHTML = ''; append(joinBox, joinEl(D, conn)); }
+        txt.innerHTML = ''; append(txt, h('span', { style: 'flex:1' }, '🧑‍🏫 ' + t.say), sayBtn(t.say));
+        speak(t.say);
+        if (k >= D.think.length - 1) { btn.hidden = true; tryBox.hidden = false; }
+        else btn.textContent = '▶ 下一步（' + (k + 2) + '／' + D.think.length + '）';
+      });
+      // 換你試試：點連接詞，就會放到對的位置（怎麼點都對）
+      var T = C.tryPair, got = ['', ''], tryJoin = h('div'), tryFb = h('div');
+      var drawTry = function () { tryJoin.innerHTML = ''; append(tryJoin, joinEl(T, got)); };
+      var chips = conn.map(function (w, i) {
+        var b = h('button', { type: 'button', class: 'bchip conn-chip conn-' + (i ? 'b' : 'a') }, w);
+        b.addEventListener('click', function () {
+          got[i] = w; b.disabled = true; b.classList.add('picked'); drawTry(); sfx.right();
+          if (got[0] && got[1]) {
+            append(tryFb, readAloud(joinOf(T), function () { go.disabled = false; tryFb.appendChild(h('div', { class: 'praise' }, '你把兩件事接起來了！')); }));
+          }
+        });
+        return b;
+      });
+      drawTry();
+      var tryBox = h('div', { class: 'try-box', hidden: true },
+        h('div', { class: 'row' }, h('div', { class: 'sub', style: 'flex:1' }, '換你試試：點連接詞，把兩件事接起來。'), sayBtn('換你試試：點連接詞，把兩件事接起來。')),
+        cardsEl(T), tryJoin, h('div', { class: 'bchips' }, chips), tryFb);
+      append(stage, h('div', { class: 'card pattern-card' },
+        h('span', { class: 'kind' }, p.kind),
+        h('div', { class: 'pat' }, R.icon + ' ', colorConn(p.pattern, conn)),
+        h('div', { class: 'row', style: 'justify-content:center' }, h('div', { class: 'explain' }, p.explain), sayBtn(p.explain)),
+        pairEl, card, joinBox, txt, h('div', { style: 'text-align:center;margin:10px 0' }, btn), tryBox),
+        h('div', { style: 'margin-top:16px' }, go));
+    }));
+
+    // ② 句子合併：先問關係（是／不是這個句型）→ 放連接詞 → 念一遍
+    list.push(step('句子合併：問問關係，再用「' + p.pattern + '」把兩件事接起來。', 'quiz', function (stage, api) {
+      var ids = (C.byLevel || {})[lv] || C.pairs.map(function (x, i) { return i; }), q = 0;
+      // 連接詞選項：等級 1 只有這一組；等級 2、3 混進別的句型的連接詞
+      var others = ['只要', '就', '不但', '還', '因為', '所以'].filter(function (w) { return conn.indexOf(w) < 0; });
+      function show() {
+        stopSpeak(); stage.innerHTML = '';
+        var pr = C.pairs[ids[q]], got = ['', ''], miss = 0, first = true;
+        var card = h('div'), joinBox = h('div'), pick = h('div'), fb = h('div', { class: 'feedback' });
+        var say = function (m, icon) { fb.innerHTML = ''; append(fb, h('div', { class: 'hintbox' }, icon || '💡', h('span', { style: 'flex:1' }, m), sayBtn(m))); speak(m); };
+        var next = function () {
+          append(fb, nextBtn(q < ids.length - 1 ? '下一題 →' : '完成 →', function () { q++; if (q < ids.length) show(); else api.next(); }));
+        };
+        // 2 問關係
+        function askRel() {
+          card.innerHTML = ''; append(card, stepsCard(1));
+          var yes = h('button', { type: 'button', class: 'btn btn-primary' }, R.icon + ' ' + R.yes);
+          var no = h('button', { type: 'button', class: 'btn btn-ghost' }, R.no);
+          var answer = function (saysFit) {
+            if (saysFit === pr.fit) {
+              api.record(first); sfx.right(); pick.innerHTML = '';
+              if (pr.fit) { say('對！' + pr.why, '👍'); placeConn(); }
+              else {
+                say('對！' + pr.why, '👍');
+                if (pr.alt) append(fb, h('div', { class: 'model' }, h('span', { class: 'tag' }, '可以這樣說'), h('span', {}, pr.alt), sayBtn(pr.alt)));
+                next();
+              }
+            } else {
+              if (first) api.record(false);
+              first = false; miss++; sfx.wrong();
+              say('再想一想：' + R.q + (miss >= c.wrongLimit ? '　' + pr.why : ''), '🤔');
+            }
+          };
+          yes.addEventListener('click', function () { answer(true); });
+          no.addEventListener('click', function () { answer(false); });
+          pick.innerHTML = '';
+          append(pick, h('div', { class: 'row', style: 'justify-content:center' }, h('div', { class: 'sub' }, R.q), sayBtn(R.q)),
+            h('div', { class: 'row', style: 'justify-content:center;gap:12px' }, yes, no));
+        }
+        // 3 放連接詞：照順序點（先放前面，再放後面）
+        function placeConn() {
+          card.innerHTML = ''; append(card, stepsCard(2));
+          var opts = lv === 1 ? conn.slice() : conn.concat(shuffle(others).slice(0, lv === 2 ? 2 : 4));
+          var draw = function () { joinBox.innerHTML = ''; append(joinBox, joinEl(pr, got)); };
+          draw();
+          var chips = shuffle(opts).map(function (w) {
+            var b = h('button', { type: 'button', class: 'bchip conn-chip' + (lv === 1 ? ' conn-' + (conn.indexOf(w) ? 'b' : 'a') : '') }, w);
+            b.addEventListener('click', function () {
+              var at = got[0] ? 1 : 0;
+              if (w === conn[at]) {
+                got[at] = w; b.disabled = true; b.classList.add('picked'); sfx.right(); draw(); fb.innerHTML = '';
+                if (got[1]) { pick.innerHTML = ''; append(pick, readAloud(joinOf(pr), function () { append(fb, h('div', { class: 'praise' }, '你把兩件事接起來了！')); next(); })); }
+              } else {
+                sfx.wrong(); b.classList.remove('shake'); void b.offsetWidth; b.classList.add('shake');
+                say(conn.indexOf(w) >= 0 ? '「' + w + '」要放在後面。先放第一件事前面的詞。'
+                  : '「' + w + '」不是「' + p.pattern + '」的詞。有' + R.name + '，要用「' + conn[0] + '」和「' + conn[1] + '」。');
+              }
+            });
+            return b;
+          });
+          pick.innerHTML = '';
+          append(pick, h('div', { class: 'sub', style: 'text-align:center' }, '點連接詞，先放「第一件事」前面，再放「第二件事」前面。'), h('div', { class: 'bchips' }, chips));
+        }
+        append(stage, qbar(q, ids.length), cardsEl(pr), card, joinBox, pick, fb);
+        askRel();
+        if (c.autoRead) speak(pr.a + '。' + pr.b + '。' + R.q);
+      }
+      show();
+    }));
+
+    // ③ 自己造句：想自己的生活（想法卡），先說再寫；寫完自己檢查關係（沿用 runMake 的句型框和老師批改）
+    list.push(step(lv < 3 ? '自己造句：想一件自己的事，先說再寫。' : '自己造句：用「' + p.pattern + '」寫一個句子。', 'quiz', function (stage, api) {
+      var inner = h('div');
+      append(stage, h('div', { class: 'idea-box' },
+        h('div', { class: 'row' }, h('b', { style: 'flex:1' }, '💭 想一想你自己：' + R.idea), sayBtn('想一想你自己：' + R.idea)),
+        h('div', { class: 'idea-chips' }, (C.ideas || []).map(function (t) { return h('span', { class: 'idea-chip' }, t); })),
+        h('div', { class: 'sub' }, '🗣️ 先說給自己聽，再寫下來。寫完問自己：' + R.check)), inner);
+      runMake(inner, p, L, api);
+    }));
+    return list;
+  }
 
   // ════════════════════════════════════════════════
   //  短語短句「積木」鷹架（p.blocks）：我做 → 我們一起做 → 你做；每組 3 步、約 8 分鐘

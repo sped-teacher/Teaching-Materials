@@ -695,3 +695,27 @@ details.tw-list > summary::-webkit-details-marker { display: none; }
 details.tw-list > summary::after { content: '＋'; margin-left: auto; color: var(--muted); font-weight: 400; }
 details.tw-list[open] > summary::after { content: '－'; }
 details.tw-list .fold-body { padding: 0 14px 10px; }
+
+/* 句型練習：句子合併（兩張句子卡、連接詞空格、念一遍、想法卡） */
+.sc-pair { display: grid; grid-template-columns: auto 1fr 1fr; gap: 8px; align-items: stretch; margin: 10px 0; padding: 4px; border-radius: 14px; transition: box-shadow .2s; }
+.sc-pair.lit { box-shadow: 0 0 0 4px #FFF07A; }
+.sc-emoji { font-size: 40px; display: grid; place-items: center; padding: 0 4px; }
+.sc-card { background: #fff; border: 2px solid var(--line); border-radius: 12px; padding: 6px 10px; display: flex; flex-direction: column; gap: 2px; position: relative; text-align: left; }
+.sc-card small { color: var(--muted); font-size: 13px; }
+.sc-card b { font-family: var(--kai); font-weight: 400; font-size: 24px; line-height: 1.5; padding-right: 36px; }
+.sc-card .say { position: absolute; right: 6px; bottom: 6px; }
+.sc-a { border-left: 6px solid var(--conn1); }
+.sc-b { border-left: 6px solid var(--conn2); }
+.sc-join { margin: 10px 0; line-height: 2; }
+.sc-conn { display: inline-block; min-width: 2.6em; text-align: center; border-bottom: 3px dashed var(--line); margin: 0 2px; color: var(--muted); }
+.sc-conn.filled { border-bottom-style: solid; }
+.sc-conn.filled.conn-a { color: var(--conn1); border-color: var(--conn1); }
+.sc-conn.filled.conn-b { color: var(--conn2); border-color: var(--conn2); }
+.conn-chip { font-weight: 700; border: 3px solid var(--line); background: #fff; color: var(--ink); }
+.conn-chip.conn-a { border-color: var(--conn1); color: var(--conn1); }
+.conn-chip.conn-b { border-color: var(--conn2); color: var(--conn2); }
+.read-box { text-align: center; background: #F3F8FF; border: 1px solid #CFE0F5; border-radius: 14px; padding: 10px; margin: 8px 0; }
+.idea-box { background: #FFFBEA; border: 1px solid #F1E2A6; border-radius: 14px; padding: 10px 12px; margin-bottom: 12px; text-align: left; font-size: 19px; }
+.idea-chips { display: flex; flex-wrap: wrap; gap: 6px; margin: 8px 0; }
+.idea-chip { background: #fff; border: 2px solid #F1E2A6; border-radius: 999px; padding: 2px 12px; font-size: 18px; }
+@media (max-width: 560px) { .sc-pair { grid-template-columns: 1fr 1fr; } .sc-emoji { grid-column: 1 / -1; } }
