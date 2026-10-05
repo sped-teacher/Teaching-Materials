@@ -1,0 +1,21 @@
+{
+  "lesson": "08",
+  "cards": [
+    { "name": "短語_全世界最勇敢的女孩", "scene": "A brave teenage girl in a headscarf standing on a stage holding a book and a pencil high, people from all over the world (different clothes) cheering for her, a globe in the background." },
+    { "name": "短語_全國最高聳的山峰", "scene": "The tallest mountain peak towering above all other mountains, snow on top, clouds around its middle." },
+    { "name": "短語_全球最賣座的電影", "scene": "A huge crowd of people from different countries lining up at a cinema, everyone holding popcorn and tickets, very excited (no readable signs)." },
+    { "name": "短語_全臺灣最暢銷的小說", "scene": "A bookstore where a big stack of the same book is almost sold out, many people holding that book and reading it happily (no readable titles)." },
+    { "name": "情境_全班最高大的同學", "scene": "Students lining up in a classroom by height; one boy at the end is much taller than everyone else, standing at the very back." },
+    { "name": "情境_全家最可愛的小狗", "scene": "A family of parents and children in a living room all smiling at a cute small dog that wags its tail and tilts its head." },
+    { "name": "情境_全校最厲害的選手", "scene": "School sports day running race: a girl crossing the finish line in first place far ahead of others, the whole school cheering." },
+    { "name": "情境_全校最漂亮的花園", "scene": "A beautiful school garden full of colorful blooming flowers and butterflies, students walking there happily at recess." },
+    { "name": "短語_展現出無比勇氣的馬拉拉", "scene": "A brave teenage girl in a headscarf speaking confidently at a podium, standing tall without fear, holding a book, audience listening." },
+    { "name": "短語_激發出無比潛力的學生", "scene": "A student solving a hard puzzle and lighting up with energy, glowing sparkles around, a teacher cheering." },
+    { "name": "短語_散發出無比活力的志工", "scene": "Energetic volunteers in matching vests happily handing out water and helping people at an event, full of energy." },
+    { "name": "短語_展露出無比熱情的球迷", "scene": "Sports fans in a stadium waving scarves and flags, shouting and cheering with huge excitement." },
+    { "name": "情境_無比勇氣的消防員", "scene": "A brave firefighter in full gear running toward a burning house to save people, fearless and determined; no flames on any person." },
+    { "name": "情境_無比耐心的老師", "scene": "A kind teacher sitting beside a student at a desk, patiently explaining a math problem again with a gentle smile; eraser marks on the paper." },
+    { "name": "情境_無比毅力的選手", "scene": "A marathon runner with a bandaged knee limping but still running toward the finish line, determined face, crowd encouraging." },
+    { "name": "情境_無比熱情的啦啦隊", "scene": "A school cheerleading team jumping and shouting with pom-poms on sports day, cheering for the runners with big smiles." }
+  ]
+}

@@ -1,0 +1,13 @@
+{
+  "lesson": "10",
+  "cards": [
+    { "name": "短語_流露出真誠的情感", "scene": "An ancient Chinese poet in a mountain village waving goodbye to a friend walking away down a path at sunset, the poet's face showing sincere warm feelings; a wooden gate beside him." },
+    { "name": "短語_彈奏出動人的樂章", "scene": "A girl playing a guzheng (Chinese zither) beautifully, listeners touched, some wiping tears." },
+    { "name": "短語_布置出舒適的房間", "scene": "A cozy bedroom with soft pillows, warm lamp, plants and a reading corner, a child relaxing happily." },
+    { "name": "短語_展現出高超的舞技", "scene": "A dancer doing an amazing high jump spin on stage, audience amazed." },
+    { "name": "情境_表達出真心的感謝", "scene": "On Mother's Day, a child gives a handmade heart card to the mother, who is touched and hugging the child." },
+    { "name": "情境_演唱出好聽的歌聲", "scene": "A class choir singing together on a stage at a school singing contest, music notes floating, audience clapping." },
+    { "name": "情境_描繪出美麗的風景", "scene": "A child sitting by a lake with an easel painting the mountains and the lake in front of them." },
+    { "name": "情境_拍攝出精采的照片", "scene": "On a school field trip, a child with a camera captures classmates jumping in the air together on a grassy hill." }
+  ]
+}

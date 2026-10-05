@@ -1,0 +1,20 @@
+{
+  "lesson": "11",
+  "cards": [
+    { "name": "短語_雷聲隆隆作響", "scene": "Dark storm clouds with a lightning bolt; a child at a window covering ears; big sound wave lines coming from the clouds." },
+    { "name": "短語_風聲呼呼作響", "scene": "Strong wind blowing trees sideways, swirling wind lines, a child holding a hat that is about to fly off." },
+    { "name": "短語_樹葉沙沙作響", "scene": "Wind blowing through a tree, leaves shaking with small sound lines, a child listening under the tree." },
+    { "name": "情境_鈴鐺叮叮作響", "scene": "A child riding a bicycle and ringing the bell on the handlebar, small sound lines around the bell." },
+    { "name": "情境_油鍋滋滋作響", "scene": "A mother frying an egg in a pan in the kitchen, oil bubbling and popping with sizzle lines; a child watching from a safe distance." },
+    { "name": "情境_肚子咕咕作響", "scene": "A hungry child sitting in class near lunchtime, holding the tummy, little swirl sound lines near the tummy; a clock pointing near noon." },
+    { "name": "情境_鼓咚咚作響", "scene": "A temple festival: a drummer hitting a big drum hard while a lion dance performs in front, big sound lines from the drum." },
+    { "name": "短語_爺爺是部落的傳奇獵人", "scene": "A tall strong indigenous Bunun grandfather with a scar on his cheek, standing proudly in a mountain village, villagers looking at him with respect; mountains behind." },
+    { "name": "短語_媽媽是社區的美食專家", "scene": "A mother serving delicious dishes at a neighborhood gathering, neighbors happily tasting and praising." },
+    { "name": "短語_姐姐是學校的風雲人物", "scene": "A popular older sister walking through the school while many students wave and greet her." },
+    { "name": "短語_爸爸是公司的技術人員", "scene": "A father in an office fixing a computer and machines, colleagues watching." },
+    { "name": "情境_姐姐是學校的跳繩冠軍", "scene": "A school jump-rope contest: an older sister jumping very fast, then holding a first-place trophy, classmates cheering." },
+    { "name": "情境_爸爸是家裡的修理高手", "scene": "A father with a toolbox quickly fixing a child's broken bicycle at home, the child amazed." },
+    { "name": "情境_小華是班上的開心果", "scene": "A boy telling a joke in the classroom and the whole class laughing out loud." },
+    { "name": "情境_爺爺是公園的下棋高手", "scene": "A grandpa playing Chinese chess at a stone table in a park, winning, with a crowd of people gathered around watching." }
+  ]
+}

@@ -1,0 +1,21 @@
+{
+  "lesson": "12",
+  "cards": [
+    { "name": "短語_一輪火紅的夕陽", "scene": "A young sailor on the deck of an old sailing ship looking at a big round fiery red sun setting over the sea, golden waves and colorful clouds." },
+    { "name": "短語_一本精采的小說", "scene": "A child completely absorbed in an exciting novel, imaginary adventure scenes (pirate ship, treasure map) rising from the pages (no text)." },
+    { "name": "短語_一輪明亮的滿月", "scene": "A big bright full moon in the night sky over rooftops." },
+    { "name": "短語_一片閃耀的星空", "scene": "A whole night sky full of twinkling stars over a hill." },
+    { "name": "情境_一輪火紅的夕陽", "scene": "A family at the beach in the evening watching a big round red sun sink into the sea, sky and water glowing red and orange." },
+    { "name": "情境_一座高大的山", "scene": "From a classroom window, children look out at a very tall big mountain in the distance." },
+    { "name": "情境_一塊香甜的蛋糕", "scene": "Afternoon tea: one slice of strawberry cake on a small plate with a fork, looking sweet and delicious; a child about to eat it." },
+    { "name": "情境_一道美麗的彩虹", "scene": "After the rain, a beautiful seven-colored rainbow arcs across the sky; children with umbrellas pointing at it." },
+    { "name": "短語_閃著金光的波浪", "scene": "Sea waves sparkling with golden light under the setting sun, glittering shimmering highlights on each wave." },
+    { "name": "短語_含著淚光的雙眼", "scene": "Close-up of a child's eyes shining with tears of being moved, a gentle smile." },
+    { "name": "短語_寫滿回憶的日記", "scene": "An open diary full of handwriting-like lines and small doodles, photos and tickets taped inside (no readable text)." },
+    { "name": "短語_蓋滿戳章的護照", "scene": "An open passport covered with many colorful round travel stamps (shapes only, no readable text)." },
+    { "name": "情境_結滿果實的果樹", "scene": "An orchard where a peach tree is full of many round pink peaches; a child reaching up happily." },
+    { "name": "情境_貼滿貼紙的鉛筆盒", "scene": "A little girl showing her pencil case covered with many cute stickers (stars, animals, hearts)." },
+    { "name": "情境_擠滿遊客的遊樂園", "scene": "A crowded amusement park on a holiday, full of visitors, long lines at a Ferris wheel and roller coaster." },
+    { "name": "情境_寫滿祝福的卡片", "scene": "At graduation, a child holds a big card covered with many classmates' handwriting-like lines and little hearts and stars (no readable text), smiling." }
+  ]
+}

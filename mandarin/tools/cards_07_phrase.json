@@ -1,0 +1,29 @@
+{
+  "lesson": "07",
+  "cards": [
+    { "name": "短語_一次一次的練習著", "scene": "On a windy cliff, a mother eagle watches her young eaglet flap its wings against strong wind, trying to fly again and again; small motion lines show many tries." },
+    { "name": "短語_一遍一遍的朗讀著", "scene": "A child standing by a window holding an open book, reading aloud again and again; little repeating speech bubbles with simple lines (no letters)." },
+    { "name": "短語_一回一回的嘗試著", "scene": "A child trying to toss a ring onto a bottle at a game stall, several rings on the ground from earlier tries, the child aiming again with determination." },
+    { "name": "短語_一天一天的努力著", "scene": "Three small panels in a row showing the same girl practicing violin at morning, afternoon and evening, with a calendar beside her." },
+    { "name": "情境_一次一次的練習著", "scene": "A little boy learning to ride a bicycle in a park; he has fallen, scraped knee with a bandage, and is getting back on the bike again to try one more time; a parent encouraging." },
+    { "name": "情境_一口一口的品嘗著", "scene": "A child at a table slowly eating a pudding with a small spoon, taking one small bite at a time, savoring it with closed eyes; mother smiling nearby." },
+    { "name": "情境_一頁一頁的閱讀著", "scene": "In a quiet library, a child sitting on a cushion turning the pages of a storybook one by one, totally absorbed." },
+    { "name": "情境_一筆一筆的書寫著", "scene": "Calligraphy class: a child carefully writing with a Chinese ink brush on red-lined paper, one careful stroke at a time; ink stone beside (no readable characters)." },
+    { "name": "短語_最酷熱的沙漠", "scene": "A vast hot desert under a blazing sun, heat waves rising from the sand, a lonely camel, a cactus; everything looks extremely hot." },
+    { "name": "短語_最巨大的生物", "scene": "A huge blue whale swimming in the ocean next to a tiny boat with a child waving, showing how enormous the whale is." },
+    { "name": "短語_最閃亮的星星", "scene": "A night sky full of stars where one star shines much brighter than all others, a child pointing at it from a rooftop." },
+    { "name": "短語_最有趣的故事", "scene": "A grandpa telling a story to a group of children who are laughing so hard they hold their bellies; little imaginary funny animals floating above." },
+    { "name": "情境_最高大的樹", "scene": "A school playground with one enormous tree beside the classroom building; the tree is taller than the building; children look small beneath it." },
+    { "name": "情境_最好吃的蛋糕", "scene": "A birthday party: a mother serves a homemade strawberry cream cake, children taking bites with delighted faces, thumbs up." },
+    { "name": "情境_最熱鬧的夜市", "scene": "A crowded Taiwanese night market at night: many people, food stalls with steam and lanterns, families laughing; very busy and lively (no readable signs)." },
+    { "name": "情境_最安靜的圖書館", "scene": "A calm library where several children read silently, one child turning a page very gently with a finger on lips sign gesture from a librarian; peaceful mood." },
+    { "name": "短語_望著這面小小的蛛網", "scene": "A child and father leaning close to a desk lamp at night, gazing at a tiny spider web with a tiny spider on it, curious and quiet." },
+    { "name": "短語_吃著這顆紅紅的蘋果", "scene": "A child biting into a shiny bright red apple, holding it with both hands." },
+    { "name": "短語_看著這片藍藍的天空", "scene": "A child lying on green grass looking up at a clear bright blue sky with a few small white clouds." },
+    { "name": "短語_抱著一本厚厚的書本", "scene": "A child hugging a very thick big book against the chest, smiling proudly." },
+    { "name": "情境_軟軟的小狗", "scene": "After school, a child at home hugging a fluffy soft little puppy in their arms, cheek against its fur, both look happy." },
+    { "name": "情境_冰冰的果汁", "scene": "On a hot summer day, a child drinking a glass of orange juice with ice cubes through a straw; cold water drops on the glass; sun shining." },
+    { "name": "情境_圓圓的皮球", "scene": "At recess on the school playground, a child kicking a round colorful ball, mid-kick, classmates nearby." },
+    { "name": "情境_長長的雨傘", "scene": "On a rainy day, a child in a raincoat walking to school holding a long umbrella over the head, puddles on the road." }
+  ]
+}

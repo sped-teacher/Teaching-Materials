@@ -1,0 +1,29 @@
+{
+  "lesson": "09",
+  "cards": [
+    { "name": "短語_磨練出堅強的意志", "scene": "A young boxer girl in training gloves punching a heavy bag, sweaty but with a strong, determined, never-give-up expression; a small glowing heart shape on her chest to show inner strength." },
+    { "name": "短語_締造出輝煌的成果", "scene": "A team of children standing on a winners' podium holding a shining golden trophy together, confetti falling." },
+    { "name": "短語_設計出獨特的作品", "scene": "A child at a craft table proudly showing a one-of-a-kind robot made from recycled boxes and bottle caps." },
+    { "name": "短語_拍攝出精采的畫面", "scene": "A child photographer holding a camera capturing the exact moment a dolphin jumps out of the water." },
+    { "name": "情境_鍛鍊出結實的肌肉", "scene": "An older brother doing push-ups on a mat at home, his arms strong and muscular; a younger sibling counting and admiring." },
+    { "name": "情境_烘焙出好吃的餅乾", "scene": "A school baking class: children in aprons take a tray of golden cookies out of an oven, smelling them happily." },
+    { "name": "情境_拼湊出完整的拼圖", "scene": "A child cheering beside a completed 1000-piece jigsaw puzzle of a landscape on a table, the last piece just placed." },
+    { "name": "情境_栽種出新鮮的蔬菜", "scene": "A school vegetable garden where students harvest fresh green leafy vegetables and put them in baskets, smiling." },
+    { "name": "短語_將挫折化為前進的動力", "scene": "A child who fell on a running track getting up and running forward again; behind the child a grey storm cloud turns into a bright arrow pushing forward." },
+    { "name": "短語_將失敗化為成長的養分", "scene": "A small plant growing tall out of a pot whose soil is made of crumpled failed drawings, showing failures feeding growth." },
+    { "name": "短語_將傳統化為創新的基礎", "scene": "A child using traditional paper-cutting patterns to decorate a modern colorful lamp." },
+    { "name": "短語_將想像化為設計的元素", "scene": "A child with a thought bubble of a flying castle, drawing it as a design on a T-shirt." },
+    { "name": "情境_將失敗化為前進的動力", "scene": "A student at a desk carefully correcting mistakes on a test paper with a red pen, then studying hard with a determined face." },
+    { "name": "情境_將眼淚化為努力的力量", "scene": "Two small panels: first a child crying after losing a race, then the same child wiping tears and training hard on the track." },
+    { "name": "情境_將垃圾化為再生的資源", "scene": "Students sorting plastic bottles, paper and cans into recycling bins, with arrows showing them turning into new products like a bag and a bench." },
+    { "name": "情境_將夢想化為行動的目標", "scene": "A child who dreams of being a painter (thought bubble of a painter) drawing a picture every day at a desk; a stack of finished drawings." },
+    { "name": "短語_綻放生命的光彩", "scene": "A flower blooming brightly through a crack in a stone wall, glowing with light rays around it." },
+    { "name": "短語_展現學習的成效", "scene": "A child confidently presenting a science project to the class, a chart with rising bars behind (no text)." },
+    { "name": "短語_開創事業的高峰", "scene": "An adult climbing to the top of a mountain-shaped staircase and planting a flag at the peak." },
+    { "name": "短語_完成年少的夢想", "scene": "An adult pilot in uniform smiling next to an airplane, with a small thought bubble of herself as a child holding a toy plane." },
+    { "name": "情境_享受努力的成果", "scene": "A family eating ripe red tomatoes they grew themselves in a small backyard garden, everyone smiling." },
+    { "name": "情境_分享成功的喜悅", "scene": "A child running home holding a medal and telling the family excitedly, everyone clapping and hugging." },
+    { "name": "情境_展現練習的成果", "scene": "A child playing piano on a stage at a recital, confident and smiling, audience applauding." },
+    { "name": "情境_留下畢業的回憶", "scene": "Graduation day: classmates in graduation caps posing together for a group photo, a teacher holding the camera." }
+  ]
+}
