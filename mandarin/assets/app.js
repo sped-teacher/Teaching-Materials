@@ -2730,7 +2730,7 @@
     var R = READINGS[lid], LR = (LESSONS[lid] && LESSONS[lid].reading) || {};
     var head = h('div', { class: 'sub', style: 'margin:0 0 6px' }, '第 ' + p.no + ' ' + (LR.unit || '段'));
     if (!R) {
-      return h('div', {}, head, h('div', { class: 'note', style: 'text-align:left' }, '🔒 課文還沒解鎖。請老師到「📖 課文點讀」輸入教室密碼，這裡就會出現課文。'));
+      return h('div', {}, head, h('div', { class: 'note', style: 'text-align:left' }, '🔒 課文還沒解鎖。請老師回到本課，再點一次「讀懂課文」輸入教室密碼。'));
     }
     var all = [];
     R.sections.forEach(function (sec) { sec.paras.forEach(function (pa) { all.push(pa); }); });
@@ -2836,7 +2836,7 @@
     var no = parseInt(lid, 10);
     var crumbs = [{ text: '首頁', href: '#/' }];
     if (LESSONS[lid]) crumbs.push({ text: '第 ' + no + ' 課', href: '#/lesson/' + lid });
-    crumbs.push({ text: kind === 'read' ? '課文點讀' : '朗讀挑戰' });
+    crumbs.push({ text: { read: '課文點讀', score: '朗讀挑戰', reading: '讀懂課文' }[kind] });
     var main = shell(crumbs);
     var input = h('input', { type: 'password', autocomplete: 'off', autocapitalize: 'off', spellcheck: 'false', 'aria-label': '教室密碼' });
     var msg = h('p', { class: 'muted', style: 'min-height:1.6em;margin:0' });
@@ -3131,6 +3131,8 @@
     if (p[0] === 'review') return renderReview(LESSONS[p[1]] ? p[1] : null);
     if (p[0] === 'test' && LESSONS[p[1]]) return renderTest(p[1]);
     if (p[0] === 'lesson' && LESSONS[p[1]]) {
+      // 讀懂課文要看課文：還沒解鎖就在這裡直接輸入教室密碼（解開後回到讀懂課文）
+      if (p[2] === 'm' && p[3] === 'reading' && !READINGS[p[1]] && hasReading(p[1])) return renderUnlock('reading', p[1]);
       if (p[2] === 'm' && MODULES[p[3]]) return renderModule(p[1], p[3], p[4] != null ? parseInt(p[4], 10) : null);
       return renderLesson(p[1]);
     }
