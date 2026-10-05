@@ -2339,13 +2339,69 @@
       var cw = function (k) { return h('span', { class: 'sc-conn' + (got[k] ? ' filled conn-' + (k ? 'b' : 'a') : '') }, got[k] || '＿＿'); };
       return h('div', { class: 'sentence sc-join' }, cw(0), pr.a, '，', cw(1), pr.b, '。');
     };
-    // 念一遍：老師的示範念法＋學生自己念（等級 1 先自動念一次）
+    // 念一遍：按 🎤 自己念，電腦逐字比讀音（同音字算對）；念對 85% 以上、連接詞都念到才算過
+    //   沒過：紅色標出沒念到的字，再念一次；念兩次還沒過可以先跳過（辨識有誤差，不要卡住學生）
+    //   不能用語音辨識的瀏覽器：改成「我念好了」
+    //   等級 1 先自動念一次給學生聽
     var readAloud = function (sentence, onDone) {
-      var done = h('button', { type: 'button', class: 'btn btn-primary' }, '🗣️ 我念好了');
-      done.addEventListener('click', function () { done.disabled = true; onDone(); });
+      var chars = Array.from(sentence).filter(function (ch) { return /[㐀-鿿]/.test(ch); });
+      var targets = chars.map(function (ch) { var z = charReads(ch)[0] || ''; return { c: ch, zy: z, bare: bareZy(z) }; });
+      var connAt = {}, at = 0;
+      conn.forEach(function (w) { var k = sentence.replace(/[^㐀-鿿]/g, '').indexOf(w, at); for (var x = 0; x < w.length; x++) connAt[k + x] = true; at = k + w.length; });
+      var line = h('div', { class: 'sentence read-line' }), heard = h('div', { class: 'muted read-heard' }, '　'), fb = h('div');
+      var drawLine = function (res) {
+        line.innerHTML = ''; var n = 0;
+        Array.from(sentence).forEach(function (ch) {
+          if (!/[㐀-鿿]/.test(ch)) { line.appendChild(document.createTextNode(ch)); return; }
+          var k = n++;
+          line.appendChild(h('span', { class: (res ? (res[k] ? 'rd-ok' : 'rd-miss') : '') }, ch));
+        });
+      };
+      drawLine(null);
+      var box = h('div', { class: 'read-box' }, h('div', { class: 'sub' }, '按 🎤，自己大聲念一遍，電腦會聽你念。'),
+        h('div', { class: 'row', style: 'justify-content:center' }, line, sayBtn(sentence, '聽老師念')), heard, fb);
+      var finished = false, tries = 0;
+      var finish = function (msg) { if (finished) return; finished = true; mic.hidden = true; fb.innerHTML = ''; append(fb, h('div', { class: 'praise' }, msg)); onDone(); };
+      var mic = h('button', { type: 'button', class: 'btn btn-primary mic-read' }, '🎤 按我，念出來');
+      if (!SR_CLASS) {
+        mic.textContent = '🗣️ 我念好了';
+        mic.addEventListener('click', function () { finish('念完了！'); });
+      } else {
+        var rec = null;
+        mic.addEventListener('click', function () {
+          if (finished) return;
+          if (rec) { rec.stop(); return; }
+          stopSpeak();
+          var got = '';
+          rec = new SR_CLASS(); rec.lang = 'zh-TW'; rec.interimResults = true; rec.continuous = false; rec.maxAlternatives = 1;
+          rec.onresult = function (e) { got = ''; for (var r = 0; r < e.results.length; r++) got += e.results[r][0].transcript; heard.textContent = '聽到：' + got; };
+          rec.onerror = function (e) {
+            if (e.error === 'not-allowed' || e.error === 'service-not-allowed') toast('請在瀏覽器設定裡允許使用麥克風');
+            else if (e.error === 'network') toast('語音辨識要連上網路');
+          };
+          rec.onend = function () {
+            rec = null; mic.classList.remove('listening'); mic.textContent = '🎤 再念一次';
+            if (finished) return;
+            var hz = Array.from(got.replace(/[^㐀-鿿0-9〇零○]/g, ''));
+            var res = hz.length ? alignRead(targets, hz) : targets.map(function () { return null; });
+            var ok = res.filter(function (r) { return r; }).length;
+            var connOk = Object.keys(connAt).every(function (k) { return res[k]; });
+            drawLine(res);
+            if (ok / targets.length >= 0.85 && connOk) { sfx.right(); return finish('念得很清楚！'); }
+            tries++; sfx.wrong(); fb.innerHTML = '';
+            var m = !hz.length ? '沒有聽清楚，靠近一點、大聲一點再念一次。'
+              : ok / targets.length < 0.5 ? '好像不是這一句喔。先按 🔊 聽老師念，再跟著念一次。'
+              : !connOk ? '連接詞「' + conn.join('」「') + '」要念出來喔！再念一次。' : '紅色的字再念一次，念慢一點。';
+            append(fb, h('div', { class: 'hintbox' }, '💡', h('span', { style: 'flex:1' }, m), sayBtn(m)));
+            if (tries >= 2) append(fb, btnTo('先跳過 →', 'btn-ghost', function () { if (rec) { try { rec.abort(); } catch (e) { } } finish('下次再念念看！'); }));
+          };
+          try { rec.start(); mic.classList.add('listening'); mic.textContent = '👂 請念……（念完會自動停）'; heard.textContent = '　'; } catch (err) { rec = null; }
+        });
+        window.addEventListener('hashchange', function () { if (rec) { try { rec.abort(); } catch (e) { } } }, { once: true });
+      }
+      append(box, mic);
       if (lv === 1) speak(sentence);
-      return h('div', { class: 'read-box' }, h('div', { class: 'sub' }, '自己大聲念一遍，聽聽看順不順。'),
-        h('div', { class: 'row', style: 'justify-content:center' }, h('div', { class: 'sentence' }, colorConn(sentence, conn)), sayBtn(sentence, '聽老師念')), done);
+      return box;
     };
     var list = [];
 
@@ -2377,7 +2433,7 @@
         b.addEventListener('click', function () {
           got[i] = w; b.disabled = true; b.classList.add('picked'); drawTry(); sfx.right();
           if (got[0] && got[1]) {
-            append(tryFb, readAloud(joinOf(T), function () { go.disabled = false; tryFb.appendChild(h('div', { class: 'praise' }, '你把兩件事接起來了！')); }));
+            append(tryFb, readAloud(joinOf(T), function () { go.disabled = false; }));
           }
         });
         return b;
@@ -2445,7 +2501,7 @@
               var at = got[0] ? 1 : 0;
               if (w === conn[at]) {
                 got[at] = w; b.disabled = true; b.classList.add('picked'); sfx.right(); draw(); fb.innerHTML = '';
-                if (got[1]) { pick.innerHTML = ''; append(pick, readAloud(joinOf(pr), function () { append(fb, h('div', { class: 'praise' }, '你把兩件事接起來了！')); next(); })); }
+                if (got[1]) { pick.innerHTML = ''; append(pick, readAloud(joinOf(pr), function () { next(); })); }
               } else {
                 sfx.wrong(); b.classList.remove('shake'); void b.offsetWidth; b.classList.add('shake');
                 say(conn.indexOf(w) >= 0 ? '「' + w + '」要放在後面。先放第一件事前面的詞。'

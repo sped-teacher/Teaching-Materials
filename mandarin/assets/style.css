@@ -719,3 +719,7 @@ details.tw-list .fold-body { padding: 0 14px 10px; }
 .idea-chips { display: flex; flex-wrap: wrap; gap: 6px; margin: 8px 0; }
 .idea-chip { background: #fff; border: 2px solid #F1E2A6; border-radius: 999px; padding: 2px 12px; font-size: 18px; }
 @media (max-width: 560px) { .sc-pair { grid-template-columns: 1fr 1fr; } .sc-emoji { grid-column: 1 / -1; } }
+.read-line .rd-ok { color: var(--right); }
+.read-line .rd-miss { color: #D2553F; text-decoration: underline wavy #D2553F; }
+.read-heard { font-size: 16px; min-height: 1.4em; }
+.mic-read.listening { background: #D2553F; }
