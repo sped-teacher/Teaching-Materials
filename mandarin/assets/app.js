@@ -1647,6 +1647,12 @@
     show();
   }
 
+  // 顏國雄老師 HTML5 FUN「PARTDLE 部件拼語詞」：115 學年度上學期（gid）、康軒五年級（col＝K）、第幾課（lesson）
+  // 題庫是本課生字詞語，和網站的語詞一樣（2026-10-06 核對過）
+  function partdleUrl(L) {
+    return 'https://gsyan888.blogspot.com/2024/06/html5-fun-partdle.html?by=gsyan&id=1kBueULlojPOH9E3EZYEUcUAv1HfJm_wULQT1hT2m1nM&gid=510658925&autostart=1&col=K&lesson=' + L.no;
+  }
+
   MODULES.zhuyinGame = {
     name: '語詞挑戰', icon: '🗣️', desc: '注音聽打、識字讀詞（看國字念出語詞）', core: false,
     // 語詞和「認識語詞」一模一樣（L.words，依生字詞語解釋）；注音以 data/quiz_zy.js 為準
@@ -1678,7 +1684,10 @@
         }
         append(stage, h('div', { class: 'mode-opts' },
             opt('type', '🎧', '注音聽打', '聽語詞，點注音鍵盤打出來，再選字'),
-            opt('say', '🗣️', '識字讀詞', '看國字，念出這個語詞')),
+            opt('say', '🗣️', '識字讀詞', '看國字，念出這個語詞'),
+            // 外部網站（顏國雄老師 PARTDLE）：開新視窗，不記錄成績
+            h('a', { class: 'mode-opt', href: partdleUrl(L), target: '_blank', rel: 'noopener' },
+              h('span', { class: 'mode-ic' }, '🧩'), h('b', {}, '部件拼語詞'), h('small', {}, '用部件拼出語詞（外部網站，開新視窗）'))),
           SR_CLASS ? null : h('p', { class: 'muted', style: 'font-size:15px' }, '這個瀏覽器不能語音辨識，識字讀詞請改用 Safari 或 Chrome。'));
       })];
     }
@@ -1697,7 +1706,8 @@
     var main = h('main', {});
     if (mc) main.style.setProperty('--mc', mc);
     append(app, h('header', { class: 'topbar' }, h('a', { class: 'brand', href: '#/' }, '📚 ' + SITE_NAME), nav, gearBtn()), main,
-      h('footer', { class: 'footer' }, h('a', { href: 'guide.html' }, '📘 使用說明'), '　', h('a', { href: '../' }, '🏫 資源班教材總覽'), h('br'), '特殊教育輔助教材，非出版社官方產品。', h('br'), '內容依康軒版國語五上整理改寫，僅供教學使用，不作商業用途。', h('br'), '楷書字型：全字庫正楷體（數位發展部，CNS11643 中文標準交換碼全字庫網站 https://www.cns11643.gov.tw，政府資料開放授權條款－第1版）'));
+      h('footer', { class: 'footer' }, h('a', { href: 'guide.html' }, '📘 使用說明'), '　', h('a', { href: '../' }, '🏫 資源班教材總覽'), h('br'), '特殊教育輔助教材，非出版社官方產品。', h('br'), '內容依康軒版國語五上整理改寫，僅供教學使用，不作商業用途。', h('br'), '楷書字型：全字庫正楷體（數位發展部，CNS11643 中文標準交換碼全字庫網站 https://www.cns11643.gov.tw，政府資料開放授權條款－第1版）', h('br'),
+        '注音聽打、識字讀詞參考顏國雄老師「HTML5 FUN」的遊戲構想，本站改寫成簡易版；雄筆順、部件拼語詞（PARTDLE）、語文高手為顏國雄老師作品，以連結使用（', h('a', { href: 'https://gsyan888.blogspot.com/', target: '_blank', rel: 'noopener' }, '雄::gsyan'), '）。'));
     window.scrollTo(0, 0);
     return main;
   }
@@ -1827,6 +1837,7 @@
         L.pediaId ? h('a', { class: 'btn btn-ghost', href: PEDIA + '/Bookmark/TCollection?TextNameId=' + L.pediaId, target: '_blank', rel: 'noopener' }, '📖 教育百科・本課生字詞') : null,
         // 雄::gsyan 語文高手：id＝學期-版本(1＝康軒)-年級-課次-遊戲
         h('a', { class: 'btn btn-ghost', href: 'https://gsyan888.blogspot.com/2026/01/html5-fun-confusable.html?id=1151-1-5-' + L.no + '-basketball', target: '_blank', rel: 'noopener' }, '🏀 字音字形語文高手（形近字遊戲）'),
+        h('a', { class: 'btn btn-ghost', href: partdleUrl(L), target: '_blank', rel: 'noopener' }, '🧩 部件拼語詞（PARTDLE）'),
         h('a', { class: 'btn btn-ghost', href: 'https://sites.google.com/view/sentencematch/%E5%BA%B7%E8%BB%92', target: '_blank', rel: 'noopener' }, '🧠 詞語理解練習（康軒）'),
         h('a', { class: 'btn btn-ghost', href: 'https://sites.google.com/view/samesentence/%E5%BA%B7%E8%BB%92', target: '_blank', rel: 'noopener' }, '✍️ 照樣造句線上練習（康軒 5A）')));
   }
