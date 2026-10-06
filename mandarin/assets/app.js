@@ -521,8 +521,9 @@
   }
 
   // 字卡／詞卡：每張都點過才能下一步（等級 3 可直接下一步）
-  function runCards(stage, items, api, build) {
+  function runCards(stage, items, api, build, wide) {
     if (CAPTURE) return;
+    if (wide) build.wide = true;
     var c = api.cfg, seen = 0;
     var grid = h('div', { class: items.length && build.wide ? '' : 'card-grid', style: build.wide ? 'display:grid;gap:14px' : '' });
     var status = h('p', { class: 'muted', style: 'text-align:center;margin:12px 0 0' });
@@ -559,6 +560,31 @@
     return a;
   }
   function radicalLabel(ch) { return ch.rform ? ch.rform + '（' + ch.radical + '）' : ch.radical; }
+
+  // ── 拆字解說（認識生字）：部件 ＋ 部件 → 字；意思部件綠色、念法部件藍色；點卡片時部件合起來，iPad 念解說 ──
+  function radPart(L, ch) { var P = (L.charParts || {})[ch.c]; return P && P.parts.find(function (x) { return x.r; }); }
+  var PART_TYPE = { xs1: '形聲字', xs2: '形聲字', hy: '會意字', xx: '象形字', kj: '記部件' };
+  function partsCard(L, ch, P) {
+    var row = h('div', { class: 'pc-row' });
+    P.parts.forEach(function (x, k) {
+      if (k) append(row, h('span', { class: 'pc-plus' }, '＋'));
+      append(row, h('div', { class: 'pc-part ' + (x.s ? 'snd' : 'mean') }, h('b', {}, x.p),
+        h('small', {}, x.s ? '念法像 ' + x.s : x.m)));
+    });
+    append(row, h('span', { class: 'pc-plus' }, '→'), h('div', { class: 'pc-char' }, withZy(ch.c, ch.zy, true)));
+    var el = h('div', { class: 'pc-card', role: 'button', tabindex: '0' },
+      h('span', { class: 'pc-type' }, PART_TYPE[P.t] || ''),
+      row,
+      P.pic ? picEl(L.id, P.pic) : null,
+      h('div', { class: 'facts' }, h('span', { class: 'nw' }, '部首 ', h('b', {}, radicalLabel(ch))), '　', h('span', { class: 'nw' }, '筆畫 ', h('b', {}, String(ch.strokes)))),
+      h('div', { class: 'wds' }, ch.words.join('、')),
+      ch.poly ? h('div', { class: 'poly' }, h('span', { class: 'tag' }, '多音字'), ch.poly.map(function (p) {
+        return h('div', {}, h('b', { class: 'poly-char' }, withZy(ch.c, p.zy, true)), h('div', { class: 'nw' }, p.words.join('、')));
+      })) : null);
+    // 點卡片：部件一個一個亮起來再合成（動畫），同時念解說
+    el.addEventListener('click', function () { el.classList.remove('go'); void el.offsetWidth; el.classList.add('go'); });
+    return { el: el, say: P.say + '可以造詞：' + ch.words.join('、') };
+  }
 
   // ════════════════════════════════════════════════
   //  自己造句：打字或用說的。用「規則」檢查句型結構（連接詞、順序、每一段有沒有寫），
@@ -783,13 +809,15 @@
 
   var MODULES = {
     chars: {
-      name: '認識生字', icon: '✏️', desc: '看字卡、聽音選字、找部首', core: true,
+      name: '認識生字', icon: '✏️', desc: function (L) { return L.charParts ? '拆字看一看、聽音選字、部首的意思' : '看字卡、聽音選字、找部首'; }, core: true,
       units: function (L, c) { return mkUnits(L.chars, c.group); },
       steps: function (L, unit, c) {
         var items = unit.items;
         return [
-          step('看字卡：點每一張卡，聽聽看怎麼念。', 'cards', function (stage, api) {
+          step(L.charParts ? '拆字看一看：點每一張卡，聽聽這個字是怎麼組成的。' : '看字卡：點每一張卡，聽聽看怎麼念。', 'cards', function (stage, api) {
             runCards(stage, items, api, function (ch) {
+              var P = (L.charParts || {})[ch.c];
+              if (P) return partsCard(L, ch, P);
               var el = h('div', { role: 'button', tabindex: '0' },
                 h('div', { class: 'hanzi' }, withZy(ch.c, ch.zy, true)),   // 生字卡一定顯示注音（學生字要知道怎麼念），不受注音開關影響
                 h('div', { class: 'facts' }, h('span', { class: 'nw' }, '部首 ', h('b', {}, radicalLabel(ch))), '　', h('span', { class: 'nw' }, '筆畫 ', h('b', {}, String(ch.strokes)))),
@@ -800,7 +828,7 @@
                 pediaLink(ch.c));
               var polySay = ch.poly ? '。這是多音字，還有另一個念法：' + ch.poly.map(function (p) { return p.words.join('、'); }).join('；') : '';
               return { el: el, say: ch.c + '，' + ch.cue + '。部首是' + ch.radical + '，一共' + ch.strokes + '畫。可以造詞：' + ch.words.join('、') + polySay };
-            });
+            }, !!L.charParts);   // 拆字卡比較寬，一張一列
           }),
           step('聽音選字：按喇叭聽聲音，找出正確的字。', 'quiz', function (stage, api) {
             runQuiz(stage, shuffle(items).map(function (ch) {
@@ -819,6 +847,21 @@
               };
             }), api);
           }),
+          // 有拆字資料：部首連同它的意思一起選（部件意義化）
+          L.charParts ? step('部首的意思：這個字的部首是哪一個？跟什麼有關？', 'quiz', function (stage, api) {
+            var lab = function (ch) { var r = radPart(L, ch); return r ? r.p + '（' + r.m + '）' : radicalLabel(ch); };
+            var all = uniq(L.chars.map(lab));
+            runQuiz(stage, shuffle(items).map(function (ch) {
+              var ans = lab(ch), P = L.charParts[ch.c] || {};
+              return {
+                say: ch.c + '，' + ch.cue + '。部首是哪一個？跟什麼有關？', kai: true,
+                options: [ans].concat(shuffle(all.filter(function (r) { return r !== ans; }))),
+                hint: '想一想這個字的意思，再看看字裡哪一個部件跟意思有關。',
+                after: P.say || ch.c + '，部首是' + ch.radical,
+                prompt: function () { return h('div', {}, h('div', { class: 'big' }, ch.c), h('div', { class: 'sub' }, ch.cue)); }
+              };
+            }), api);
+          }) :
           step('找部首：這個字的部首是哪一個？', 'quiz', function (stage, api) {
             var allRad = uniq(L.chars.map(radicalLabel));
             runQuiz(stage, shuffle(items).map(function (ch) {
