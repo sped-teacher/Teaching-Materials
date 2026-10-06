@@ -750,3 +750,23 @@ details.tw-list .fold-body { padding: 0 14px 10px; }
 .pc-thumb::after { content: '🔍'; position: absolute; right: 2px; bottom: 0; font-size: 16px; }
 .pc-big { width: 100%; max-width: 480px; border-radius: 14px; display: block; margin: 0 auto; }
 @media (max-width: 640px) { .pc-thumb { width: 72px; height: 72px; } }
+/* 字源小圖：卡片右下角 */
+.pc-card .pc-thumb { position: absolute; right: 10px; bottom: 10px; margin: 0; }
+.pc-card.has-pic .facts, .pc-card.has-pic .wds, .pc-card.has-pic .poly { padding: 0 104px; }
+@media (max-width: 640px) { .pc-card.has-pic .facts, .pc-card.has-pic .wds, .pc-card.has-pic .poly { padding: 0 80px 0 0; } }
+/* 部件很多：部件縮小，字換到下一行（→ 也換行） */
+.pc-row.many { gap: 6px; }
+.pc-row.many .pc-part { min-width: 66px; padding: 4px 6px 6px; }
+.pc-row.many .pc-part b { font-size: 40px; }
+.pc-row.many .pc-part small { font-size: 13px; }
+.pc-row.many > .pc-plus:last-of-type { flex-basis: 100%; height: 0; overflow: hidden; }
+.pc-row.many .pc-char { flex-basis: 100%; }
+/* 改錯字 */
+.fx-card { text-align: center; padding: 18px 12px; }
+.fx-sent { display: flex; flex-wrap: wrap; justify-content: center; gap: 2px; margin: 10px 0 6px; font-family: var(--kai); }
+.fx-c { font: inherit; font-family: var(--kai); font-size: 40px; line-height: 1.3; min-width: 50px; padding: 2px 3px; border: 2px solid transparent; border-radius: 10px; background: transparent; color: inherit; cursor: pointer; }
+.fx-c.p { cursor: default; min-width: 0; }
+.fx-c.wrong { border-color: var(--wrong); background: var(--wrong-soft); border-radius: 50%; }
+.fx-c.fixed { border-color: var(--right); background: var(--right-soft); }
+@media (max-width: 640px) { .fx-c { font-size: 30px; min-width: 36px; } }
+.fx-g { display: inline-flex; white-space: nowrap; }

@@ -561,6 +561,81 @@
   }
   function radicalLabel(ch) { return ch.rform ? ch.rform + '（' + ch.radical + '）' : ch.radical; }
 
+  // ── 改錯字（認識生字）：① 點出寫錯的字（等級 1 先標好）② 選出正確的生字 ③ 說明（部首的意思）──
+  //    選項：正確的生字＋句子裡的錯字＋本課其他生字（依等級 2／3／4 個）
+  function runFix(stage, items, L, api) {
+    if (CAPTURE) return;
+    var c = api.cfg, i = 0;
+    function show() {
+      stopSpeak(); stage.innerHTML = '';
+      var ch = items[i], F = L.charParts[ch.c].fix, chars = Array.from(F.s), at = chars.indexOf(F.w);
+      var found = c.level === 1, miss = 0, hinted = false, solved = false;
+      var sent = h('div', { class: 'fx-sent' }), fb = h('div', { class: 'feedback' }), optBox = h('div'), tools = h('div', { class: 'tools' });
+      var ask = h('div', { class: 'sub', style: 'text-align:center' });
+      function drawSent() {
+        sent.innerHTML = '';
+        chars.forEach(function (x, k) {
+          var punct = /[，。、！？：；「」]/.test(x);
+          var b = h(punct ? 'span' : 'button', { type: 'button', class: 'fx-c' + (punct ? ' p' : '') + (k === at && found ? (solved ? ' fixed' : ' wrong') : '') }, k === at && solved ? ch.c : x);
+          if (!punct) b.addEventListener('click', function () { tapChar(k, b); });
+          // 標點黏在前一個字後面，換行時不會跑到行首
+          if (punct && sent.lastChild) { var prev = sent.lastChild; if (!prev.classList.contains('fx-g')) { var g = h('span', { class: 'fx-g' }); sent.replaceChild(g, prev); g.appendChild(prev); prev = g; } prev.appendChild(b); }
+          else sent.appendChild(b);
+        });
+      }
+      function say(m, icon) { fb.innerHTML = ''; append(fb, h('div', { class: 'hintbox' }, icon || '💡', h('span', { style: 'flex:1' }, m), sayBtn(m))); speak(m); }
+      function tapChar(k, b) {
+        if (found || solved) return;
+        if (k === at) { found = true; sfx.tap(); drawSent(); fb.innerHTML = ''; showOpts(); return; }
+        miss++; sfx.wrong(); b.classList.add('shake'); setTimeout(function () { b.classList.remove('shake'); }, 400);
+        if (miss >= 2) { found = true; drawSent(); say('錯的字在這裡，它被圈起來了。'); showOpts(); }
+        else say('這個字沒有寫錯，再找找看。');
+      }
+      function showOpts() {
+        ask.textContent = '「' + F.w + '」寫錯了，要改成哪一個字？';
+        var n = { 1: 2, 2: 3, 3: 4 }[c.level] || 3;
+        var others = shuffle(L.chars.map(function (x) { return x.c; }).filter(function (x) { return x !== ch.c && x !== F.w; }));
+        var opts = shuffle([ch.c, F.w].concat(others).slice(0, n));
+        if (opts.indexOf(ch.c) < 0) opts[0] = ch.c;
+        optBox.innerHTML = '';
+        append(optBox, h('div', { class: 'options' }, opts.map(function (o) {
+          var b = h('button', { type: 'button', class: 'opt kai' }, o);
+          b.addEventListener('click', function () {
+            if (solved) return;
+            if (o === ch.c) {
+              solved = true; sfx.right(); b.classList.add('right'); drawSent();
+              api.record(miss === 0 && !hinted);
+              var m = '對了！' + F.h;
+              fb.innerHTML = '';
+              append(fb, h('div', { class: 'hintbox' }, '✅', h('span', { style: 'flex:1' }, m), sayBtn(m)),
+                nextBtn(i < items.length - 1 ? '下一題 →' : '完成 →', function () { i++; if (i < items.length) show(); else api.next(); }));
+              speak(m);
+            } else {
+              miss++; sfx.wrong(); b.disabled = true; b.classList.add('wrong');
+              say(o === F.w ? '「' + F.w + '」就是寫錯的字，換一個。' : F.h);
+            }
+          });
+          return b;
+        })));
+      }
+      if (c.hint) {
+        var hb = h('button', { class: 'btn btn-ghost', type: 'button' }, '💡 提示');
+        hb.addEventListener('click', function () {
+          hinted = true;
+          if (!found) { found = true; drawSent(); showOpts(); say('錯的字被圈起來了。'); }
+          else say(F.h);
+        });
+        tools.appendChild(hb);
+      }
+      ask.textContent = found ? '' : '哪一個字寫錯了？點它。';
+      append(stage, qbar(i, items.length), h('div', { class: 'card fx-card' }, ask, sent, optBox), tools, fb);
+      drawSent();
+      if (found) showOpts();
+      speak(c.level === 1 ? '圈起來的字寫錯了，要改成哪一個字？' : '句子裡有一個字寫錯了，找出來，點它。');
+    }
+    show();
+  }
+
   // ── 拆字解說（認識生字）：部件 ＋ 部件 → 字；意思部件綠色、念法部件藍色；點卡片時部件合起來，iPad 念解說 ──
   function radPart(L, ch) { var P = (L.charParts || {})[ch.c]; return P && P.parts.find(function (x) { return x.r; }); }
   var PART_TYPE = { xs1: '形聲字', xs2: '形聲字', hy: '會意字', xx: '象形字', kj: '記部件' };
@@ -572,10 +647,11 @@
         h('small', {}, x.s ? '念法像 ' + x.s : x.m)));
     });
     append(row, h('span', { class: 'pc-plus' }, '→'), h('div', { class: 'pc-char' }, withZy(ch.c, ch.zy, true)));
-    // 字源圖：小圖放在字的旁邊，點了才放大（不佔版面）；還沒畫好就不顯示
+    // 字源圖：小圖放在卡片右下角，點了才放大（不佔版面）；還沒畫好就不顯示
+    var thumb = null;
     if (P.pic) {
       var src = 'images/lesson' + L.id + '/' + encodeURIComponent(P.pic) + '.webp';
-      var thumb = h('button', { class: 'pc-thumb', type: 'button', hidden: true, 'aria-label': '看「' + ch.c + '」的圖' });
+      thumb = h('button', { class: 'pc-thumb', type: 'button', hidden: true, 'aria-label': '看「' + ch.c + '」的圖' });
       var img = new Image(); img.alt = '';
       img.onload = function () { thumb.appendChild(img); thumb.hidden = false; };
       img.src = src;
@@ -587,11 +663,12 @@
         close.addEventListener('click', function () { ov.remove(); });
         speak(P.say);
       });
-      append(row, thumb);
     }
-    var el = h('div', { class: 'pc-card', role: 'button', tabindex: '0' },
+    // 部件多（3 個以上）時，部件縮小、字換到下一行，避免一行太擠
+    if (P.parts.length >= 3) row.classList.add('many');
+    var el = h('div', { class: 'pc-card' + (P.pic ? ' has-pic' : ''), role: 'button', tabindex: '0' },
       h('span', { class: 'pc-type' }, PART_TYPE[P.t] || ''),
-      row,
+      row, thumb,
       h('div', { class: 'facts' }, h('span', { class: 'nw' }, '部首 ', h('b', {}, radicalLabel(ch))), '　', h('span', { class: 'nw' }, '筆畫 ', h('b', {}, String(ch.strokes)))),
       h('div', { class: 'wds' }, ch.words.join('、')),
       ch.poly ? h('div', { class: 'poly' }, h('span', { class: 'tag' }, '多音字'), ch.poly.map(function (p) {
@@ -863,6 +940,10 @@
               };
             }), api);
           }),
+          // 有改錯字資料：找出句子裡寫錯的字，改成本課生字（提示用部首的意思）
+          L.charParts && items.some(function (ch) { return (L.charParts[ch.c] || {}).fix; }) ? step('改錯字：句子裡有一個字寫錯了，找出來，改成正確的字。', 'quiz', function (stage, api) {
+            runFix(stage, shuffle(items.filter(function (ch) { return (L.charParts[ch.c] || {}).fix; })), L, api);
+          }) :
           // 有拆字資料：部首連同它的意思一起選（部件意義化）
           L.charParts ? step('部首的意思：這個字的部首是哪一個？跟什麼有關？', 'quiz', function (stage, api) {
             var lab = function (ch) { var r = radPart(L, ch); return r ? r.p + '（' + r.m + '）' : radicalLabel(ch); };
