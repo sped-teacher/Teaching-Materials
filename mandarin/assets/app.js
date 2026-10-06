@@ -572,10 +572,26 @@
         h('small', {}, x.s ? '念法像 ' + x.s : x.m)));
     });
     append(row, h('span', { class: 'pc-plus' }, '→'), h('div', { class: 'pc-char' }, withZy(ch.c, ch.zy, true)));
+    // 字源圖：小圖放在字的旁邊，點了才放大（不佔版面）；還沒畫好就不顯示
+    if (P.pic) {
+      var src = 'images/lesson' + L.id + '/' + encodeURIComponent(P.pic) + '.webp';
+      var thumb = h('button', { class: 'pc-thumb', type: 'button', hidden: true, 'aria-label': '看「' + ch.c + '」的圖' });
+      var img = new Image(); img.alt = '';
+      img.onload = function () { thumb.appendChild(img); thumb.hidden = false; };
+      img.src = src;
+      thumb.addEventListener('click', function (e) {
+        e.stopPropagation();
+        var big = new Image(); big.src = src; big.alt = '「' + ch.c + '」的圖'; big.className = 'pc-big';
+        var close = h('button', { class: 'btn btn-primary btn-block', type: 'button', style: 'margin-top:10px' }, '關掉');
+        var ov = modalWrap(h('div', { style: 'text-align:center' }, big, h('p', { style: 'font-size:18px;margin:8px 0 0' }, P.say), close));
+        close.addEventListener('click', function () { ov.remove(); });
+        speak(P.say);
+      });
+      append(row, thumb);
+    }
     var el = h('div', { class: 'pc-card', role: 'button', tabindex: '0' },
       h('span', { class: 'pc-type' }, PART_TYPE[P.t] || ''),
       row,
-      P.pic ? picEl(L.id, P.pic) : null,
       h('div', { class: 'facts' }, h('span', { class: 'nw' }, '部首 ', h('b', {}, radicalLabel(ch))), '　', h('span', { class: 'nw' }, '筆畫 ', h('b', {}, String(ch.strokes)))),
       h('div', { class: 'wds' }, ch.words.join('、')),
       ch.poly ? h('div', { class: 'poly' }, h('span', { class: 'tag' }, '多音字'), ch.poly.map(function (p) {
