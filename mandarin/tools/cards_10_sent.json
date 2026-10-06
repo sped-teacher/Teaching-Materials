@@ -1,9 +1,21 @@
 {
   "lesson": "10",
   "cards": [
-    { "name": "句型1_示範", "scene": "A brother singing in the shower with bubbles and music notes. Simple clear scene, the two events of the sentence both visible." },
-    { "name": "句型1_看圖", "scene": "A mother cooking in the kitchen stirring a pot while humming, music notes floating. Simple clear scene, the two events of the sentence both visible." },
-    { "name": "句型2_示範", "scene": "A busy father in work clothes sitting beside his child, checking homework with care. Simple clear scene, the two events of the sentence both visible." },
-    { "name": "句型2_看圖", "scene": "An elderly grandmother doing exercises in a park in the morning, energetic and smiling. Simple clear scene, the two events of the sentence both visible." }
+    {
+      "name": "句型1_示範",
+      "scene": "A closed bathroom door at home, warm steam and soap bubbles drifting out from under and around the door, many music notes floating out as someone happily sings inside; a little sister standing outside the door, covering her mouth and giggling. Simple clear scene, the two events of the sentence both visible."
+    },
+    {
+      "name": "句型1_看圖",
+      "scene": "A mother cooking in the kitchen stirring a pot while humming, music notes floating. Simple clear scene, the two events of the sentence both visible."
+    },
+    {
+      "name": "句型2_示範",
+      "scene": "A busy father in work clothes sitting beside his child, checking homework with care. Simple clear scene, the two events of the sentence both visible."
+    },
+    {
+      "name": "句型2_看圖",
+      "scene": "An elderly grandmother doing exercises in a park in the morning, energetic and smiling. Simple clear scene, the two events of the sentence both visible."
+    }
   ]
 }
