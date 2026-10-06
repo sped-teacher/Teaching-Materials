@@ -559,6 +559,10 @@
     a.addEventListener('click', function (e) { e.stopPropagation(); });
     return a;
   }
+  // 雄筆順（顏國雄老師）：本課生字的筆順、部件上色、部件拼圖
+  function strokeLink(L, chars) {
+    return 'https://gsyan888.github.io/html5_fun/html5_stroke_parts/html5_stroke_parts.html?by=gsyan&words=' + encodeURIComponent((chars || L.chars).map(function (x) { return x.c; }).join(''));
+  }
   function radicalLabel(ch) { return ch.rform ? ch.rform + '（' + ch.radical + '）' : ch.radical; }
 
   // ── 改錯字（認識生字）：① 點出寫錯的字（等級 1 先標好）② 選出正確的生字 ③ 說明（部首的意思）──
@@ -1794,7 +1798,7 @@
   }
 
   MODULES.zhuyinGame = {
-    name: '語詞挑戰', icon: '🗣️', desc: '注音聽打、識字讀詞（看國字念出語詞）', core: false,
+    name: '語詞挑戰', icon: '🗣️', desc: '注音聽打、識字讀詞、部件拼語詞', core: false,
     // 語詞和「認識語詞」一模一樣（L.words，依生字詞語解釋）；注音以 data/quiz_zy.js 為準
     units: function (L, c) {
       var items = (L.words || []).map(function (x) { return { w: x.w, zy: QUIZ_ZY[x.w] || x.zy }; });
@@ -1959,7 +1963,7 @@
           h('div', { class: 'status' }, lastT ? '上次 ' + lastT.d + '：' + lastT.score + ' 分' : '還沒考過'),
           testGo)));
 
-    var strokeUrl = 'https://gsyan888.github.io/html5_fun/html5_stroke_parts/html5_stroke_parts.html?by=gsyan&words=' + encodeURIComponent(L.chars.map(function (x) { return x.c; }).join(''));
+    var strokeUrl = strokeLink(L);
     var LK = (window.LESSON_LINKS || {})[lid] || {};
     var hasR = hasReading(lid), lock = READINGS[lid] ? '' : '🔒 ';
     if ((LK.reads && LK.reads.length) || LK.score || hasR) {
@@ -2009,6 +2013,8 @@
     }
     append(main, h('div', { class: 'task-head' },
       h('div', { class: 'task-title' }, h('span', { class: 'icon' }, M.icon), h('h2', { style: 'flex:1' }, M.name),
+        // 認識生字：這一組生字直接連到雄筆順（筆順、部件上色、部件拼圖），開新視窗
+        mid === 'chars' ? h('a', { class: 'btn btn-ghost stroke-link', href: strokeLink(L, unit.items), target: '_blank', rel: 'noopener' }, '✍️ 筆順・部件') : null,
         units.length > 1 ? h('span', { class: 'unit-pill' }, (unit.label || '第 ' + (ui + 1) + '／' + units.length + ' 組')) : (unit.label ? h('span', { class: 'unit-pill' }, unit.label) : null)),
       tabs,
       h('div', { class: 'progress' }, bar),

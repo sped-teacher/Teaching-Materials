@@ -770,3 +770,5 @@ details.tw-list .fold-body { padding: 0 14px 10px; }
 .fx-c.fixed { border-color: var(--right); background: var(--right-soft); }
 @media (max-width: 640px) { .fx-c { font-size: 30px; min-width: 36px; } }
 .fx-g { display: inline-flex; white-space: nowrap; }
+.stroke-link { min-height: 40px; padding: 4px 14px; font-size: 16px; white-space: nowrap; }
+.stroke-link { text-decoration: none; }
