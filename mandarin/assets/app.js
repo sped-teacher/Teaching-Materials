@@ -638,7 +638,7 @@
 
   // ── 拆字解說（認識生字）：部件 ＋ 部件 → 字；意思部件綠色、念法部件藍色；點卡片時部件合起來，iPad 念解說 ──
   function radPart(L, ch) { var P = (L.charParts || {})[ch.c]; return P && P.parts.find(function (x) { return x.r; }); }
-  var PART_TYPE = { xs1: '形聲字', xs2: '形聲字', hy: '會意字', xx: '象形字', kj: '記部件' };
+  var PART_TYPE = { xs1: '形聲字', xs2: '形聲字', hy: '會意字', xx: '象形字', kj: '口訣記法' };
   function partsCard(L, ch, P) {
     var row = h('div', { class: 'pc-row' });
     P.parts.forEach(function (x, k) {
