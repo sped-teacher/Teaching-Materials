@@ -1,0 +1,11 @@
+{
+  "lesson": "04",
+  "cards": [
+    { "name": "句型1_示範", "scene": "Children looking at the sky, with a thought bubble showing a sunny picnic on the grass. Simple clear scene, the two events of the sentence both visible." },
+    { "name": "句型1_看圖", "scene": "A family looking out the window imagining a sunny weekend; a thought bubble shows them riding bicycles along a riverside path. Simple clear scene, the two events of the sentence both visible." },
+    { "name": "句型2_示範", "scene": "A small boy lifting a heavy box easily, showing surprising strength, classmates amazed. Simple clear scene, the two events of the sentence both visible." },
+    { "name": "句型2_看圖", "scene": "A tiny puppy barking very loudly with big sound lines, a surprised big cat stepping back. Simple clear scene, the two events of the sentence both visible." },
+    { "name": "句型3_示範", "scene": "An artist with a suitcase leaving the city, arriving at a peaceful countryside farm with a field and easel. Simple clear scene, the two events of the sentence both visible." },
+    { "name": "句型3_看圖", "scene": "A worried child handing in a test, then the same child surprised and happy holding a test paper with a big 100 score circle (number only). Simple clear scene, the two events of the sentence both visible." }
+  ]
+}

@@ -1,0 +1,11 @@
+{
+  "lesson": "11",
+  "cards": [
+    { "name": "句型1_示範", "scene": "Mountain weather changing: half of the picture sunny, half rainy over the same mountain. Simple clear scene, the two events of the sentence both visible." },
+    { "name": "句型1_看圖", "scene": "Two panels of a kitten: chasing a ball of yarn, then curled up asleep. Simple clear scene, the two events of the sentence both visible." },
+    { "name": "句型2_示範", "scene": "A child reading a book: relaxed in a beanbag, learning new things, and writing a great essay (three small panels). Simple clear scene, the two events of the sentence both visible." },
+    { "name": "句型2_看圖", "scene": "Three small panels of the same boy: swimming in a pool, diving underwater with a mask, surfing a wave. Simple clear scene, the two events of the sentence both visible." },
+    { "name": "句型3_示範", "scene": "Sudden rain on a street, children running into a shop to take shelter. Simple clear scene, the two events of the sentence both visible." },
+    { "name": "句型3_看圖", "scene": "A pencil with a broken tip on a desk, and a child taking out a pencil sharpener. Simple clear scene, the two events of the sentence both visible." }
+  ]
+}

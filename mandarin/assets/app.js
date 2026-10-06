@@ -776,7 +776,7 @@
   function runMake(stage, p, L, api) {
     if (CAPTURE) return;
     var c = api.cfg, frame = c.level < 3, parts = patParts(p), tries = 0, done = false;
-    var model = (p.models || [])[0] || (p.origin || [])[0] || '';
+    var model = api.example || (p.models || [])[0] || (p.origin || [])[0] || '';   // api.example：看圖造句的參考句
     var inputs = [];
     function mkInput(ph) {
       var inp = h('input', { type: 'text', class: 'make-in', lang: 'zh-Hant', autocomplete: 'off', autocapitalize: 'off', spellcheck: 'false', enterkeyhint: 'done', placeholder: ph || '' });
@@ -906,7 +906,7 @@
 
   var MODULES = {
     chars: {
-      name: '認識生字', icon: '✏️', desc: function (L) { return L.charParts ? '拆字看一看、聽音選字、部首的意思' : '看字卡、聽音選字、找部首'; }, core: true,
+      name: '認識生字', icon: '✏️', desc: function (L) { return L.charParts ? '拆字看一看、聽音選字、改錯字' : '看字卡、聽音選字、找部首'; }, core: true,
       units: function (L, c) { return mkUnits(L.chars, c.group); },
       steps: function (L, unit, c) {
         var items = unit.items;
@@ -1075,7 +1075,7 @@
     },
 
     sentences: {
-      name: '句型練習', icon: '🧱', desc: '看老師示範、把兩件事接起來（問關係、🎤 念一遍）、自己造句', core: true,
+      name: '句型練習', icon: '🧱', desc: '看老師示範、把兩件事接起來（問關係、🎤 念一遍）、看圖造句、自己造句', core: true,
       units: function (L, c) {
         return L.sentences.filter(function (s) { return !s.flex || c.level === 3; })
           .map(function (s) { return { key: s.id, items: [s], label: s.pattern + (s.flex ? '（挑戰）' : '') }; })
@@ -1283,7 +1283,7 @@
 
     // 字族文：先讀韻文認識一家人 → 母體字加部首組字 → 句子選字；最後一組是綜合測驗
     lookalikes: {
-      name: '形近字', icon: '🔍', desc: '讀字族文、看語詞選字、組字、句子選字', core: false,
+      name: '形近字', icon: '🔍', desc: '讀字族文、組字、句子選字', core: false,
       units: function (L) {
         return L.families.map(function (f) { return { key: f.id, items: [f], label: f.title || (f.poly ? '「' + f.base + '」一字兩音' : '「' + f.base + '」字家族') }; })
           .concat([{ key: 'mix', items: L.lookalikes, label: '綜合測驗' }]);
@@ -1361,21 +1361,9 @@
             fillStep('句子裡的念法：「' + f.base + '」在句子裡怎麼念？', famQs)
           ];
         }
+        // 形似字（沒有母體字，不能組字）：比一比 → 句子選字（老師決定不做「看語詞選字」，步驟少一點）
         if (similar) return [
           readStep,
-          step('看語詞選字：語詞裡少了哪一個字？', 'quiz', function (stage, api) {
-            var qs = [];
-            f.members.forEach(function (m) {
-              m.words.forEach(function (w) {
-                qs.push({
-                  say: w, kai: true, options: [m.c].concat(shuffle(famChars.filter(function (x) { return x !== m.c; }))),
-                  hint: m.tip, after: w,
-                  prompt: function () { return h('div', { class: 'big', style: 'font-size:72px' }, blanked(w.replace(m.c, '＿'))); }
-                });
-              });
-            });
-            runQuiz(stage, shuffle(qs), api);
-          }),
           fillStep('句子選字：空格裡要填哪一個字？', famQs)
         ];
         return [
@@ -2512,7 +2500,14 @@
     // 句子卡（a、b，三段的句型還有 c）
     var cardsEl = function (pr) {
       var cards = [['第一件事', pr.a, 'a'], ['第二件事', pr.b, 'b']].concat(pr.c ? [['第三件事', pr.c, 'c']] : []);
-      return h('div', { class: 'sc-pair' + (pr.c ? ' three' : '') }, h('div', { class: 'sc-emoji' }, pr.e || ''),
+      // 有圖（老師示範）就換成圖；圖還沒畫好時先顯示表情符號
+      var vis = h('div', { class: 'sc-emoji' }, pr.e || '');
+      if (pr.pic) {
+        var im = new Image(); im.alt = '';
+        im.onload = function () { vis.className = 'sc-pic'; vis.innerHTML = ''; vis.appendChild(im); };
+        im.src = 'images/lesson' + L.id + '/' + encodeURIComponent(pr.pic) + '.webp';
+      }
+      return h('div', { class: 'sc-pair' + (pr.c ? ' three' : '') }, vis,
         cards.map(function (x) { return h('div', { class: 'sc-card sc-' + x[2] }, h('small', {}, x[0]), h('b', {}, x[1] + '。'), sayBtn(x[1])); }));
     };
     // 合起來的句子：連接詞的位置（空的顯示 ＿＿）
@@ -2723,7 +2718,18 @@
       show();
     }));
 
-    // ③ 自己造句：想自己的生活（想法卡），先說再寫；寫完自己檢查關係（沿用 runMake 的句型框和老師批改）
+    // ③ 看圖造句（練一次）：看圖＋提示詞，用句型說出圖裡的事；參考句放在「看例句」，不算抄例句
+    var K = C.look;
+    if (K) list.push(step('看圖造句：看圖和提示，用「' + p.pattern + '」說出圖裡的事。', 'quiz', function (stage, api) {
+      var inner = h('div');
+      var hintTxt = '提示：' + K.hint.join('、');
+      append(stage, h('div', { class: 'look-box' },
+        picEl(L.id, K.pic, true),
+        h('div', { class: 'row', style: 'justify-content:center' }, h('div', { class: 'look-hints' }, K.hint.map(function (t) { return h('span', { class: 'idea-chip' }, t); })), sayBtn(hintTxt))), inner);
+      runMake(inner, Object.assign({}, p, { models: [], origin: [] }), L, Object.assign({}, api, { example: K.model }));
+    }));
+
+    // ④ 自己造句：想自己的生活（想法卡），先說再寫；寫完自己檢查關係（沿用 runMake 的句型框和老師批改）
     list.push(step(lv < 3 ? '自己造句：想一件自己的事，先說再寫。' : '自己造句：用「' + p.pattern + '」寫一個句子。', 'quiz', function (stage, api) {
       var inner = h('div');
       append(stage, h('div', { class: 'idea-box' },

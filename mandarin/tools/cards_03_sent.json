@@ -1,0 +1,9 @@
+{
+  "lesson": "03",
+  "cards": [
+    { "name": "句型1_示範", "scene": "Two panels: a child finishing homework at a desk, then the child playing happily in a park. Simple clear scene, the two events of the sentence both visible." },
+    { "name": "句型1_看圖", "scene": "Two panels: a child brushing teeth at the sink, then the child lying in bed going to sleep. Simple clear scene, the two events of the sentence both visible." },
+    { "name": "句型2_示範", "scene": "A student walking to school in the rain with an umbrella and rain boots, determined to arrive on time. Simple clear scene, the two events of the sentence both visible." },
+    { "name": "句型2_看圖", "scene": "A child at a desk with a tall stack of homework books, writing seriously and determined late in the evening. Simple clear scene, the two events of the sentence both visible." }
+  ]
+}

@@ -1,0 +1,13 @@
+{
+  "lesson": "12",
+  "cards": [
+    { "name": "句型1_示範", "scene": "A boy walking to school through heavy rain with an umbrella, arriving on time. Simple clear scene, the two events of the sentence both visible." },
+    { "name": "句型1_看圖", "scene": "A dark night outside a school, a father arriving in a car with headlights on to pick up a waiting child. Simple clear scene, the two events of the sentence both visible." },
+    { "name": "句型2_示範", "scene": "A student on a stage holding a speech paper, knees shaking and nervous despite preparing. Simple clear scene, the two events of the sentence both visible." },
+    { "name": "句型2_看圖", "scene": "A child hugging a puppy at a pet shop while the mother nearby sneezes with a tissue. Simple clear scene, the two events of the sentence both visible." },
+    { "name": "句型3_示範", "scene": "A team that lost a game, but teammates high-fiving and smiling proudly. Simple clear scene, the two events of the sentence both visible." },
+    { "name": "句型3_看圖", "scene": "A child watching others receive awards on stage, then writing notes happily in a notebook, smiling. Simple clear scene, the two events of the sentence both visible." },
+    { "name": "句型4_示範", "scene": "Students sitting around a table discussing a hard problem together. Simple clear scene, the two events of the sentence both visible." },
+    { "name": "句型4_看圖", "scene": "A very hot sunny day with a melting ice cream, then children jumping into a swimming pool. Simple clear scene, the two events of the sentence both visible." }
+  ]
+}
