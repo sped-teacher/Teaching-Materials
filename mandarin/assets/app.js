@@ -2923,7 +2923,9 @@
       var k = -1, txt = h('div', { class: 'think-txt' });
       var blocks = B.map(function (b, i) { return blockEl(i, p.model[i]); });
       var go = nextBtn('我知道了，開始練習 →', api.next);
-      go.disabled = lv !== 3;  // 等級 1、2 要先看完老師示範
+      // 等級 1、2 要做完「分一分」才能下一步（老師講解可以不聽完）；沒有分一分的短語直接可以下一步
+      var canSort = ROLES.length >= 2;
+      go.disabled = lv !== 3 && canSort;
       var ex = h('div', { class: 'blk-examples', hidden: true }, h('div', { class: 'sub' }, '課本裡還有這些例子（看圖想一想）：'),
         h('div', { class: 'ex-grid' }, (p.examples || []).map(function (e, n) {
           var say = (p.exampleSay || [])[n] || '';
@@ -2940,39 +2942,13 @@
         var tSay = t.say + (t.at >= 0 && roleAt(t.at) ? '這種詞叫' + roleAt(t.at) + '。' : '');
         txt.innerHTML = ''; append(txt, h('span', { style: 'flex:1' }, '🧑‍🏫 ' + tSay), sayBtn(tSay));
         speak(tSay);
-        if (k >= p.think.length - 1) {
-          btn.hidden = true;
-          // 換一塊就不合理的短語（例如有量詞要配）沒有「換你試試」，直接看課本例子
-          if (tryOpts.length) tryBox.hidden = false; else afterTry();
-          if (lv === 3) { ex.hidden = false; }
-        }
+        if (k >= p.think.length - 1) { btn.hidden = true; ex.hidden = false; }
         else btn.textContent = '▶ 下一塊（' + (k + 2) + '／' + p.think.length + '）';
       });
-      // 換你試試：換掉藍色積木（怎麼選都對），把換之前、換之後並排，說出意思怎麼變
-      var tryAt = slotOf('n') >= 0 ? slotOf('n') : slots[0], tk = B[tryAt].k;
-      var tryOpts = shuffle(bank[tk].filter(function (x) { var t = p.model.slice(); t[tryAt] = x.w; return !x.x && x.w !== p.model[tryAt] && okParts(t); })).slice(0, 3);
-      var tryFb = h('div'), tryRow = row(p.model, tryAt);
-      var tryChips = tryOpts.map(function (x) {
-        return chipEl(tk, x, function (b) {
-          var t = p.model.slice(); t[tryAt] = x.w;
-          tryChips.forEach(function (cb) { cb.classList.toggle('picked', cb === b); });
-          var w = {}; slots.forEach(function (i) { w[B[i].k] = t[i]; });
-          var m = '只換了' + colorOf(tryAt) + '積木：「' + p.model[tryAt] + '」變成「' + x.w + '」，其他都一樣。' +
-            (p.swapSay ? p.swapSay.replace(/\{(\w)\}/g, function (mm, kk) { return w[kk] || ''; }) : '意思也跟著變了！');
-          tryFb.innerHTML = ''; tryRow.hidden = true;
-          append(tryFb, h('div', { class: 'swap-cmp' }, row(p.model), h('div', { class: 'swap-arrow' }, '⬇️'), row(t)),
-            h('div', { class: 'hintbox' }, '🧑‍🏫', h('span', { style: 'flex:1' }, m), sayBtn(m)));
-          speak(m); sfx.right(); addMade(t.join(''));
-          afterTry();
-        });
-      });
-      // 換你試試之後：看課本例子；等級 2、3 再「分一分」詞性（等級 2 分完才能下一步）
+      // 分一分：一開始就有按鈕，不用等老師講完（換你試試已經拿掉）
       var sortBox = h('div', { class: 'try-box sort-box', hidden: true }), sorted = false;
-      function afterTry() {
-        ex.hidden = false;
-        if (lv >= 2 && ROLES.length >= 2 && !sorted) { sortBox.hidden = false; runSort(); if (lv === 2) return; }
-        go.disabled = false;
-      }
+      var sortBtn = h('button', { class: 'btn btn-ghost sort-btn', type: 'button', hidden: !canSort }, '🧩 分一分：這些詞是什麼詞？');
+      sortBtn.addEventListener('click', function () { sortBtn.hidden = true; sortBox.hidden = false; runSort(); sortBox.scrollIntoView({ behavior: 'smooth', block: 'start' }); });
       // 分一分：詞放回短語裡問（同一個詞在不同地方，詞性可能不一樣），選它在這裡是哪一種詞
       //   短語：先用課本的短語換掉那一格；不合理就用情境的答案；再不行就找一個合理的組合
       function phraseWith(i, w) {
@@ -3033,22 +3009,19 @@
             })), fb);
         }
         function finish() {
-          sorted = true; box.innerHTML = '';
+          sorted = true; box.innerHTML = ''; ex.hidden = false;
           append(done, h('div', { class: 'praise' }, '分好了！'));
           go.disabled = false;
         }
         one();
       }
-      var tryBox = h('div', { class: 'try-box', hidden: true },
-        h('div', { class: 'row' }, h('div', { class: 'sub', style: 'flex:1' }, '換你試試：選一個' + colorOf(tryAt) + '積木放進去，每一個都可以！'), sayBtn('換你試試：選一個' + colorOf(tryAt) + '積木放進去，每一個都可以！')),
-        tryRow, h('div', { class: 'bchips' }, tryChips), tryFb);
       append(stage, h('div', { class: 'card pattern-card' },
         h('span', { class: 'kind' }, p.kind || '短語練習'),
         p.pic ? picEl(L.id, p.pic, true) : null,
         h('div', { class: 'row', style: 'justify-content:center' }, h('div', { class: 'blk-row big' }, blocks), sayBtn(p.model.join(''))),
         h('div', { class: 'row', style: 'justify-content:center' }, h('div', { class: 'explain' }, p.explain), sayBtn(p.explain)),
         posCard(),
-        txt, h('div', { style: 'text-align:center;margin:10px 0' }, btn), tryBox, sortBox, ex),
+        txt, h('div', { class: 'row', style: 'justify-content:center;gap:10px;flex-wrap:wrap;margin:10px 0' }, btn, sortBtn), sortBox, ex),
         h('div', { style: 'margin-top:16px' }, go));
     }));
 
