@@ -2924,7 +2924,7 @@
       var blocks = B.map(function (b, i) { return blockEl(i, p.model[i]); });
       var go = nextBtn('我知道了，開始練習 →', api.next);
       // 等級 1、2 要做完「分一分」才能下一步（老師講解可以不聽完）；沒有分一分的短語直接可以下一步
-      var canSort = ROLES.length >= 2;
+      var canSort = ROLES.length >= 1;
       go.disabled = lv !== 3 && canSort;
       var ex = h('div', { class: 'blk-examples', hidden: true }, h('div', { class: 'sub' }, '課本裡還有這些例子（看圖想一想）：'),
         h('div', { class: 'ex-grid' }, (p.examples || []).map(function (e, n) {
@@ -2972,13 +2972,16 @@
           var pool = [];
           slots.forEach(function (i) { if (roleAt(i) === r) (bank[B[i].k] || []).forEach(function (x) { if (!x.x && !pool.some(function (y) { return y.w === x.w; })) pool.push({ w: x.w, i: i }); }); });
           shuffle(pool).forEach(function (o) {
-            if (words.filter(function (x) { return x.r === r; }).length >= (ROLES.length > 2 ? 1 : 2)) return;
+            if (words.filter(function (x) { return x.r === r; }).length >= (ROLES.length > 2 ? 1 : ROLES.length === 2 ? 2 : 4)) return;
             var ph = phraseWith(o.i, o.w);
             if (ph) words.push({ w: o.w, r: r, i: o.i, ph: ph });
           });
         });
         words = shuffle(words).slice(0, 5);
         if (!words.length) { sorted = true; go.disabled = false; sortBox.hidden = true; return; }
+        // 選項：名詞、動詞、形容詞、量詞一定有，再加上這個短語用到的特別詞性（疊字詞等）
+        var SORT_OPTS = uniq(['名詞', '動詞', '形容詞', '量詞'].concat(ROLES));
+        var NEAR = { '疊字詞': '形容詞', '疊字量詞': '量詞', '摹聲詞': '形容詞' };
         var q = 0, box = h('div'), done = h('div');
         var ask = '分一分：在這個短語裡，畫線的詞是哪一種詞？';
         append(sortBox, h('div', { class: 'row' }, h('div', { class: 'sub', style: 'flex:1' }, ask), sayBtn(ask)), box, done);
@@ -2988,7 +2991,7 @@
           var why = function (r) { return (POS[r] ? POS[r].why : '「{w}」是' + r + '。').replace('{w}', it.w); };
           var phEl = h('div', { class: 'sort-word' }, it.ph.map(function (x, k) { return k === it.i ? h('u', { class: 'sort-hl' }, x) : x; }));
           append(box, h('div', { class: 'row', style: 'justify-content:center' }, phEl, sayBtn(it.ph.join(''))),
-            h('div', { class: 'row', style: 'justify-content:center;gap:10px;flex-wrap:wrap' }, shuffle(ROLES.slice()).map(function (r) {
+            h('div', { class: 'row', style: 'justify-content:center;gap:10px;flex-wrap:wrap' }, SORT_OPTS.map(function (r) {
               var b = h('button', { type: 'button', class: 'btn btn-ghost' }, r);
               b.addEventListener('click', function () {
                 if (solved) return;
@@ -3000,7 +3003,9 @@
                   setTimeout(function () { q++; if (q < words.length) one(); else finish(); }, 1600);
                 } else {
                   sfx.wrong(); b.disabled = true;
-                  fb.innerHTML = ''; var m2 = '再想一想。' + why(it.r).replace(/，所以是.+$/, '。');
+                  // 疊字詞／形容詞、疊字量詞／量詞、摹聲詞／形容詞：不算錯得離譜，提醒選更準確的
+                  var near = NEAR[it.r] === r;
+                  fb.innerHTML = ''; var m2 = near ? '「' + it.w + '」也是在說' + (r === '量詞' ? '多少' : '樣子') + '，不過這裡要選更準確的：它是' + (it.r === '摹聲詞' ? '模仿聲音的詞' : '疊起來的詞') + '。' : '再想一想。' + why(it.r).replace(/，所以是.+$/, '。');
                   append(fb, h('div', { class: 'hintbox' }, '💡', h('span', { style: 'flex:1' }, m2), sayBtn(m2)));
                   speak(m2);
                 }
