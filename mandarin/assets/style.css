@@ -778,3 +778,16 @@ details.tw-list .fold-body { padding: 0 14px 10px; }
 .look-box .pic.big { max-width: 360px; margin: 0 auto 8px; }
 .look-hints { display: flex; gap: 8px; justify-content: center; flex-wrap: wrap; }
 .sc-pic img { width: 160px; height: 160px; object-fit: cover; border-radius: 14px; border: 2px solid var(--line); display: block; margin: 0 auto; }
+/* 詞性小卡、分一分 */
+details.pos-card { margin: 10px auto; max-width: 560px; border: 1px solid var(--line); border-radius: 14px; background: var(--card); text-align: left; }
+details.pos-card > summary { cursor: pointer; list-style: none; padding: 10px 14px; font-size: 17px; font-weight: 700; display: flex; gap: 8px; }
+details.pos-card > summary::-webkit-details-marker { display: none; }
+details.pos-card > summary::after { content: '＋'; margin-left: auto; color: var(--muted); font-weight: 400; }
+details.pos-card[open] > summary::after { content: '－'; }
+.pos-body { padding: 0 14px 10px; }
+.pos-row { display: flex; align-items: center; gap: 10px; padding: 6px 0; border-top: 1px solid var(--line); font-size: 17px; }
+.pos-row b { min-width: 76px; }
+.sort-word { font-family: var(--kai); font-size: 52px; padding: 4px 18px; border: 3px dashed var(--line); border-radius: 14px; margin: 6px 0 10px; }
+.sort-box .btn.right { border-color: var(--right); background: var(--right-soft); }
+.sort-word { font-size: 40px; }
+.sort-hl { text-decoration: none; border-bottom: 4px solid var(--accent); background: var(--accent-soft); border-radius: 6px; padding: 0 4px; }

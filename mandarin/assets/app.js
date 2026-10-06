@@ -2799,6 +2799,17 @@
   //  積木顏色全站固定：紅 v＝做什麼、藍 n＝誰／什麼、紫 r＝後來怎樣、綠 a＝樣子、橘 q＝數量
   // ════════════════════════════════════════════════
   var BLK_COLOR = { v: '紅', n: '藍', r: '紫', a: '綠', q: '橘' };
+  // 詞性小卡與「分一分」：詞性要看它在短語裡怎麼用（同一個詞放在不同地方，詞性可能不一樣）
+  //   test：小卡上的說明（括號裡是可以試試的檢查方法）；why：分一分的說明（一定是「在這裡……」）
+  var POS = {
+    '名詞': { test: '說的是人、東西、地方或一件事（常常在「的」後面）', why: '在這裡，「{w}」說的是人、東西、地方或一件事，所以是名詞。' },
+    '動詞': { test: '在做的動作（常常可以加「正在」試試看）', why: '在這裡，「{w}」是在做的動作，所以是動詞。' },
+    '形容詞': { test: '說什麼樣子（常常可以加「很」試試看）', why: '在這裡，「{w}」說的是什麼樣子，所以是形容詞。' },
+    '量詞': { test: '說多少、哪一個，後面接東西', why: '在這裡，「{w}」說的是多少、哪一個，所以是量詞。' },
+    '疊字詞': { test: '兩個一樣的字疊起來，說出樣子', why: '在這裡，「{w}」用兩個一樣的字疊起來，說出樣子，所以是疊字詞。' },
+    '疊字量詞': { test: '量詞疊起來，表示很多', why: '在這裡，「{w}」是量詞疊起來，表示很多，所以是疊字量詞。' },
+    '摹聲詞': { test: '模仿聲音的詞', why: '在這裡，「{w}」是在模仿聲音，所以是摹聲詞。' }
+  };
   var ASK3 = { n: '圖裡有誰？有什麼？', r: '他們有什麼反應？', a: '它是什麼樣子？', v: '用哪一個紅色積木連起來？', q: '有多少？' };  // 問自己的問題（通用版）
   var ASK_ORDER = ['n', 'r', 'v', 'a', 'q'];  // 想的順序：先看圖判斷主體（人／東西、反應、動作），再選樣子、數量
   function blockSteps(L, p, c) {
@@ -2850,11 +2861,26 @@
     var fits = function (sc, parts) {
       return slots.every(function (i) { var f = sc.fit[B[i].k]; return !f || f.indexOf(parts[i]) >= 0; });
     };
-    // 一塊積木：上面小字是積木名稱，下面是詞（空的顯示「？」）
+    // 詞性：p.roles（和 model 一格對一格），照這個詞在短語裡的用法標
+    var roleAt = function (i) { return (p.roles || [])[i] || ''; };
+    var roleOfK = function (k) { return roleAt(slotOf(k)); };
+    var ROLES = uniq(slots.map(roleAt).filter(Boolean));
+    // 詞性小卡（可以展開）：這個短語用到的詞性＋怎麼檢查
+    var posCard = function () {
+      var rs = ROLES.filter(function (r) { return POS[r]; });
+      if (!rs.length) return null;
+      return h('details', { class: 'pos-card' }, h('summary', {}, '📒 詞性小卡：看它在短語裡怎麼用'),
+        h('div', { class: 'pos-body' }, rs.map(function (r) {
+          var m = r + '：' + POS[r].test;
+          return h('div', { class: 'pos-row' }, h('b', {}, r), h('span', { style: 'flex:1' }, POS[r].test), sayBtn(m));
+        })));
+    };
+    // 一塊積木：上面小字是積木名稱（詞性），下面是詞（空的顯示「？」）
     var blockEl = function (i, w, cls) {
       var b = B[i];
       if (typeof b === 'string') return h('span', { class: 'blk blk-glue' }, h('small', {}, ' '), h('b', {}, b));
-      return h('span', { class: 'blk blk-' + (b.c || b.k) + (w ? '' : ' blank') + (cls ? ' ' + cls : '') }, h('small', {}, b.name), h('b', {}, w || '？'));
+      return h('span', { class: 'blk blk-' + (b.c || b.k) + (w ? '' : ' blank') + (cls ? ' ' + cls : '') },
+        h('small', {}, b.name + (roleAt(i) ? '（' + roleAt(i) + '）' : '')), h('b', {}, w || '？'));
     };
     var row = function (parts, blankAt) {
       return h('div', { class: 'blk-row' }, B.map(function (b, i) { return blockEl(i, i === blankAt ? '' : parts[i]); }));
@@ -2910,12 +2936,14 @@
         k++;
         var t = p.think[k];
         blocks.forEach(function (el, i) { el.classList.toggle('lit', t.at === i || t.at === -1); });
-        txt.innerHTML = ''; append(txt, h('span', { style: 'flex:1' }, '🧑‍🏫 ' + t.say), sayBtn(t.say));
-        speak(t.say);
+        // 老師放聲思考時說出詞性（照資料的詞性名稱）
+        var tSay = t.say + (t.at >= 0 && roleAt(t.at) ? '這種詞叫' + roleAt(t.at) + '。' : '');
+        txt.innerHTML = ''; append(txt, h('span', { style: 'flex:1' }, '🧑‍🏫 ' + tSay), sayBtn(tSay));
+        speak(tSay);
         if (k >= p.think.length - 1) {
           btn.hidden = true;
           // 換一塊就不合理的短語（例如有量詞要配）沒有「換你試試」，直接看課本例子
-          if (tryOpts.length) tryBox.hidden = false; else { ex.hidden = false; go.disabled = false; }
+          if (tryOpts.length) tryBox.hidden = false; else afterTry();
           if (lv === 3) { ex.hidden = false; }
         }
         else btn.textContent = '▶ 下一塊（' + (k + 2) + '／' + p.think.length + '）';
@@ -2935,9 +2963,82 @@
           append(tryFb, h('div', { class: 'swap-cmp' }, row(p.model), h('div', { class: 'swap-arrow' }, '⬇️'), row(t)),
             h('div', { class: 'hintbox' }, '🧑‍🏫', h('span', { style: 'flex:1' }, m), sayBtn(m)));
           speak(m); sfx.right(); addMade(t.join(''));
-          ex.hidden = false; go.disabled = false;
+          afterTry();
         });
       });
+      // 換你試試之後：看課本例子；等級 2、3 再「分一分」詞性（等級 2 分完才能下一步）
+      var sortBox = h('div', { class: 'try-box sort-box', hidden: true }), sorted = false;
+      function afterTry() {
+        ex.hidden = false;
+        if (lv >= 2 && ROLES.length >= 2 && !sorted) { sortBox.hidden = false; runSort(); if (lv === 2) return; }
+        go.disabled = false;
+      }
+      // 分一分：詞放回短語裡問（同一個詞在不同地方，詞性可能不一樣），選它在這裡是哪一種詞
+      //   短語：先用課本的短語換掉那一格；不合理就用情境的答案；再不行就找一個合理的組合
+      function phraseWith(i, w) {
+        var t = p.model.slice(); t[i] = w;
+        if (okParts(t)) return t;
+        for (var s = 0; s < scenes.length; s++) { t = scenes[s].ans.slice(); t[i] = w; if (okParts(t)) return t; }
+        var found = null;
+        (function fill(j, cur) {
+          if (found) return;
+          if (j >= slots.length) { if (okParts(cur)) found = cur.slice(); return; }
+          var si = slots[j];
+          if (si === i) { fill(j + 1, cur); return; }
+          (bank[B[si].k] || []).forEach(function (x) { if (!found && !x.x) { cur[si] = x.w; fill(j + 1, cur); } });
+        })(0, (function () { var c0 = p.model.slice(); c0[i] = w; return c0; })());
+        return found;
+      }
+      function runSort() {
+        if (sortBox.firstChild) return;
+        var words = [];
+        ROLES.forEach(function (r) {
+          var pool = [];
+          slots.forEach(function (i) { if (roleAt(i) === r) (bank[B[i].k] || []).forEach(function (x) { if (!x.x && !pool.some(function (y) { return y.w === x.w; })) pool.push({ w: x.w, i: i }); }); });
+          shuffle(pool).forEach(function (o) {
+            if (words.filter(function (x) { return x.r === r; }).length >= (ROLES.length > 2 ? 1 : 2)) return;
+            var ph = phraseWith(o.i, o.w);
+            if (ph) words.push({ w: o.w, r: r, i: o.i, ph: ph });
+          });
+        });
+        words = shuffle(words).slice(0, 5);
+        if (!words.length) { sorted = true; go.disabled = false; sortBox.hidden = true; return; }
+        var q = 0, box = h('div'), done = h('div');
+        var ask = '分一分：在這個短語裡，畫線的詞是哪一種詞？';
+        append(sortBox, h('div', { class: 'row' }, h('div', { class: 'sub', style: 'flex:1' }, ask), sayBtn(ask)), box, done);
+        function one() {
+          box.innerHTML = '';
+          var it = words[q], fb = h('div'), solved = false;
+          var why = function (r) { return (POS[r] ? POS[r].why : '「{w}」是' + r + '。').replace('{w}', it.w); };
+          var phEl = h('div', { class: 'sort-word' }, it.ph.map(function (x, k) { return k === it.i ? h('u', { class: 'sort-hl' }, x) : x; }));
+          append(box, h('div', { class: 'row', style: 'justify-content:center' }, phEl, sayBtn(it.ph.join(''))),
+            h('div', { class: 'row', style: 'justify-content:center;gap:10px;flex-wrap:wrap' }, shuffle(ROLES.slice()).map(function (r) {
+              var b = h('button', { type: 'button', class: 'btn btn-ghost' }, r);
+              b.addEventListener('click', function () {
+                if (solved) return;
+                if (r === it.r) {
+                  solved = true; sfx.right(); b.classList.add('right');
+                  fb.innerHTML = ''; var m = '對了！' + why(r);
+                  append(fb, h('div', { class: 'hintbox' }, '✅', h('span', { style: 'flex:1' }, m), sayBtn(m)));
+                  speak(m);
+                  setTimeout(function () { q++; if (q < words.length) one(); else finish(); }, 1600);
+                } else {
+                  sfx.wrong(); b.disabled = true;
+                  fb.innerHTML = ''; var m2 = '再想一想。' + why(it.r).replace(/，所以是.+$/, '。');
+                  append(fb, h('div', { class: 'hintbox' }, '💡', h('span', { style: 'flex:1' }, m2), sayBtn(m2)));
+                  speak(m2);
+                }
+              });
+              return b;
+            })), fb);
+        }
+        function finish() {
+          sorted = true; box.innerHTML = '';
+          append(done, h('div', { class: 'praise' }, '分好了！'));
+          go.disabled = false;
+        }
+        one();
+      }
       var tryBox = h('div', { class: 'try-box', hidden: true },
         h('div', { class: 'row' }, h('div', { class: 'sub', style: 'flex:1' }, '換你試試：選一個' + colorOf(tryAt) + '積木放進去，每一個都可以！'), sayBtn('換你試試：選一個' + colorOf(tryAt) + '積木放進去，每一個都可以！')),
         tryRow, h('div', { class: 'bchips' }, tryChips), tryFb);
@@ -2946,7 +3047,8 @@
         p.pic ? picEl(L.id, p.pic, true) : null,
         h('div', { class: 'row', style: 'justify-content:center' }, h('div', { class: 'blk-row big' }, blocks), sayBtn(p.model.join(''))),
         h('div', { class: 'row', style: 'justify-content:center' }, h('div', { class: 'explain' }, p.explain), sayBtn(p.explain)),
-        txt, h('div', { style: 'text-align:center;margin:10px 0' }, btn), tryBox, ex),
+        posCard(),
+        txt, h('div', { style: 'text-align:center;margin:10px 0' }, btn), tryBox, sortBox, ex),
         h('div', { style: 'margin-top:16px' }, go));
     }));
 
@@ -3080,13 +3182,15 @@
           var wrongAt = order.find(function (i) { return parts[i] !== sc.ans[i] && !(sc.fit[B[i].k] && sc.fit[B[i].k].indexOf(parts[i]) >= 0); });
           if (wrongAt == null) return say('積木都可以了，按「✅ 我造好了」。');
           cur = wrongAt; draw();
-          if (tier === 2) return say('看亮起來的那一塊：' + ((sc.q || {})[B[wrongAt].k] || ASK3[B[wrongAt].k] || ASK3[ck(B[wrongAt].k)]));
+          var rw = roleAt(wrongAt);
+          if (tier === 2) return say('看亮起來的那一塊：' + ((sc.q || {})[B[wrongAt].k] || ASK3[B[wrongAt].k] || ASK3[ck(B[wrongAt].k)]) +
+            (rw && POS[rw] ? '這一塊放' + rw + '（' + POS[rw].test + '）。' : ''));
           parts[wrongAt] = sc.ans[wrongAt]; draw();
           say('老師幫你放好「' + sc.ans[wrongAt] + '」了。再想想其他的積木。');
         });
         if (lv === 1) append(card, askCard(sc, null));  // 等級 1 一開始就有三個問題
         append(stage, qbar(q, own.length), sceneEl(sc, lv === 3), h('div', { class: 'prompt' }, top), card, pickBox,
-          c.hint ? h('div', { class: 'tools' }, hb) : null, fb);
+          c.hint ? h('div', { class: 'tools' }, hb) : null, posCard(), fb);
         draw();
         speak(lv === 3 ? '看圖，自己造一個短語。' : sc.say);
       }
