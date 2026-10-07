@@ -105,6 +105,10 @@ python <資料夾>/tools/check_lesson.py 07
 - gsyan（雄筆順等）的資料只能連結，不能複製進 repo。
 - 讀音只依《國語辭典簡編本》《國語小字典》，不用《重編國語辭典修訂本》，不憑記憶寫注音。
 
+## 網站做好之後
+
+全抽組的紙本回家作業（形近字、短語句型、段落大意）用 `fullpullout-worksheet` skill，內容直接取自網站資料。
+
 ## 參考檔案
 
 - `references/data-schema.md`：每個欄位的格式與範例（寫資料時讀）
