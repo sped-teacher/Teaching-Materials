@@ -162,7 +162,8 @@ for (const id of ids) {
     else if (!uniq(q.options)) E('問題選項重複：' + q.q);
     (q.keys || []).forEach((k) => keyOK(k, '問題「' + q.q + '」'));
   });
-  if (!R.theme) W('讀懂課文沒有「想一想主旨」theme（可以不做，第 7 課以後都有）');
+  if (!R.theme || !R.theme.options) E('讀懂課文缺「想一想主旨」theme（每課都要有）');
+  if ((R.questions || []).some((q) => /想告訴我們什麼/.test(q.q))) W('回答問題裡有「想告訴我們什麼」，和主旨重複，移到 theme');
   if (R.sort) {
     R.sort.cards.forEach((c) => { if (!R.sort.groups[c.g]) E('分類卡片的 g 不對：' + c.t); (c.keys || []).forEach((k) => keyOK(k, '分類卡片')); });
     if (!R.sort.byLevel) E('分類活動缺 byLevel');
