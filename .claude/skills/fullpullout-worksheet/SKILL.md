@@ -5,7 +5,7 @@ description: 產生資源班「全抽組」國語回家作業（每課 3 頁 A4 
 
 # 全抽組國語作業
 
-給「全抽組」（國語課全部在資源班上）學生的回家作業。上課用平板網站，回家寫紙本。程式在本 skill 的 `scripts/`，每一課的補充資料放在網站資料夾 `<網站>/tools/worksheet/wsdata/XX.json`（隨 repo 同步）。
+給「全抽組」（國語課全部在資源班上）學生的回家作業。上課用平板網站，回家寫紙本。程式在本 skill 的 `scripts/`。**學習單和題目資料都只放老師電腦、不上傳 GitHub**（老師 2026-10-12 決定）：成品在 `Desktop\學國5上\全抽作業`、`Desktop\學國5上\外加學習單`；題目資料在 `Desktop\學國5上\學習單資料\wsdata\XX.json`（全抽＋外加共用：段落大意等）與 `wsdata_extra\XX.json`（外加的短語、句型、成語）。新一冊照同樣方式放在該冊的桌面資料夾，產生時用 `--data` 指定；換電腦要自己用隨身碟帶過去。
 
 ## 學生與老師定下的規則（一定要照）
 
@@ -30,13 +30,13 @@ description: 產生資源班「全抽組」國語回家作業（每課 3 頁 A4 
 
 1. **先確認網站資料齊全**：要用的課 `mandarin/data/lessonXX.js` 有 families、lookalikes、phrases（有 blocks、scenes）、sentences（有 combine.look）、reading.map，圖都畫好了（`check_spec.mjs` 沒有 ❌）。新的一冊先用 `mandarin-learning-site` skill 把網站做好。
 2. **核對〈字音字形〉**：讀出版社的字音字形檔，逐課比對網站的 families：缺題目的字列出來、非生字的多音字排除。
-3. **寫段落大意**（每課一個 `wsdata/XX.json`，格式見 `references/wsdata.md`）：
+3. **寫段落大意**（每課一個 `學習單資料\wsdata\XX.json`，格式見 `references/wsdata.md`）：
    - 讀課文（`tools/texts/lessonXX.txt`，只在老師電腦），照網站 `reading.map` 的分段改寫，句子短、學生懂。
    - 從本課語詞（`words`）挑**剛好 8 個**、有網站圖的，用〔 〕標成空格；8 個不夠就加一句帶出別的語詞（例：第十課「日暮的時候，也就是傍晚」）。
    - 寫完**先列給老師確認**（每課：分段標題＋大意＋8 個挖空語詞），老師說可以才產生。
 4. **產生**（在 repo 根目錄）：
    ```bash
-   python .claude/skills/fullpullout-worksheet/scripts/fit.py --site mandarin --out "C:\Users\class\Desktop\學國5上\全抽作業"
+   python .claude/skills/fullpullout-worksheet/scripts/fit.py --site mandarin --data "C:\Users\class\Desktop\學國5上\學習單資料\wsdata" --out "C:\Users\class\Desktop\學國5上\全抽作業"
    ```
    後面加課次（`01 04`）只做那幾課。每課先用最豐富的版面，放不下 3 頁會自動減少情境圖、縮小圖。輸出 `第XX課_全抽作業.docx`＋`.pdf`。輸出資料夾不在 repo 裡；新一冊依老師習慣命名（例：`Desktop\學國5下\全抽作業`），沒指定就問。
 5. **檢查**：
@@ -68,11 +68,11 @@ Word（轉 PDF、算頁數）、`pip install python-docx pywin32 pillow`、文�
 | ④ 句型 | 句型＋關係＋說明＋課文原句 → 1 選一選 → 2 接一句 → 3 自己造句（兩行） | 外加才有 |
 | ⑤ 成語造句（放最後，三個一頁） | 網站成語圖＋意思 → 1 哪個情境比較適合 → 2 完成句子→ 3 我自己造句 | 外加才有；成語＝本課**生字延伸成語**（網站 `idioms`），不是課文詞語 |
 
-這三部分的內容在 `<網站>/tools/worksheet/wsdata_extra/XX.json`（格式見 `references/wsdata.md`）。第 1～3 課沿用老師原本的外加學習單；新課要新寫，**先列給老師確認**再產生：
+這三部分的內容在 `學習單資料\wsdata_extra\XX.json`（格式見 `references/wsdata.md`）。第 1～3 課沿用老師原本的外加學習單；新課要新寫，**先列給老師確認**再產生：
 - 短語：結構照網站 `phrases[].roles`；選一選的錯誤選項是別的詞性；換一換給前半、讓學生補。
 - 成語：意思可用網站 `idioms[].meaning`；兩個情境一對一錯、都是學生生活；第 2 題「完成句子」統一標準（老師 2026-10-12 決定）：每句**兩個空格**——一格寫**目標成語**、一格填**符合句意的內容**（誰、發生什麼事、為了什麼）；空格前後有提示詞讓答案範圍清楚，句子短、一行寫得完。資料寫法：「他就像〔成語〕，遇到＿也不退縮。」
 - 句型：照網站 `sentences`；選一選一對一錯、錯的是不相關的句子。
 
 ```bash
-python .claude/skills/fullpullout-worksheet/scripts/fit.py --site mandarin --group extra --out "C:\Users\class\Desktop\學國5上\外加學習單" 01 02 03
+python .claude/skills/fullpullout-worksheet/scripts/fit.py --site mandarin --group extra --data "C:\Users\class\Desktop\學國5上\學習單資料\wsdata" --out "C:\Users\class\Desktop\學國5上\外加學習單" 01 02 03
 ```

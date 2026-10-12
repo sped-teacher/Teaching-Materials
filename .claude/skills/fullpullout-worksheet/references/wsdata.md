@@ -1,6 +1,6 @@
 # wsdata/XX.json 格式
 
-放在 `<網站>/tools/worksheet/wsdata/`，一課一個檔，檔名是兩位數課次。只放「網站資料沒有、這份作業才需要」的內容。範例：`mandarin/tools/worksheet/wsdata/07.json`。
+放在老師電腦 `Desktop\學國5上\學習單資料\wsdata\`（不上傳 GitHub），一課一個檔，檔名是兩位數課次。只放「網站資料沒有、這份作業才需要」的內容。範例：該資料夾的 `07.json`。
 
 ```json
 {
@@ -25,7 +25,7 @@
 
 # wsdata_extra/XX.json（外加組）
 
-範例：`mandarin/tools/worksheet/wsdata_extra/03.json`。
+放在 `學習單資料\wsdata_extra\`（和 wsdata 同一層）。範例：該資料夾的 `03.json`。
 
 ```json
 {

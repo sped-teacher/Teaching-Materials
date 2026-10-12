@@ -31,3 +31,6 @@ build/
 # Claude Code 本機設定
 .claude/settings.local.json
 .claude/launch.json
+
+# 學習單的題目資料只放老師電腦（Desktop\學國5上\學習單資料），不上傳
+**/tools/worksheet/

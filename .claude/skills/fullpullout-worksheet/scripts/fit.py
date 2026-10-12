@@ -5,7 +5,7 @@
 
   --site  網站資料夾（有 data/lessonXX.js、images/、tools/）
   --out   作業輸出資料夾（不在 repo 裡）
-  --data  補充資料（段落大意改寫等），預設 <site>/tools/worksheet/wsdata
+  --data  題目資料 wsdata 資料夾（只放老師電腦，例：Desktop\學國5上\學習單資料\wsdata）；外加組資料在旁邊的 wsdata_extra
 需要：Word、python-docx、pywin32、Pillow、文鼎標楷注音字型。
 """
 import argparse, os, subprocess, sys
