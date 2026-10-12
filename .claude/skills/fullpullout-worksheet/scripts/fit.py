@@ -17,24 +17,26 @@ ap = argparse.ArgumentParser()
 ap.add_argument('--site', required=True)
 ap.add_argument('--out', required=True)
 ap.add_argument('--data')
+ap.add_argument('--group', default='full', choices=['full', 'extra'], help='full＝全抽組作業（每課 3 頁）、extra＝外加組學習單')
 ap.add_argument('lessons', nargs='*')
 a = ap.parse_args()
 site = Path(a.site).resolve()
 out = Path(a.out).resolve()
 out.mkdir(parents=True, exist_ok=True)
-env = dict(os.environ, WS_SITE=str(site), WS_OUT=str(out), PYTHONIOENCODING='utf-8')
+env = dict(os.environ, WS_SITE=str(site), WS_OUT=str(out), WS_GROUP=a.group, PYTHONIOENCODING='utf-8')
 if a.data:
     env['WS_DATA'] = str(Path(a.data).resolve())
 data = Path(env.get('WS_DATA', site / 'tools' / 'worksheet' / 'wsdata'))
-lessons = a.lessons or sorted(p.stem for p in data.glob('[0-9][0-9].json'))
+src = data if a.group == 'full' else data.parent / 'wsdata_extra'
+lessons = a.lessons or sorted(p.stem for p in src.glob('[0-9][0-9].json'))
 
 LEVELS = 6   # 版面等級 0～5：0 最豐富；放不下時減少情境圖、縮小圖（見 make_docx.py 的 PLANS）
 word = win32com.client.DispatchEx('Word.Application')
 word.Visible = False
 try:
     for lid in lessons:
-        docx = out / f'第{lid}課_全抽作業.docx'
-        for level in range(LEVELS):
+        docx = out / (f'第{lid}課_全抽作業.docx' if a.group == 'full' else f'第{lid}課_外加學習單.docx')
+        for level in (range(LEVELS) if a.group == 'full' else [0]):   # 外加組不限頁數
             r = subprocess.run([sys.executable, str(HERE / 'make_docx.py'), lid, str(level), 'top'],
                                capture_output=True, text=True, encoding='utf-8', env=env)
             if r.returncode:
@@ -43,7 +45,7 @@ try:
             warn = [l for l in r.stdout.splitlines() if '⚠' in l]
             d = word.Documents.Open(str(docx), False, True)
             pages = d.ComputeStatistics(2)
-            if pages <= 3 or level == LEVELS - 1:
+            if a.group == 'extra' or pages <= 3 or level == LEVELS - 1:
                 d.ExportAsFixedFormat(str(docx.with_suffix('.pdf')), 17)
                 d.Close(False)
                 print(f'{lid}：{pages} 頁（版面等級 {level}）', *warn)
