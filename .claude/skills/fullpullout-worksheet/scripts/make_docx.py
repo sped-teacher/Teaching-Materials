@@ -128,6 +128,8 @@ def table(rows, cols, widths, borders=True):
     t.alignment = WD_TABLE_ALIGNMENT.CENTER
     t.autofit = False
     for row in t.rows:
+        trPr = row._tr.get_or_add_trPr()          # 一格（一張卡片）不要被拆到兩頁
+        cs = OxmlElement('w:cantSplit'); trPr.append(cs)
         for k, c in enumerate(row.cells):
             c.width = Cm(widths[k])
             if borders:
@@ -464,31 +466,31 @@ def page_idiom_extra(no, newpage):
     header(no, '成語造句', '看圖和意思，選出適合的情境，完成句子，再自己造句。', newpage=newpage)
     for k, d in enumerate(XD['idioms']):
         t = table(1, 2, [3.6, WIDTH - 3.6])
-        picture(para(t.cell(0, 0), True, WD_ALIGN_PARAGRAPH.CENTER, before=4), d['idiom'], 3.1)
+        picture(para(t.cell(0, 0), True, WD_ALIGN_PARAGRAPH.CENTER, before=4), d['idiom'], 2.8)
         c = t.cell(0, 1)
-        p = para(c, True, before=2)
-        add(p, d['idiom'], size=16, bold=True, color=NAVY)
-        p = para(c, after=2, line=1.15)
-        add(p, '意思：', size=11.5, color=GRAY)
-        add(p, d['meaning'], size=11.5)
+        p = para(c, True, before=0)
+        add(p, d['idiom'], size=15, bold=True, color=NAVY)
+        p = para(c, after=1, line=1.05)
+        add(p, '意思：', size=11, color=GRAY)
+        add(p, d['meaning'], size=11)
         p = para(c, line=1.15)
         add(p, '1. 哪個情境比較適合？', size=12.5)
         for o in d['situ']:
-            p = para(c, line=1.2)
+            p = para(c, line=1.1)
             add(p, '　□ ', size=12.5, color=GRAY)
             add(p, o, size=12.5)
-        p = para(c, before=3)
+        p = para(c, before=1)
         add(p, '2. 完成句子：', size=12.5)
         # 兩格：〔成語〕＝寫目標成語，＿＝填符合句意的內容。手寫字比印刷字大，格子要寫得下
-        p = para(c, line=1.9)
+        p = para(c, line=1.75)
         add(p, '　', size=13)
         for j, part in enumerate(d['frame'].split('〔成語〕')):
             if j:
                 blank(p, len(d['idiom']) + 2, size=13)
             fill_line(p, part, size=13, unit=11)
-        p = para(c, before=3)
+        p = para(c, before=1)
         add(p, '3. 我自己造句：', size=12.5)
-        write_line(c, length=24)
+        write_line(c, length=24, before=5)
         para(c).paragraph_format.line_spacing = Pt(3)
         sp = para(doc); sp.paragraph_format.line_spacing = Pt(5)
         if k == 2 and len(XD['idioms']) > 3:          # 三個一頁
