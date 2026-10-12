@@ -449,9 +449,9 @@ def page_phrase_extra(no, newpage):
             boxes(p, it['options'])
         step(c, 'B. 換一換')
         for fr in ph['swap']:
-            p = para(c, line=1.6)
+            p = para(c, line=2.0)
             add(p, '　', size=13)
-            fill_line(p, fr)
+            fill_line(p, fr, unit=6)
         step(c, 'C. 自己仿寫一個')
         write_line(c)
         para(c).paragraph_format.line_spacing = Pt(4)
@@ -471,15 +471,21 @@ def page_idiom_extra(no, newpage):
         p = para(c, after=2, line=1.15)
         add(p, '意思：', size=11.5, color=GRAY)
         add(p, d['meaning'], size=11.5)
-        p = para(c, line=1.3)
+        p = para(c, line=1.15)
         add(p, '1. 哪個情境比較適合？', size=12.5)
         for o in d['situ']:
             p = para(c, line=1.2)
             add(p, '　□ ', size=12.5, color=GRAY)
             add(p, o, size=12.5)
-        p = para(c, before=3, line=1.5)
-        add(p, '2. 把成語寫進句子裡：', size=12.5)
-        fill_line(p, d['frame'], size=12.5, unit=len(d['idiom']) + 2)   # 空格只有一個，填的就是這個成語
+        p = para(c, before=3)
+        add(p, '2. 完成句子：', size=12.5)
+        # 兩格：〔成語〕＝寫目標成語，＿＝填符合句意的內容。手寫字比印刷字大，格子要寫得下
+        p = para(c, line=1.9)
+        add(p, '　', size=13)
+        for j, part in enumerate(d['frame'].split('〔成語〕')):
+            if j:
+                blank(p, len(d['idiom']) + 2, size=13)
+            fill_line(p, part, size=13, unit=11)
         p = para(c, before=3)
         add(p, '3. 我自己造句：', size=12.5)
         write_line(c, length=24)
@@ -512,7 +518,8 @@ def page_sentence_extra(no, newpage):
         boxes(p, s['choose']['options'])
         p = para(c, before=1 if tight else 3, line=1.3 if tight else 1.5)
         add(p, '2. 接一句：', size=13)
-        fill_line(p, s['connect'], unit=8)
+        p.paragraph_format.line_spacing = 1.8 if tight else 2.0
+        fill_line(p, s['connect'], unit=12)
         p = para(c, before=1 if tight else 3)
         add(p, '3. 我自己造句：', size=13)
         write_line(c, 2, before=4 if len(XD['sentences']) >= 3 else 6)
