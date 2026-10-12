@@ -448,7 +448,11 @@ def page_phrase_extra(no, newpage):
             add(p, '「', size=13)
             fill_line(p, it['stem'], unit=4 * max(1, it['stem'].count('＿') and 1))
             add(p, '」', size=13)
-            boxes(p, it['options'])
+            # 選項亂序：答案不要固定在第一個（依題目決定位置，每次產生都一樣）
+            import random
+            opts = it['options'][:]
+            random.Random(it['stem'] + ph['model']).shuffle(opts)
+            boxes(p, opts)
         step(c, 'B. 換一換')
         for fr in ph['swap']:
             p = para(c, line=2.0)
