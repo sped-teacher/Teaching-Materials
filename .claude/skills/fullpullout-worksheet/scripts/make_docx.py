@@ -478,8 +478,8 @@ def page_idiom_extra(no, newpage):
             add(p, '　□ ', size=12.5, color=GRAY)
             add(p, o, size=12.5)
         p = para(c, before=3, line=1.5)
-        add(p, '2. 完成句子：', size=12.5)
-        fill_line(p, d['frame'], size=12.5)
+        add(p, '2. 把成語寫進句子裡：', size=12.5)
+        fill_line(p, d['frame'], size=12.5, unit=len(d['idiom']) + 2)   # 空格只有一個，填的就是這個成語
         p = para(c, before=3)
         add(p, '3. 我自己造句：', size=12.5)
         write_line(c, length=24)
