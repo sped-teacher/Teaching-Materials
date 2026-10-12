@@ -364,7 +364,7 @@ if sents:
         blank(p, 30, size=14)
 
 # ── ③ 段落大意（有注音）──
-header('③', '段落大意', '看圖和字母，從詞庫找出語詞，寫進段落裡同字母的底線。', newpage=True)
+header('③', '段落大意', '一邊念課文，一邊看圖和字母，找出語詞，寫進段落裡同字母的底線。', newpage=True)
 blanks = [w for s in EX['summary'] for w in re.findall(r'〔(.+?)〕', s['text'])]
 LET = 'ABCDEFGH'
 CIRC = 'ⒶⒷⒸⒹⒺⒻⒼⒽ'
@@ -375,14 +375,8 @@ for w, i in letter.items():
     c = t.cell(0, i)
     add(para(c, True, WD_ALIGN_PARAGRAPH.CENTER), LET[i], size=11, bold=True, color=NAVY)
     picture(para(c, align=WD_ALIGN_PARAGRAPH.CENTER), w, 1.95)
-p = para(doc, before=3)
-shade(p._p.get_or_add_pPr(), FILL['gray'])
-add(p, '詞庫：', size=12, color=GRAY)
-p = para(doc, after=4)
-shade(p._p.get_or_add_pPr(), FILL['gray'])
-for w in sorted(blanks, key=lambda w: (len(w), w[::-1])):
-    zy_text(p, w, 14, zyw.get(w) or KNOWN.get(w))
-    add(p, '　', size=14)
+# 不給詞庫：學生回家念課文，從課文裡找語詞（老師 2026-10-12 決定）
+para(doc, after=4)
 t = table(len(EX['summary']), 1, [WIDTH])
 for r, sec_ in enumerate(EX['summary']):
     c = t.cell(r, 0)
