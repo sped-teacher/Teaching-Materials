@@ -5,7 +5,7 @@ description: 產生資源班「全抽組」國語回家作業（每課 3 頁 A4 
 
 # 全抽組國語作業
 
-給「全抽組」（國語課全部在資源班上）學生的回家作業。上課用平板網站，回家寫紙本。程式在本 skill 的 `scripts/`。**學習單和題目資料都只放老師電腦、不上傳 GitHub**（老師 2026-10-12 決定）：成品在 `Desktop\學國5上\全抽作業`、`Desktop\學國5上\外加學習單`；題目資料在 `Desktop\學國5上\學習單資料\wsdata\XX.json`（全抽＋外加共用：段落大意等）與 `wsdata_extra\XX.json`（外加的短語、句型、成語）。新一冊照同樣方式放在該冊的桌面資料夾，產生時用 `--data` 指定；換電腦要自己用隨身碟帶過去。
+給「全抽組」（國語課全部在資源班上）學生的回家作業。上課用平板網站，回家寫紙本。程式在本 skill 的 `scripts/`。**學習單和題目資料都只放老師電腦、不上傳 GitHub**（老師 2026-10-12 決定）：成品在 `Desktop\國五\全抽作業`、`Desktop\學國5上\外加學習單`；題目資料在 `Desktop\學國5上\學習單資料\wsdata\XX.json`（全抽＋外加共用：段落大意等）與 `wsdata_extra\XX.json`（外加的短語、句型、成語）。新一冊照同樣方式放在該冊的桌面資料夾，產生時用 `--data` 指定；換電腦要自己用隨身碟帶過去。
 
 ## 學生與老師定下的規則（一定要照）
 
@@ -36,7 +36,7 @@ description: 產生資源班「全抽組」國語回家作業（每課 3 頁 A4 
    - 寫完**先列給老師確認**（每課：分段標題＋大意＋8 個挖空語詞），老師說可以才產生。
 4. **產生**（在 repo 根目錄）：
    ```bash
-   python .claude/skills/fullpullout-worksheet/scripts/fit.py --site mandarin --data "C:\Users\class\Desktop\學國5上\學習單資料\wsdata" --out "C:\Users\class\Desktop\學國5上\全抽作業"
+   python .claude/skills/fullpullout-worksheet/scripts/fit.py --site mandarin --data "C:\Users\class\Desktop\學國5上\學習單資料\wsdata" --out "C:\Users\class\Desktop\國五\全抽作業"
    ```
    後面加課次（`01 04`）只做那幾課。每課先用最豐富的版面，放不下 3 頁會自動減少情境圖、縮小圖。輸出 `第XX課_全抽作業.docx`＋`.pdf`。輸出資料夾不在 repo 裡；新一冊依老師習慣命名（例：`Desktop\學國5下\全抽作業`），沒指定就問。
 5. **檢查**：
