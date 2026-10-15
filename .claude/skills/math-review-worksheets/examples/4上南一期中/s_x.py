@@ -88,7 +88,7 @@ def mul1(a, b):
 def mul2(a, b, n):
     """乘以二位數的直式格（兩列＋相加）"""
     return VG(n, [dict(carry=True), dict(d=str(a)), dict(op="×", d=str(b), line=True), dict(),
-                  dict(op="＋", pre={0: "0"}, line=True), dict()], h=0.6)
+                  dict(op="＋", start=1, line=True), dict()], h=0.6)
 
 
 def app(text, unit):
@@ -120,7 +120,7 @@ def x_h06():
     review()
     side([(["9. 1205×6＝（　　　）"], VG(5, [dict(carry=True), dict(d="1205"), dict(op="×", d="6", line=True), dict()])),
           (["10. 23×31＝（　　　）"], VG(3, [dict(d="23"), dict(op="×", d="31", line=True), dict(),
-                                            dict(op="＋", pre={0: "0"}, line=True), dict()]))])
+                                            dict(op="＋", start=1, line=True), dict()]))])
     q("11.", "「四千零八萬三千」記作", B6)
     check(1205 * 6 == 7230 and 23 * 31 == 713, "x06")
     ans("第05次 作業", "7. 100 度鈍角　8. 110　9. 7230　10. 23＋690＝713　11. 40083000")
@@ -135,7 +135,7 @@ def x_h07():
     review()
     side([(["10. 3405×2＝（　　　）"], VG(5, [dict(carry=True), dict(d="3405"), dict(op="×", d="2", line=True), dict()], h=0.52)),
           (["11. 45×12＝（　　　）"], VG(3, [dict(d="45"), dict(op="×", d="12", line=True), dict(),
-                                            dict(op="＋", pre={0: "0"}, line=True), dict()], h=0.52))])
+                                            dict(op="＋", start=1, line=True), dict()], h=0.52))])
     check(120 - 30 == 90 and 3405 * 2 == 6810 and 45 * 12 == 540, "x07")
     ans("第06次 作業", "7. 始邊、終邊、旋轉中心　8. 90，直角　9. 4，120　10. 6810　11. 90＋450＝540")
 

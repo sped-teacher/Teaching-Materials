@@ -192,11 +192,11 @@ def e01(path):
     side([(["9. 2318×4＝（　　　）"],
            lambda c: vgrid(5, [dict(carry=True), dict(d="2318"), dict(op="×", d="4", line=True), dict()], h=0.7, parent=c)),
           (["10. 36×24＝（　　　）"],
-           lambda c: vgrid(3, [dict(d="36"), dict(op="×", d="24", line=True), dict(), dict(op="＋", pre={0: "0"}, line=True),
+           lambda c: vgrid(3, [dict(d="36"), dict(op="×", d="24", line=True), dict(), dict(op="＋", start=1, line=True),
                                dict()], h=0.66, parent=c))])
     side([(["11. 415×23＝（　　　）"],
            lambda c: vgrid(5, [dict(carry=True), dict(d="415"), dict(op="×", d="23", line=True), dict(),
-                               dict(op="＋", pre={0: "0"}, line=True), dict()], h=0.66, parent=c)),
+                               dict(op="＋", start=1, line=True), dict()], h=0.66, parent=c)),
           (["12. 1 張門票 285 元，買 16 張要付幾元？", "\n算式：（　　）×（　　）＝（　　）", "\n（直式寫在下面）"], None)])
     para("答：＿＿＿＿＿＿", indent=9.0)
     check(2468 + 1375 == 3843 and 8030000 - 2650000 == 5380000 and 2318 * 4 == 9272 and 36 * 24 == 864

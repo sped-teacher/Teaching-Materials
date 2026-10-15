@@ -1,5 +1,5 @@
 # 老師用：上課規劃＋全部答案
-import sys, os, json, tempfile
+import sys, os, json, re, tempfile
 sys.path.insert(0, os.path.join(os.path.dirname(os.path.abspath(__file__)), "..", "..", "scripts"))
 from lib import *
 import lib
@@ -46,6 +46,8 @@ for k in order:
     if k not in ans: continue
     para((k.replace("第0", "第 ").replace("次", " 次").replace("複習考", "複習考 "), "b"), size=13, before=6, keep=True)
     for line in ans[k]:
+        # 乘二位數的兩列：不寫「第 2 列補 0」（老師沒教），寫成「426、284（從十位寫）→ 3266」
+        line = re.sub(r"(\d+)＋(\d+)0＝(\d+)", r"\1、\2（從十位寫）→ \3", line)
         para(line, size=11.5, indent=0.4)
 save(OUT)
 print("saved", OUT)

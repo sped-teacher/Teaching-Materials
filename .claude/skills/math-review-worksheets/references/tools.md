@@ -23,7 +23,7 @@ from s_a import ans, E, check   # 範例裡的答案／驗算工具
 | `step(n, *parts)` | 「第 n 步」 |
 | `E("8")` | 示範答案：回傳「（8）」藍字，用 `*E("8")` 展開 |
 | `place_table(cols, rows, hot={列: 位名}, ex_rows=(...), h, label_w)` | 位值表。`cols` 例：`ALL`（千萬～一）或 `["十萬","萬","千","百","十","一"]`；`rows=[(左欄標籤或 None, "數字")]` |
-| `vgrid(n, rows, h, size=18, parent=None)` | 直式格。rows 每列 dict：`d` 數字（靠右）、`op` 符號、`line` 下面粗線、`carry` 進位小格列、`ex` 藍字、`hl` 塗色的位（0＝一位）、`pre={0: "0"}` 灰底提示字 |
+| `vgrid(n, rows, h, size=18, parent=None)` | 直式格。rows 每列 dict：`d` 數字（靠右）、`op` 符號、`line` 下面粗線、`carry` 進位小格列、`ex` 藍字、`hl` 塗色的位（0＝一位）、`start=1` 乘二位數的第 2 列從十位開始寫（這列和乘數的十位塗同色，**不寫 0**）、`pre` 灰底提示字 |
 | `ldiv(除數, 被除數, q="商", work=[(字串, 畫線)], blank, h, size, ex, parent)` | 除法直式。示範時 `work` 每列字串長度＝被除數位數（用空白對齊），例 7425÷6：`("6   ",True),("14  ",False),("12  ",True)…` |
 | `mults(除數, n, filled)` | 倍數表（除數×1～×n），示範時 `filled=True` |
 | `blocks(("10萬",3), ("1萬",6))` | 積木，每種一列 |

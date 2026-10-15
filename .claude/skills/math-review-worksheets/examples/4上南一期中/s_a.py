@@ -294,17 +294,17 @@ def s04(path):
     page_break()
     title("③ 乘以二位數：拆成兩次")
     hint("第 1 列：先乘「一位」的數。",
-         "第 2 列：再乘「十位」的數，最右邊先寫一個 0（灰色那格）。",
+         "第 2 列：再乘「十位」的數，乘出來的第一個數字寫在十位（和乘數的十位對齊，橘色那格）。",
          "最後把兩列加起來。")
     para(("老師示範　", "b"), "23×14", before=2)
     vgrid(3, [dict(d="23"), dict(op="×", d="14", line=True), dict(d="92", ex=True),
-              dict(op="＋", d="230", ex=True, line=True), dict(d="322", ex=True)], h=0.75)
-    para("23×4＝92；23×10＝230；92＋230＝322", size=12, indent=0.4)
+              dict(op="＋", d="23 ", ex=True, line=True, start=1), dict(d="322", ex=True)], h=0.75)
+    para("先乘個位的 4：23×4＝92；再乘十位的 1：23×1＝23，從十位開始寫；兩列對齊加起來＝322", size=12, indent=0.4)
     q("換你試試", "42×13＝", B5)
-    vgrid(3, [dict(d="42"), dict(op="×", d="13", line=True), dict(), dict(op="＋", pre={0: "0"}, line=True), dict()], h=0.75)
+    vgrid(3, [dict(d="42"), dict(op="×", d="13", line=True), dict(), dict(op="＋", start=1, line=True), dict()], h=0.75)
     q("應用題", "1 盒巧克力有 24 個，12 盒共有幾個？")
     para("算式：", B4, "×", B4, "＝", B5, indent=0.4)
-    vgrid(3, [dict(), dict(op="×", line=True), dict(), dict(op="＋", pre={0: "0"}, line=True), dict()], h=0.75)
+    vgrid(3, [dict(), dict(op="×", line=True), dict(), dict(op="＋", start=1, line=True), dict()], h=0.75)
     para("答：＿＿＿＿＿＿＿", indent=0.4)
     check(23 * 14 == 322 and 42 * 13 == 546 and 24 * 12 == 288, "s04c")
     ans("第03次 課堂", "③ 換你：126＋420＝546　應用：24×12＝288，288 個")
@@ -324,7 +324,7 @@ def M1(a, b, n=5):
 def M2(a, b, n):
     """×二位數的小直式格（兩列＋相加，第 2 列灰底 0）"""
     return G(n, [dict(carry=True), dict(d=str(a)), dict(op="×", d=str(b), line=True), dict(),
-                 dict(op="＋", pre={0: "0"}, line=True), dict()])
+                 dict(op="＋", start=1, line=True), dict()])
 
 
 # 乘法作業（老師 2026-10-15 改過的版本）：雙面；依「心算 → 直式 → 應用題 → 複習一下」排，同一類放一起；
@@ -357,29 +357,29 @@ def h04(path):
 def s05(path):
     begin("四年級數學　期中複習　第 4 次　2-3 三位數、四位數×二位數")
     title("① 三位數×二位數")
-    hint("第 1 列：×一位的數。第 2 列：×十位的數（最右邊先寫 0）。最後兩列相加。",
-         "例：×20 → 先 ×2，再在後面補 0。")
+    hint("第 1 列：×個位的數。第 2 列：×十位的數，乘出來的第一個數字寫在十位（和橘色那格對齊）。最後兩列相加。",
+         "乘哪一位，放下來的就跟它對齊。")
     para(("老師示範　", "b"), "213×14", before=2)
     vgrid(4, [dict(d="213"), dict(op="×", d="14", line=True), dict(d="852", ex=True),
-              dict(op="＋", d="2130", ex=True, line=True), dict(d="2982", ex=True)], h=0.75)
-    para("213×4＝852；213×10＝2130；852＋2130＝2982", size=12, indent=0.4)
+              dict(op="＋", d="213 ", ex=True, line=True, start=1), dict(d="2982", ex=True)], h=0.75)
+    para("先乘個位的 4：213×4＝852；再乘十位的 1：213×1＝213，從十位開始寫；兩列對齊加起來＝2982", size=12, indent=0.4)
     q("換你試試", "326×25＝", B5)
     step(1, "326×5＝", B5)
-    step(2, "326×20 → 326×2＝", B5, "，補 0 →", B5)
+    step(2, "再乘十位的 2：326×2＝", B5, "，從十位開始寫")
     vgrid(5, [dict(carry=True), dict(d="326"), dict(op="×", d="25", line=True), dict(),
-              dict(op="＋", pre={0: "0"}, line=True), dict()], h=0.75)
+              dict(op="＋", start=1, line=True), dict()], h=0.75)
     check(213 * 14 == 2982 and 326 * 25 == 8150, "s05")
-    ans("第04次 課堂", "① 換你：1630；652，6520；8150")
+    ans("第04次 課堂", "① 換你：1630；652（從十位開始寫）；8150")
 
     page_break()
     title("② 四位數×二位數")
     hint("做法一樣，只是數字比較長：一位一位乘，進位記在小格。")
     q("換你試試", "2047×16＝", B6, before=2)
     vgrid(6, [dict(carry=True), dict(d="2047"), dict(op="×", d="16", line=True), dict(),
-              dict(op="＋", pre={0: "0"}, line=True), dict()], h=0.8)
+              dict(op="＋", start=1, line=True), dict()], h=0.8)
     q("自己做", "1205×31＝", B6)
     vgrid(6, [dict(carry=True), dict(d="1205"), dict(op="×", d="31", line=True), dict(),
-              dict(op="＋", pre={0: "0"}, line=True), dict()], h=0.8)
+              dict(op="＋", start=1, line=True), dict()], h=0.8)
     check(2047 * 16 == 32752 and 1205 * 31 == 37355, "s05b")
     ans("第04次 課堂", "② 換你：12282＋20470＝32752　自己做：1205＋36150＝37355")
 
@@ -405,7 +405,7 @@ def s05(path):
 def h05(path):
     begin("四年級數學　期中複習　第 4 次　回家作業", base=13, margin=1.2)
     title("三位數、四位數×二位數")
-    hint("第 1 列 ×一位；第 2 列 ×十位，先寫 0；兩列相加。", title="記得")
+    hint("第 1 列 ×個位；第 2 列 ×十位，第一個數字寫在十位（對齊橘色那格）；兩列相加。", title="記得")
     calc = [(142, 23, 4), (507, 16, 4), (1324, 21, 5), (213, 32, 4), (405, 24, 4), (168, 15, 4), (1032, 23, 5),
             (2140, 16, 5), (326, 27, 4), (1508, 32, 5), (254, 18, 4), (4105, 24, 5)]
     for k in range(0, len(calc), 2):

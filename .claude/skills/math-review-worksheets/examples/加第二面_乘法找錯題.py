@@ -22,10 +22,10 @@ for g in sec._sectPr.xpath("./w:docGrid"):
     sec._sectPr.remove(g)
 
 p = para(("五、找錯誤、改正確：", "b"), size=15, after=4)
-hint("檢查 3 步：① 每一位乘得對不對　② 進位有沒有加上去　③ 乘十位那一列有沒有往左一格（先寫 0）",
+hint("檢查 3 步：① 每一位乘得對不對　② 進位有沒有加上去　③ 乘十位算出來的第一個數字，有沒有寫在十位（對齊）",
      "先估一估：1438×4 大約是 1400×4＝5600，答案差很多就一定算錯了。", title="小明寫了 4 題直式，幫他檢查：算錯的把錯的數字圈起來，在右邊寫出正確的算法")
 
-REASONS = "錯在：□ 九九算錯　□ 忘記加進位　□ 第 2 列沒往左一格（沒寫 0）　□ 加錯"
+REASONS = "錯在：□ 九九算錯　□ 忘記加進位　□ 第 2 列沒有對齊　□ 加錯"
 
 
 def item(n, expr, student_rows, ncols, blank_rows):
@@ -45,16 +45,16 @@ assert 2065 * 3 == 6195
 item(2, "2065×3",
      [dict(carry=True, d="  11 "), dict(d="2065"), dict(op="×", d="3", line=True), dict(d="6095")], 5,
      [dict(carry=True), dict(d="2065"), dict(op="×", d="3", line=True), dict()])
-# 3. 36×24：第 2 列沒有往左一格（72 沒寫成 720）→ 144＋72＝216，正確是 144＋720＝864
+# 3. 36×24：第 2 列沒有對齊（乘十位的 72 應該從十位開始寫）→ 144＋72＝216，正確是 864
 assert 36 * 24 == 864 and 36 * 4 == 144 and 36 * 20 == 720
 item(3, "36×24",
      [dict(d="36"), dict(op="×", d="24", line=True), dict(d="144"), dict(op="＋", d="72", line=True), dict(d="216")], 4,
-     [dict(d="36"), dict(op="×", d="24", line=True), dict(), dict(op="＋", line=True), dict()])
+     [dict(d="36"), dict(op="×", d="24", line=True), dict(), dict(op="＋", line=True, start=1), dict()])
 # 4. 47×23：算對了（141＋940＝1081）
 assert 47 * 23 == 1081 and 47 * 3 == 141 and 47 * 20 == 940
 item(4, "47×23",
-     [dict(d="47"), dict(op="×", d="23", line=True), dict(d="141"), dict(op="＋", d="940", line=True), dict(d="1081")], 4,
-     [dict(d="47"), dict(op="×", d="23", line=True), dict(), dict(op="＋", line=True), dict()])
+     [dict(d="47"), dict(op="×", d="23", line=True), dict(d="141"), dict(op="＋", d="94 ", line=True), dict(d="1081")], 4,
+     [dict(d="47"), dict(op="×", d="23", line=True), dict(), dict(op="＋", line=True, start=1), dict()])
 
 lib.doc.save(OUT)
 print("saved", OUT)

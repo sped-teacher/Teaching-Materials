@@ -177,7 +177,19 @@ PLACE = ["一", "十", "百", "千", "萬", "十萬", "百萬", "千萬"]
 def vgrid(n, rows, cw=0.95, h=0.85, size=18, header=True, center=True, parent=None):
     """直式格子（n 個數字欄＋左邊運算符號欄）。rows：dict 清單
        d：數字字串（靠右對齊，空白＝空格）；op：運算符號；line：這列下面畫粗線；
-       carry：True＝進位小格列；ex：示範藍字；hl：要塗色的位（從右數 0＝一位）；pre：{位: 字} 灰底提示字"""
+       carry：True＝進位小格列；ex：示範藍字；hl：要塗色的位（從右數 0＝一位）；pre：{位: 字} 灰底提示字
+       start：k＝乘以二位數的第 2 列「從第 k 位開始寫」：這一列的第 k 位和乘數（op ×）那一列的第 k 位塗同一個橘色。
+       老師 2026-10-15：沒有教「第 2 列先寫 0」，教的是「乘哪一位，放下來的就跟它對齊」→ 不要用灰底 0。"""
+    rows = [dict(r) for r in rows]
+    for r in rows:                       # 舊寫法 pre={0: "0"}（第 2 列先寫 0）一律改成對齊十位
+        if r.get("pre") == {0: "0"}:
+            del r["pre"]; r["start"] = 1
+    starts = {r["start"] for r in rows if "start" in r}
+    for r in rows:
+        if "start" in r:
+            r["hl"] = set(r.get("hl", ())) | {r["start"]}
+        elif r.get("op") == "×" and starts:
+            r["hl"] = set(r.get("hl", ())) | starts
     t = (parent or doc).add_table(rows=len(rows) + (1 if header else 0), cols=n + 1)
     if center: t.alignment = WD_TABLE_ALIGNMENT.CENTER
     borders(t, sz=4, color="BFBFBF")

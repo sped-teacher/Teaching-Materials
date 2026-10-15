@@ -205,12 +205,12 @@ def t10(path):
 
     page_break()
     title("② 乘法、除法")
-    hint("乘二位數：拆成兩列，第 2 列先寫 0。除法：除→乘→減→拉，不夠除商寫 0；除數是二位數先寫倍數表。", title="工具")
+    hint("乘二位數：拆成兩列，乘十位時從十位開始寫（對齊）。除法：除→乘→減→拉，不夠除商寫 0；除數是二位數先寫倍數表。", title="工具")
     side([(["7. 3046×7＝（　　　）"],
            lambda c: vgrid(5, [dict(carry=True), dict(d="3046"), dict(op="×", d="7", line=True), dict()], h=0.72, parent=c)),
           (["8. 238×26＝（　　　）"],
            lambda c: vgrid(4, [dict(carry=True), dict(d="238"), dict(op="×", d="26", line=True), dict(),
-                               dict(op="＋", pre={0: "0"}, line=True), dict()], h=0.68, parent=c))])
+                               dict(op="＋", start=1, line=True), dict()], h=0.68, parent=c))])
     side([(["9. 5274÷6＝（　　　）"], lambda c: ldiv("6", "5274", blank=6, h=0.66, parent=c)),
           (["10. 863÷34＝（　　）…（　　）", "\n倍數表：34、＿＿、＿＿"], lambda c: ldiv("34", "863", blank=4, h=0.66, parent=c))])
     q("11.", "1 箱蘋果有 48 顆，35 箱共有幾顆？")
@@ -248,7 +248,7 @@ def u10(path):
           (["4. 1209×8＝（　　　）"],
            VG(5, [dict(carry=True), dict(d="1209"), dict(op="×", d="8", line=True), dict()]))])
     side([(["5. 57×43＝（　　　）"],
-           VG(4, [dict(d="57"), dict(op="×", d="43", line=True), dict(), dict(op="＋", pre={0: "0"}, line=True), dict()])),
+           VG(4, [dict(d="57"), dict(op="×", d="43", line=True), dict(), dict(op="＋", start=1, line=True), dict()])),
           (["6. 3528÷7＝（　　　）"], LD("7", "3528", blank=6))])
     side([(["7. 702÷26＝（　　）", "\n倍數表：26、＿＿、＿＿"], LD("26", "702", blank=4)),
           (["8. ∠ㄅ是幾度？"], lambda c: (c.add_paragraph().add_run().add_picture(
