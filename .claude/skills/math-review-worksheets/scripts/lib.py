@@ -366,6 +366,7 @@ def side(items, widths=None, size=13):
         p = c.paragraphs[0]; p.paragraph_format.space_after = Pt(2)
         _parts(p, parts, size=size)
         if builder: builder(c)
+    trPr = t.rows[0]._tr.get_or_add_trPr(); trPr.append(OxmlElement("w:cantSplit"))   # 並排的兩題不要被切到兩頁
     spacer()
     return t
 

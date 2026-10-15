@@ -311,18 +311,22 @@ def s04(path):
     save(path)
 
 
+def G(n, rows):
+    """作業用的小直式格（15 號字，可兩題並排）"""
+    return lambda c: vgrid(n, rows, h=0.6, size=15, cw=0.8, parent=c)
+
+
 def h04(path):
     begin("四年級數學　期中複習　第 3 次　回家作業", base=13, margin=1.2)
     title("乘法")
     hint("後面有幾個 0 就補幾個 0；進位寫在上面小格；乘二位數拆成兩列，第 2 列先寫 0。", title="記得")
-    q("1.", "5×9＝", B4, "　50×9＝", B4, "　500×9＝", B5, "　5000×9＝", B5, before=2)
-    q("2.", "2314×4＝", B5)
-    vgrid(5, [dict(carry=True), dict(d="2314"), dict(op="×", d="4", line=True), dict()], h=0.72)
-    q("3.", "1608×5＝", B5)
-    vgrid(5, [dict(carry=True), dict(d="1608"), dict(op="×", d="5", line=True), dict()], h=0.72)
-    q("4.", "32×21＝", B5)
-    vgrid(3, [dict(d="32"), dict(op="×", d="21", line=True), dict(), dict(op="＋", pre={0: "0"}, line=True), dict()], h=0.7)
-    q("5.", "1 枝筆 9 元，買 36 枝要付幾元？　算式：", B4, "×", B4, "＝", B4, "　答：＿＿＿＿＿")
+    q("1.", "5×9＝", B4, "　50×9＝", B4, "　500×9＝", B4, "　5000×9＝", B4, before=2)
+    side([(["2. 2314×4＝（　　　）"], G(5, [dict(carry=True), dict(d="2314"), dict(op="×", d="4", line=True), dict()])),
+          (["3. 1608×5＝（　　　）"], G(5, [dict(carry=True), dict(d="1608"), dict(op="×", d="5", line=True), dict()]))])
+    side([(["4. 32×21＝（　　　）"], G(3, [dict(d="32"), dict(op="×", d="21", line=True), dict(),
+                                           dict(op="＋", pre={0: "0"}, line=True), dict()])),
+          (["5. 1 枝筆 9 元，買 36 枝要付幾元？", "\n算式：（　）×（　）＝（　　）", "\n答：＿＿＿元"],
+           G(3, [dict(carry=True), dict(d="36"), dict(op="×", d="9", line=True), dict()]))])
     check(2314 * 4 == 9256 and 1608 * 5 == 8040 and 32 * 21 == 672 and 9 * 36 == 324, "h04")
     ans("第03次 作業", "1. 45、450、4500、45000　2. 9256　3. 8040　4. 32＋640＝672　5. 9×36＝324，324 元")
     save(path)
@@ -381,18 +385,11 @@ def h05(path):
     begin("四年級數學　期中複習　第 4 次　回家作業", base=13, margin=1.2)
     title("三位數、四位數×二位數")
     hint("第 1 列 ×一位；第 2 列 ×十位，先寫 0；兩列相加。", title="記得")
-    q("1.", "142×23＝", B5, before=2)
-    vgrid(5, [dict(carry=True), dict(d="142"), dict(op="×", d="23", line=True), dict(),
-              dict(op="＋", pre={0: "0"}, line=True), dict()], h=0.65)
-    q("2.", "507×16＝", B5)
-    vgrid(5, [dict(carry=True), dict(d="507"), dict(op="×", d="16", line=True), dict(),
-              dict(op="＋", pre={0: "0"}, line=True), dict()], h=0.65)
-    q("3.", "1324×21＝", B6)
-    vgrid(6, [dict(carry=True), dict(d="1324"), dict(op="×", d="21", line=True), dict(),
-              dict(op="＋", pre={0: "0"}, line=True), dict()], h=0.65)
-    q("4.", "1 箱衛生紙 328 元，買 15 箱要付幾元？")
-    para("1 份是", B4, "，有", B2, "份 → 算式：", B4, "×", B2, "＝", B5, indent=0.4, after=20)
-    para("答：＿＿＿＿＿＿＿", indent=0.4)
+    two = lambda a, b, n: G(n, [dict(carry=True), dict(d=a), dict(op="×", d=b, line=True), dict(),
+                                dict(op="＋", pre={0: "0"}, line=True), dict()])
+    side([(["1. 142×23＝（　　　）"], two("142", "23", 4)), (["2. 507×16＝（　　　）"], two("507", "16", 4))])
+    side([(["3. 1324×21＝（　　　）"], two("1324", "21", 5)),
+          (["4. 1 箱衛生紙 328 元，買 15 箱要付幾元？", "\n算式：（　）×（　）＝（　　）", "\n答：＿＿＿元"], two("328", "15", 4))])
     check(142 * 23 == 3266 and 507 * 16 == 8112 and 1324 * 21 == 27804 and 328 * 15 == 4920, "h05")
     ans("第04次 作業", "1. 426＋2840＝3266　2. 3042＋5070＝8112　3. 1324＋26480＝27804　4. 328×15＝4920，4920 元")
     save(path)
