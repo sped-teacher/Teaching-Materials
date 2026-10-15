@@ -378,7 +378,7 @@ def free_app(text, lines=6, size=13):
     return ([text, "\n列式：", "\n直式："], build)
 
 
-def side(items, widths=None, size=13):
+def side(items, widths=None, size=13, keep=True):
     """並排：items＝[(標題 parts, builder(cell)), ...]"""
     t = doc.add_table(rows=1, cols=len(items))
     t.alignment = WD_TABLE_ALIGNMENT.CENTER
@@ -390,7 +390,8 @@ def side(items, widths=None, size=13):
         p = c.paragraphs[0]; p.paragraph_format.space_after = Pt(2)
         _parts(p, parts, size=size)
         if builder: builder(c)
-    trPr = t.rows[0]._tr.get_or_add_trPr(); trPr.append(OxmlElement("w:cantSplit"))   # 並排的兩題不要被切到兩頁
+    if keep:   # 並排的兩題不要被切到兩頁（兩欄的考卷用 keep=False，讓直式可以接到下一欄）
+        trPr = t.rows[0]._tr.get_or_add_trPr(); trPr.append(OxmlElement("w:cantSplit"))
     spacer()
     return t
 
