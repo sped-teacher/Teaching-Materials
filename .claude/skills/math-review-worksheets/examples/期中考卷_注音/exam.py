@@ -51,22 +51,32 @@ def zp(*parts, size=ZS, indent=0, first=0, before=0, after=2, keep=False, contai
     return p
 
 
-def head(no, name, score):
-    zp((no + "、", "b"), (name, "b"), ("　" + score, "s"), size=15, before=6, keep=True)
+def head(no, name, score, below=False):
+    if not below:
+        zp((no + "、", "b"), (name, "b"), ("　" + score, "s"), size=15, before=6, keep=True)
+        return
+    zp((no + "、", "b"), (name, "b"), size=15, before=6, after=0, keep=True)
+    zp((score, "s"), size=11, after=2, keep=True).alignment = WD_ALIGN_PARAGRAPH.RIGHT
 
 
 def choice(n, stem, opts):
     zp(("（　）(%d) " % n, "n"), stem, indent=1.6, first=-1.6, keep=True)
-    zp(*sum([[("%s" % "①②③④"[i], "n"), o, ("　", "n")] for i, o in enumerate(opts)], []), indent=1.6, after=4, size=ZS - 1)
+    if sum(len(o) for o in opts) <= 14:
+        zp(*sum([[("%s" % "①②③④"[i], "n"), o, ("　", "n")] for i, o in enumerate(opts)], []), indent=1.6, after=4, size=ZS - 1)
+        return
+    for a in (0, 2):
+        p = zp(("①②③④"[a], "n"), opts[a], ("	" + "①②③④"[a + 1], "n"), opts[a + 1], indent=1.6, after=4 if a else 1,
+               size=ZS - 2, keep=not a)   # 兩行兩個：小一級字，長選項才不會斷字
+        p.paragraph_format.tab_stops.add_tab_stop(Cm(5.6))
 
 
-def cells(row, widths):
+def cells(row, widths, valign=WD_CELL_VERTICAL_ALIGNMENT.TOP):
     t = lib.doc.add_table(rows=1, cols=len(row))
     t.alignment = WD_TABLE_ALIGNMENT.CENTER
     borders(t, sz=0)
     for k, items in enumerate(row):
         c = t.cell(0, k); c.width = Cm(widths[k])
-        c.vertical_alignment = WD_CELL_VERTICAL_ALIGNMENT.TOP
+        c.vertical_alignment = valign
         first = True
         for it in items:
             p = c.paragraphs[0] if first else c.add_paragraph()
@@ -117,26 +127,26 @@ def build(path, ctx):
     # 題型順序（老師 2026-10-15）：由易到難——正面都是短題（選擇、是非、連連看、填充），花力氣的（計算、量角、作圖、應用題）在背面。
     # 題量對照學校前兩次潛能教室考卷：短題多、大計算約 5 題（計算 3＋應用 3 題數字小）；考試不給直式格和提示。
     # 一、是非
-    head("一", "對的畫○，錯的畫×", "每題 2 分，共 6 分")
+    head("一", "對的畫○，錯的畫×", "每題 2 分，共 6 分", below=True)
     for st in ["3 個角都比 90° 小的三角形，是銳角三角形。", "直角三角形有 2 個直角。", "正三角形的 3 個角都是 60°。"]:
-        zp(("（　　）", "n"), st, indent=0.4, after=3)
+        zp(("（　　）", "n"), st, indent=2.4, first=-2.0, after=3)   # 懸掛縮排：換行對齊題目文字
     ANS.append("一、○、×、○")
 
     # 二、選擇題
     head("二", "選擇題", "每題 2 分，共 10 分")
     choice(1, T("動物園的看板顯示累積遊客 60070800 人，其中的「7」表示多少？", "60070800 中的「7」表示多少？"),
            ["7萬", "70萬", "7千", "700"])
-    choice(2, T("哪一間動物園的遊客人數最多？", "下面哪一個數最大？"),
+    choice(2, T("下面是 4 間動物園的遊客人數，哪一個最多？", "下面哪一個數最大？"),
            ["9999999", "10000000", "9900000", "999999"])
     choice(3, T("小芸量了園區地圖上的 4 個角，哪一個是鈍角？", "下面哪一個是鈍角？"), ["45°", "90°", "120°", "180°"])
     choice(4, T("告示牌是三角形，3 個邊都一樣長，它是什麼三角形？", "3 個邊都一樣長的三角形，叫作什麼？"),
            ["直角三角形", "正三角形", "鈍角三角形", "等腰直角三角形"])
-    choice(5, T("89 份飼料分給 29 隻兔子，每隻大約分到幾份？", "89÷29 的商最接近多少？"), ["2", "3", "4", "5"])
-    ck(abs(89 / 29 - 3) < 0.5, "c5")
+    choice(5, T("89 份飼料平分給 29 隻兔子，每隻最多分到幾份？", "89÷29 的商是多少？"), ["2", "3", "4", "5"])
+    ck(89 // 29 == 3, "c5")
     ANS.append("二、(1) ①　(2) ②　(3) ③　(4) ②　(5) ②")
 
     # 三、連連看
-    head("三", "把一樣的數連起來", "每題 2 分，共 8 分")
+    head("三", "把一樣的數連起來", "每題 2 分，共 8 分", below=True)
     L = ["30050000", "30500000", "3005000", "3050000"]
     R = ["三百萬五千", "三百零五萬", "三千零五十萬", "三千零五萬"]   # 每一題都不在同一列（線都要斜著連）
     for i in range(4):
@@ -158,12 +168,12 @@ def build(path, ctx):
     zp(("(3) ", "n"), T("累積人數 45670000 再多 1000000 人，是", "45670000 加 1000000 是"), ("（　　　　　　）。", "n"), indent=0.8, first=-0.8)
     zp(("(4) ", "n"), T("甲園 2500 萬人加乙園 1800 萬人，", ""), ("2500 萬＋1800 萬＝（　　　）萬", "n") if not ctx else "合起來是",
        ("（　　　）萬人。", "n") if ctx else ("。", "n"), indent=0.8, first=-0.8)
-    zp(("(5) ", "n"), T("旋轉木馬轉半圈是平角，是", "平角＝"), ("（　　　）度", "n"), T("；轉一整圈是周角，是", "，周角＝"),
-       ("（　　　）度。", "n"), indent=0.8, first=-0.8)
-    zp(("(6) ", "n"), T("集合了！時鐘的分針從 12 順時針轉到 4，轉了", "分針從 12 順時針轉到 4，轉了"), ("（　　　）度。", "n"),
-       indent=0.8, first=-0.8)
-    ck(45670000 + 1000000 == 46670000 and 2500 + 1800 == 4300 and 4 * 30 == 120, "c4")
-    ANS.append("四、(1) 30506000　(2) 70400900　(3) 46670000　(4) 4300　(5) 180，360　(6) 120")
+    zp(("(5) ", "n"), T("旋轉木馬轉半圈是平角，是", "平角＝"), (T("（　　　）", "（　　）") + "度", "n"), T("；轉一整圈是周角，是", "，周角＝"),
+       (T("（　　　）", "（　　）") + "度。", "n"), indent=0.8, first=-0.8)
+    zp(("(6) ", "n"), T("告示牌上的三角形，3 個角是 70°、60°、50°，它是", "3 個角是 70°、60°、50° 的三角形，是"), ("（　　　）", "n"),
+       "三角形。", indent=0.8, first=-0.8)
+    ck(45670000 + 1000000 == 46670000 and 2500 + 1800 == 4300 and 70 + 60 + 50 == 180 and max(70, 60, 50) < 90, "c4")
+    ANS.append("四、(1) 30506000　(2) 70400900　(3) 46670000　(4) 4300　(5) 180，360　(6) 銳角")
 
     # 換到背面
     zp(("背面還有題目 →", "b"), size=12, before=6).alignment = WD_ALIGN_PARAGRAPH.RIGHT
@@ -173,19 +183,27 @@ def build(path, ctx):
     head("五", "用直式算算看", "每題 5 分，共 20 分")
     W = [COLW / 2] * 2
     blank = lambda n: (lambda c: [c.add_paragraph() for _ in range(n)])
-    side([(["(1) 2307×4＝（　　）"], blank(6)), (["(2) 46×23＝（　　）"], blank(6))], widths=W, keep=False)
-    side([(["(3) 6408÷8＝（　　）"], blank(7)), (["(4) 86÷21＝（ ）…（ ）"], blank(7))], widths=W, keep=False)
+
+    def ans_line(txt, n):   # 答案括號放在題目下一行（半欄放不下一整行）
+        def f(c):
+            q = c.add_paragraph(); q.paragraph_format.left_indent = Cm(0.6); run(q, txt, size=13)
+            blank(n)(c)
+        return f
+    side([(["(1) 2307×4"], ans_line("＝（　　　　）", 5)), (["(2) 46×23"], ans_line("＝（　　　　）", 5))], widths=W, keep=False)
+    side([(["(3) 6408÷8"], ans_line("＝（　　　　）", 6)), (["(4) 86÷21"], ans_line("＝（　 ）餘（　 ）", 6))], widths=W, keep=False)
     ck(2307 * 4 == 9228 and 46 * 23 == 1058 and 8 * 801 == 6408 and 21 * 4 + 2 == 86, "c5b")
-    ANS.append("五、(1) 9228　(2) 1058　(3) 801　(4) 4…2")
+    ANS.append("五、(1) 9228　(2) 1058　(3) 801　(4) 4 餘 2")
 
     # 六、看圖回答
-    head("六", "看圖回答問題", "(1)(2)(5)(6) 每題 2 分，(3)(4) 每格 2 分，共 16 分")
+    head("六", "看圖回答問題", "(1)(2)(5)(6) 每題 2 分，(3)(4) 每格 2 分，共 16 分", below=True)
     if ctx: zp("小芸用量角器量園區地圖上的角。", size=13)
     cells([[("img", figs.protractor(40, "right"), 0.66), ("z", ("(1) ", "n"), "角是", ("（　　）", "n"), "度")],
            [("img", figs.protractor(70, "left"), 0.66), ("z", ("(2) ", "n"), "角是", ("（　　）", "n"), "度")]], W)
     zp("用量角器量量看，再從框框裡選出角的名稱：", ("［銳角　直角　鈍角］", "b"), size=13, keep=True)
-    cells([[("img", figs.angle(55, rot=20, arm=3.0)), ("z", ("(3) （　　）", "n"), "度，", ("（　　）", "n"))],
-           [("img", figs.angle(130, rot=15, arm=3.0)), ("z", ("(4) （　　）", "n"), "度，", ("（　　）", "n"))]], W)
+    cells([[("img", figs.angle(55, rot=20, arm=3.0))], [("img", figs.angle(130, rot=15, arm=3.0))]], W,
+          valign=WD_CELL_VERTICAL_ALIGNMENT.BOTTOM)
+    cells([[("z", ("(3)（　　）", "n"), "度，"), ("z", ("　　", "n"), "是", ("（　　　）", "n"))],
+           [("z", ("(4)（　　）", "n"), "度，"), ("z", ("　　", "n"), "是", ("（　　　）", "n"))]], W)
     cells([[("z", ("(5) ", "n"), "∠ㄅ是幾度？"),
             ("img", figs.rays({"rays": [0, 55, 90], "right": [0], "sectors": [(55, 90, "35°", False, 1.0), (0, 55, "ㄅ", "dark", 0.5)]}), 0.55),
             ("z", ("（　　）", "n"), "度")],
@@ -203,7 +221,7 @@ def build(path, ctx):
     ANS.append("七、畫出 70° 的角（容許 68°～72°）")
 
     # 八、應用題（3 題，數字比較小；只給「列式」和「答」，不印單位）
-    head("八", "應用題（記得寫「答」）", "每題 7 分（列式 3 分、答案 4 分），共 21 分")
+    head("八", "應用題（記得寫「答」）", "每題 7 分（列式 3 分、答案 4 分），共 21 分", below=True)
     probs = [
         T("動物園去年約有 126 萬位遊客，今年約有 143 萬位，今年多了幾萬位？", "去年有 126 萬人，今年有 143 萬人，今年比去年多幾萬人？"),
         T("全班和老師共 32 人，1 張門票 45 元，一共要付幾元？", "1 張票 45 元，買 32 張，要付幾元？"),
