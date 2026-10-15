@@ -354,6 +354,17 @@ def boxes(n, labels=None, w=1.3, h=1.0):
     return t
 
 
+def free_app(text, lines=6, size=13):
+    """應用題（學生自己列式、自己寫直式）：給 side() 用的 (標題, builder)。
+    老師 2026-10-15：不印算式框和直式格、「答」後面不印單位，讓學生自己寫。"""
+    def build(c):
+        for _ in range(lines):
+            e = c.add_paragraph(); e.paragraph_format.space_after = Pt(2)
+        a = c.add_paragraph(); a.alignment = WD_ALIGN_PARAGRAPH.RIGHT
+        run(a, "答：＿＿＿＿", size=size)
+    return ([text, "\n列式：", "\n直式："], build)
+
+
 def side(items, widths=None, size=13):
     """並排：items＝[(標題 parts, builder(cell)), ...]"""
     t = doc.add_table(rows=1, cols=len(items))

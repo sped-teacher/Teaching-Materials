@@ -28,7 +28,8 @@ from s_a import ans, E, check   # 範例裡的答案／驗算工具
 | `mults(除數, n, filled)` | 倍數表（除數×1～×n），示範時 `filled=True` |
 | `blocks(("10萬",3), ("1萬",6))` | 積木，每種一列 |
 | `boxes(n, labels, w, h)` | 數字卡／位數空格 |
-| `side([(標題parts, builder), ...])` | 兩題並排；builder 是 `lambda c: vgrid(..., parent=c)` 或 `ldiv(..., parent=c)`，也可 `None`（只有文字） |
+| `side([(標題parts, builder), ...])` | 兩題並排（整列不會被切到兩頁）；builder 是 `lambda c: vgrid(..., parent=c)` 或 `ldiv(..., parent=c)`，也可 `None`（只有文字）。作業的直式用 `size=15, cw=0.8, h=0.6`（範例 `s_a.py` 的 `G／M1／M2`） |
+| `free_app(題目, lines=6)` | 作業的應用題：回傳 `side()` 用的一格（題目＋「列式：」「直式：」空白＋靠右「答：＿＿＿＿」，不印單位），例：`side([free_app("17. …"), free_app("18. …")])` |
 | `grid(cells, cols, widths, size=13)` | 圖文排版；每格 `[("p", parts...), ("img", 圖, 縮放)]`。**要讓學生量的角不要縮放** |
 | `image(圖, scale)` | 單獨插圖（置中） |
 
