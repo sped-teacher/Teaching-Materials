@@ -100,6 +100,7 @@ def cell_text(c, text, bold=False, size=None, color=None, fill=None, align="c"):
     p = c.paragraphs[0]
     p.alignment = WD_ALIGN_PARAGRAPH.CENTER if align == "c" else WD_ALIGN_PARAGRAPH.LEFT
     p.paragraph_format.space_after = Pt(0)
+    p.paragraph_format.space_before = Pt(0)   # 套在別人的文件裡時，不要吃到原本樣式的段前距
     p.paragraph_format.line_spacing = 1.0
     if text: run(p, text, bold=bold, size=size, color=color)
     c.vertical_alignment = WD_CELL_VERTICAL_ALIGNMENT.CENTER
