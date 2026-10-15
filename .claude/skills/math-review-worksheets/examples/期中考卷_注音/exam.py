@@ -138,7 +138,7 @@ def build(path, ctx):
     # 三、連連看
     head("三", "把一樣的數連起來", "每題 2 分，共 8 分")
     L = ["30050000", "30500000", "3005000", "3050000"]
-    R = ["三百零五萬", "三千零五萬", "三百萬五千", "三千零五十萬"]
+    R = ["三百萬五千", "三百零五萬", "三千零五十萬", "三千零五萬"]   # 每一題都不在同一列（線都要斜著連）
     for i in range(4):
         p = lib.doc.add_paragraph()
         pf = p.paragraph_format
@@ -148,7 +148,7 @@ def build(path, ctx):
         run(p, f"({i + 1}) {L[i]}\t●\t●" + "ㄅㄆㄇㄈ"[i] + ".", size=ZS)
         Z(p, R[i])
     spacer(4)
-    ANS.append("三、(1)ㄆ 三千零五萬　(2)ㄈ 三千零五十萬　(3)ㄇ 三百萬五千　(4)ㄅ 三百零五萬")
+    ANS.append("三、(1)ㄈ 三千零五萬　(2)ㄇ 三千零五十萬　(3)ㄅ 三百萬五千　(4)ㄆ 三百零五萬")
 
     # 四、填充題（8 格）
     head("四", "填充題", "每格 2 分，共 14 分")
@@ -214,8 +214,9 @@ def build(path, ctx):
         zp(("　", "n"), indent=0.8, after=92)
     ck(143 - 126 == 17 and 45 * 32 == 1440 and 6 * 78 + 2 == 470, "c8")
     ANS.append("八、(1) 143－126＝17，17 萬人（位）　(2) 45×32＝1440，1440 元　(3) 470÷6＝78…2，78 袋剩 2 顆")
-    p = zp("□我有仔細讀題目　□我有盡力完成　寫完了，請仔細檢查！", size=12, before=8)
+    p = zp("□我有仔細讀題目　□我有盡力完成", size=12, before=8, after=0)   # 老師改成兩行
     p.alignment = WD_ALIGN_PARAGRAPH.CENTER
+    zp("寫完了，請仔細檢查！", size=12).alignment = WD_ALIGN_PARAGRAPH.CENTER
     save(path)
 
 
