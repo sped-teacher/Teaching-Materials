@@ -64,8 +64,12 @@ def head(no, name, score, below=False):
     zp((score, "s"), size=11, after=2, keep=True).alignment = WD_ALIGN_PARAGRAPH.RIGHT
 
 
-def choice(n, stem, opts):
+def choice(n, stem, opts, img=None, img_w=3.0):
     zp(("（　）(%d) " % n, "n"), stem, indent=1.6, first=-1.6, keep=True)
+    if img:   # 題目和選項中間放圖
+        q = lib.doc.add_paragraph(); q.paragraph_format.left_indent = Cm(1.6)
+        q.paragraph_format.space_after = Pt(0); q.paragraph_format.keep_with_next = True
+        q.add_run().add_picture(img[0], width=Cm(img_w))
     if sum(len(o) for o in opts) <= 14:
         zp(*sum([[("%s" % "①②③④"[i], "n"), o, ("　", "n")] for i, o in enumerate(opts)], []), indent=1.6, after=4, size=ZS - 1)
         return
@@ -145,7 +149,7 @@ def build(path, ctx):
     choice(2, T("下面是 4 間動物園的遊客人數，哪一個最多？", "下面哪一個數最大？"),
            ["9999999", "10000000", "9900000", "999999"])
     choice(3, T("集合時間到了！時鐘的分針從 12 順時針轉到 4，轉了幾度？", "分針從 12 順時針轉到 4，轉了幾度？"),
-           ["60°", "90°", "120°", "150°"])
+           ["60°", "90°", "120°", "150°"], img=figs.clock(0, 4))   # 老師：時鐘題附圖
     ck(4 * 30 == 120, "c3")
     choice(4, T("告示牌是三角形，3 個邊都一樣長，它是什麼三角形？", "3 個邊都一樣長的三角形，叫作什麼？"),
            ["直角三角形", "正三角形", "鈍角三角形", "等腰直角三角形"])
