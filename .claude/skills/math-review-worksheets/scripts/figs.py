@@ -122,6 +122,34 @@ def protractor(ray, base="right", R=3.0, name=None):
     return cv.save(name)
 
 
+def protractor_span(a, b, R=3.0, name=None):
+    """量角器圖（不從 0 度線量）：角的兩邊方向是 a、b（0＝右邊、逆時針），頂點對準中心"""
+    cv = Canvas(9, 5.5, 4.5, 0.8)
+    O = (0, 0)
+    cv.sector(O, 0.9, min(a, b), max(a, b), (200, 200, 200))
+    cv.arc(O, R, 0, 180, 0.03)
+    cv.arc(O, R - 0.9, 0, 180, 0.015, (120, 120, 120))
+    cv.line((-R, 0), (R, 0), 0.03)
+    for t in range(0, 181):
+        L = 0.32 if t % 10 == 0 else (0.2 if t % 5 == 0 else 0.1)
+        cv.line(pol(O, R, t), pol(O, R - L, t), 0.012)
+        if t % 10 == 0:
+            cv.line(pol(O, R - 0.9, t), pol(O, R - 0.75, t), 0.012, (120, 120, 120))
+            cv.text(pol(O, R - 0.48, t), str(180 - t), 6.5)
+            cv.text(pol(O, R - 1.15, t), str(t), 5.5, fill=(90, 90, 90))
+    cv.line(O, pol(O, R + 0.6, a), 0.04)
+    cv.line(O, pol(O, R + 0.6, b), 0.04)
+    cv.dot(O, 0.06)
+    return cv.save(name)
+
+
+def segment(L=5.0, name=None):
+    """只有一條線（沒有標頂點）：「以這條線為邊畫角」，學生自己選頂點"""
+    cv = Canvas(8, 1, 1, 0.5)
+    cv.line((0, 0), (L, 0), 0.04)
+    return cv.save(name)
+
+
 def clock(start, end, cw=True, R=1.6, name=None):
     """時鐘：從 start 轉到 end，cw＝順時針；畫指針和旋轉箭頭"""
     cv = Canvas(5, 5, 2.5, 2.5)
