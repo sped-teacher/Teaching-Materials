@@ -73,18 +73,44 @@ def s06(path):
     save(path)
 
 
+def draw_cell(L=4.0, gap=5):
+    """畫角用：上面留空白（角會往上張開），下面是底線"""
+    def f(c):
+        for _ in range(gap):
+            c.add_paragraph().paragraph_format.space_after = Pt(2)
+        path, w = figs.baseline(L)
+        pp = c.add_paragraph(); pp.alignment = WD_ALIGN_PARAGRAPH.CENTER
+        pp.add_run().add_picture(path, width=Cm(w))
+    return f
+
+
 def h06(path):
+    # 雙面（老師 2026-10-20：題數太少、畫角沒留位置）。正面本次類題：讀量角器 → 量角 → 角的種類 → 畫角；
+    # 背面「★ 複習一下」在 s_x.x_h06。
     begin("四年級數學　期中複習　第 5 次　回家作業", base=13, margin=1.2)
     title("量角器、直角銳角鈍角")
     hint("右邊的 0 讀內圈、左邊的 0 讀外圈；銳角＜90＜鈍角，直角＝90。", title="記得")
-    grid([[("p", ("1.", "b"), "角是幾度？")] + prot_cell(30, "right", (30, 150), sc=0.72),
-          [("p", ("2.", "b"), "角是幾度？")] + prot_cell(50, "left", (50, 130), sc=0.72)], cols=2)
-    grid([[("p", ("3.", "b"), "量量看："), ("img", figs.angle(45, rot=20, arm=3.0)), ("p", "（　　）度，", B4, "角")],
-          [("p", ("4.", "b"), "量量看："), ("img", figs.angle(135, rot=10, arm=3.0)), ("p", "（　　）度，", B4, "角")]], cols=2)
-    q("5.", "90 度是", B4, "角；72 度是", B4, "角；108 度是", B4, "角。", before=2)
-    q("6.", "從頂點畫一個 80 度的角。")
-    image(figs.baseline(5.0))
-    ans("第05次 作業", "1. 30　2. 130　3. 45 度銳角　4. 135 度鈍角　5. 直、銳、鈍　6. 畫 80 度")
+    q("一、", "角是幾度？", before=2)
+    grid([[("p", ("1.", "b"))] + prot_cell(30, "right", (30, 150), sc=0.66),
+          [("p", ("2.", "b"))] + prot_cell(50, "left", (50, 130), sc=0.66),
+          [("p", ("3.", "b"))] + prot_cell(110, "right", sc=0.66),
+          [("p", ("4.", "b"))] + prot_cell(155, "left", sc=0.66)], cols=2)
+    q("二、", "用量角器量量看，再寫出是什麼角。")
+    grid([[("p", ("5.", "b")), ("img", figs.angle(45, rot=20, arm=3.0)), ("p", "（　　）度，", B4, "角")],
+          [("p", ("6.", "b")), ("img", figs.angle(135, rot=10, arm=3.0)), ("p", "（　　）度，", B4, "角")],
+          [("p", ("7.", "b")), ("img", figs.angle(100, rot=35, arm=3.0)), ("p", "（　　）度，", B4, "角")],
+          [("p", ("8.", "b")), ("img", figs.angle(90, rot=15, arm=3.0)), ("p", "（　　）度，", B4, "角")]], cols=2)
+    q("三、", "角的種類。")
+    para(("9.　", "b"), "90 度是", B4, "角；72 度是", B4, "角；108 度是", B4, "角。", indent=0.4)
+    para(("10.　", "b"), "把代號寫在（　）裡。", indent=0.4, keep=True)
+    para("ㄅ. 35°　　ㄆ. 90°　　ㄇ. 160°　　ㄈ. 89°　　ㄉ. 91°　　ㄊ. 12°", indent=1.2, keep=True)
+    para("銳角：（　　　　）　直角：（　　　　）　鈍角：（　　　　）", indent=1.2)
+    page_break()   # 背面：畫角（留大空間）→ ★ 複習一下（s_x.x_h06）
+    q("四、", "用量角器從頂點畫角。", before=0)
+    side([(["11. 畫 80 度的角，是（　　）角。"], draw_cell(gap=5)),
+          (["12. 畫 130 度的角，是（　　）角。"], draw_cell(gap=5))])
+    ans("第05次 作業", "1. 30　2. 130　3. 110　4. 25　5. 45 度銳角　6. 135 度鈍角　7. 100 度鈍角　8. 90 度直角　"
+        "9. 直、銳、鈍　10. 銳角 ㄅㄈㄊ，直角 ㄆ，鈍角 ㄇㄉ　11. 畫 80 度，銳角　12. 畫 130 度，鈍角（量角畫角容許 ±2°）")
     save(path)
 
 
