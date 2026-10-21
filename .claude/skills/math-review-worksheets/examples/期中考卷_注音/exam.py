@@ -95,6 +95,13 @@ def choice(n, stem, opts, img=None, img_w=3.0):
         p.paragraph_format.tab_stops.add_tab_stop(Cm(5.6))
 
 
+def center(t):
+    for c in t.rows[0].cells:
+        for p in c.paragraphs:
+            p.alignment = WD_ALIGN_PARAGRAPH.CENTER
+    return t
+
+
 def cells(row, widths, valign=WD_CELL_VERTICAL_ALIGNMENT.TOP):
     t = lib.doc.add_table(rows=1, cols=len(row))
     t.alignment = WD_TABLE_ALIGNMENT.CENTER
@@ -251,7 +258,7 @@ def build(path, ctx):
     cells([[("z", ("(1) ", "n"), "角是幾度？")], [("z", ("(2) ", "n"), "角是幾度？")]], W)
     PR = dict(R=3.4, fs=1.3)   # 考卷的量角器放大、刻度數字加大（B4 印才看得清楚）
     cells([[("img", figs.protractor(40, "right", **PR), 0.62)], [("img", figs.protractor(70, "left", **PR), 0.62)]], W, valign=BOT)
-    cells([[("z", ("（　　）度", "n"))], [("z", ("（　　）度", "n"))]], W)
+    center(cells([[("z", ("（　　）度", "n"))], [("z", ("（　　）度", "n"))]], W))   # 答案列置中在圖的正下方
     zp(("(3) ", "n"), "用量角器量量看，在（　）裡寫出幾度，再寫出是銳角、直角，還是鈍角。", size=13, indent=0.8, first=-0.8, keep=True)
     cells([[("img", figs.angle(130, rot=15, arm=3.0))],
            [("z", ("（　　）度，", "n")), ("z", "是", ("（　　）", "n"), "角")]], W,
@@ -261,7 +268,7 @@ def build(path, ctx):
            [("z", ("(5) ", "n"), "∠ㄆ是幾度？"),
             ("img", figs.rays({"rays": [0, 180, 110], "sectors": [(0, 110, "110°", False, 0.7), (110, 180, "ㄆ", "dark", 0.5)]}), 0.55)]],
           W, valign=BOT)
-    cells([[("z", ("（　　）度", "n"))], [("z", ("（　　）度", "n"))]], W)
+    center(cells([[("z", ("（　　）度", "n"))], [("z", ("（　　）度", "n"))]], W))
     ANS.append("六、(1) 40　(2) 110　(3) 130°，鈍（角）　(4) 90－35＝55　(5) 180－110＝70（量角題容許 ±2°）")
 
     # 八、畫畫看：從右欄開始（不要拆在兩欄）
