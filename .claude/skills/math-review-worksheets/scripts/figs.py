@@ -205,9 +205,10 @@ def rays(spec, name=None, R=3.0):
     return cv.save(name)
 
 
-def tri(pts, labels=(), marks=(), right=None, fill=(232, 232, 232), name=None, inner=None, pt=13, angles=()):
+def tri(pts, labels=(), marks=(), right=None, fill=(232, 232, 232), name=None, inner=None, pt=13, angles=(), sides=()):
     """三角形：pts 三個頂點（公分）；labels [(點索引, 字, 偏移)]；marks [(邊 i-j, 記號數)]；
-       right＝直角所在頂點索引；inner＝中間的字；angles [(頂點索引, 文字)] 寫在角裡"""
+       right＝直角所在頂點索引；inner＝中間的字；angles [(頂點索引, 文字)] 寫在角裡；
+       sides [((i, j), 文字)] 寫在邊的外側（例如「6 公分」）"""
     cv = Canvas(16, 14, 4, 4)
     xs = [p[0] for p in pts]; ys = [p[1] for p in pts]
     poly = [cv.p(*p) for p in pts]
@@ -235,11 +236,20 @@ def tri(pts, labels=(), marks=(), right=None, fill=(232, 232, 232), name=None, i
         d = math.dist(p, (cx, cy)) or 1
         q = (p[0] + (p[0] - cx) / d * off, p[1] + (p[1] - cy) / d * off)
         cv.text(q, s, pt)
-    for i, s in angles:
+    for it in angles:   # (頂點, 文字) 或 (頂點, 文字, 離頂點多遠)；很尖的角要放遠一點才不會壓到邊
+        i, s, r = (it + (0.75,))[:3]
         p = pts[i]
         d = math.dist(p, (cx, cy)) or 1
-        q = (p[0] + (cx - p[0]) / d * 0.75, p[1] + (cy - p[1]) / d * 0.75)
+        q = (p[0] + (cx - p[0]) / d * r, p[1] + (cy - p[1]) / d * r)
         cv.text(q, s, 10)
+    for it in sides:    # ((i, j), 文字) 或 ((i, j), 文字, 離邊多遠)
+        (i, j), s_, r = (it + (0.45,))[:3]
+        a, b = pts[i], pts[j]
+        m = ((a[0] + b[0]) / 2, (a[1] + b[1]) / 2)
+        L = math.dist(a, b) or 1
+        n = (-(b[1] - a[1]) / L, (b[0] - a[0]) / L)          # 邊的法向量，取朝外的那一邊
+        if (m[0] - cx) * n[0] + (m[1] - cy) * n[1] < 0: n = (-n[0], -n[1])
+        cv.text((m[0] + n[0] * r, m[1] + n[1] * r), s_, 11)
     if inner: cv.text((cx, cy), inner, pt)
     return cv.save(name)
 
