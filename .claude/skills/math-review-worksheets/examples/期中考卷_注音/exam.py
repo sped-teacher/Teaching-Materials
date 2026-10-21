@@ -83,11 +83,15 @@ def choice(n, stem, opts, img=None, img_w=3.0):
         q.paragraph_format.space_after = Pt(0); q.paragraph_format.keep_with_next = True
         q.add_run().add_picture(img[0], width=Cm(img_w))
     if sum(len(o) for o in opts) <= 14:
-        zp(*sum([[("%s" % "①②③④"[i], "n"), o, ("　", "n")] for i, o in enumerate(opts)], []), indent=1.6, after=4, size=ZS - 1)
+        zp(*sum([[("%s" % "①②③④"[i], "n"), o, ("　", "n")] for i, o in enumerate(opts)], []), indent=1.6, after=4, size=ZS)
+        return
+    if any(len(o) > 6 and not o.isdigit() for o in opts):   # 文字選項很長（例如「等腰直角三角形」）：一行一個，才不會斷字
+        for i, o in enumerate(opts):
+            zp(("①②③④"[i], "n"), o, indent=1.6, after=4 if i == 3 else 0, size=ZS, keep=i < 3)
         return
     for a in (0, 2):
         p = zp(("①②③④"[a], "n"), opts[a], ("	" + "①②③④"[a + 1], "n"), opts[a + 1], indent=1.6, after=4 if a else 1,
-               size=ZS - 2, keep=not a)   # 兩行兩個：小一級字，長選項才不會斷字
+               size=ZS, keep=not a)   # 選項和題目一樣大（老師 2026-10-21）
         p.paragraph_format.tab_stops.add_tab_stop(Cm(5.6))
 
 
