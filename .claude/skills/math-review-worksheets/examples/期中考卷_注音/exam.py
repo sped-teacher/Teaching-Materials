@@ -8,6 +8,7 @@ import figs
 import zy
 from docx.enum.section import WD_SECTION
 from docx.enum.text import WD_BREAK
+from lxml import etree
 
 ZS = 14          # 題目字級（注音字型）
 COLW = 10.6      # 一欄寬（公分）
@@ -16,6 +17,15 @@ ANS = []
 
 def ck(c, m):
     assert c, m
+
+
+def thicken(r):
+    """粗體：注音字型轉 PDF 時粗體不明顯，加 0.5pt 同色外框讓字變粗"""
+    W14 = "http://schemas.microsoft.com/office/word/2010/wordml"
+    rpr = r._element.get_or_add_rPr()
+    o = etree.SubElement(rpr, "{%s}textOutline" % W14, {"{%s}w" % W14: "6350"})
+    fill = etree.SubElement(o, "{%s}solidFill" % W14)
+    etree.SubElement(fill, "{%s}srgbClr" % W14, {"{%s}val" % W14: "000000"})
 
 
 def Z(p, text, size=ZS, bold=False):
@@ -28,6 +38,7 @@ def Z(p, text, size=ZS, bold=False):
     for c, f in zy.fonts_of(text):
         r = p.add_run(c)
         r.font.size = Pt(size); r.bold = bold
+        if bold: thicken(r)
         name = f or FONT
         r.font.name = name
         rf = r._element.get_or_add_rPr().get_or_add_rFonts()
@@ -41,6 +52,7 @@ def fill(p, parts, size=ZS):
             t, k = x
             if k == "b": Z(p, t, size, bold=True)
             elif k == "n": run(p, t, size=size)           # 不加注音（數字、括號）
+            elif k == "nb": thicken(run(p, t, size=size, bold=True))   # 不加注音、粗體
             elif k == "s": run(p, t, size=11)              # 小字（配分）
         else:
             Z(p, x, size)
@@ -113,7 +125,7 @@ def build(path, ctx):
     # ── 抬頭（單欄）──
     p = lib.doc.paragraphs[0] if lib.doc.paragraphs else lib.doc.add_paragraph()
     p.alignment = WD_ALIGN_PARAGRAPH.CENTER
-    run(p, "115學年度臺中市北區省三國小潛能教室　第一學期第一次定期成績評量　四年級數學領域", bold=True, size=16)
+    run(p, "115學年度臺中市北區省三國小潛能教室　第一學期第一次定期成績評量　四年級數學領域" + ("A" if ctx else "B"), bold=True, size=16)   # 老師：情境版 A、精簡版 B
     t = lib.doc.add_table(rows=1, cols=2); borders(t, sz=0)
     a, b = t.cell(0, 0), t.cell(0, 1); a.width, b.width = Cm(9.5), Cm(13.3)
     pa = a.paragraphs[0]
@@ -136,9 +148,13 @@ def build(path, ctx):
     # 題型順序（老師 2026-10-15）：由易到難——正面都是短題（選擇、是非、連連看、填充），花力氣的（計算、量角、作圖、應用題）在背面。
     # 題量對照學校前兩次潛能教室考卷：短題多、大計算約 5 題（計算 3＋應用 3 題數字小）；考試不給直式格和提示。
     # 一、是非
-    head("一", "對的畫○，錯的畫×", "每題 2 分，共 6 分", below=True)
-    for st in ["直角三角形有 2 個直角。", "正三角形的 3 個角都是 60°。", "等腰三角形的 2 個底角\n一樣大。"]:   # 手動換行，「一樣」不要被切開
-        zp(("（　　）", "n"), st, indent=2.4, first=-2.0, after=3)   # 懸掛縮排：換行對齊題目文字
+    # 標題的「×」用 Wingdings 2 的叉（老師 2026-10-21 改的，比較明顯）
+    hp = zp(("一、", "b"), ("對的畫○，錯的畫", "b"), size=15, before=6, after=0, keep=True)
+    sr = hp.add_run(); sr.font.size = Pt(15)
+    sym = OxmlElement("w:sym"); sym.set(qn("w:font"), "Wingdings 2"); sym.set(qn("w:char"), "F0CD"); sr._element.append(sym)
+    zp(("每題 2 分，共 6 分", "s"), size=11, after=2, keep=True).alignment = WD_ALIGN_PARAGRAPH.RIGHT
+    for k, st in enumerate(["直角三角形有 2 個直角。", "正三角形的 3 個角都是 60°。", "等腰三角形的 2 個底角\n一樣大。"], 1):
+        zp(("（　）(%d) " % k, "n"), st, indent=1.6, first=-1.6, after=3)   # 加題號（老師 2026-10-21）
     ANS.append("一、×、○、○")
 
     # 二、選擇題
@@ -228,11 +244,13 @@ def build(path, ctx):
     head("六", "看圖回答問題", "每格 2 分，共 12 分")
     if ctx: zp("小芸用量角器量園區地圖上的角。", size=13)
     BOT = WD_CELL_VERTICAL_ALIGNMENT.BOTTOM
-    cells([[("img", figs.protractor(40, "right"), 0.66)], [("img", figs.protractor(70, "left"), 0.66)]], W, valign=BOT)
-    cells([[("z", ("(1) ", "n"), "角是", ("（　　）度", "n"))], [("z", ("(2) ", "n"), "角是", ("（　　）度", "n"))]], W)
-    zp("用量角器量量看，在（　）裡寫出幾度，再寫出是銳角、直角，還是鈍角。", size=13, keep=True)
+    cells([[("z", ("(1) ", "n"), "角是幾度？")], [("z", ("(2) ", "n"), "角是幾度？")]], W)
+    PR = dict(R=3.4, fs=1.3)   # 考卷的量角器放大、刻度數字加大（B4 印才看得清楚）
+    cells([[("img", figs.protractor(40, "right", **PR), 0.62)], [("img", figs.protractor(70, "left", **PR), 0.62)]], W, valign=BOT)
+    cells([[("z", ("（　　）度", "n"))], [("z", ("（　　）度", "n"))]], W)
+    zp(("(3) ", "n"), "用量角器量量看，在（　）裡寫出幾度，再寫出是銳角、直角，還是鈍角。", size=13, indent=0.8, first=-0.8, keep=True)
     cells([[("img", figs.angle(130, rot=15, arm=3.0))],
-           [("z", ("(3)（　　）度，", "n")), ("z", ("　　", "n"), "是", ("（　　）", "n"), "角")]], W,
+           [("z", ("（　　）度，", "n")), ("z", "是", ("（　　）", "n"), "角")]], W,
           valign=WD_CELL_VERTICAL_ALIGNMENT.BOTTOM)
     cells([[("z", ("(4) ", "n"), "∠ㄅ是幾度？"),
             ("img", figs.rays({"rays": [0, 55, 90], "right": [0], "sectors": [(55, 90, "35°", False, 1.0), (0, 55, "ㄅ", "dark", 0.5)]}), 0.55)],
@@ -257,16 +275,16 @@ def build(path, ctx):
     # 八、應用題（3 題，數字比較小；只給「列式」和「答」，不印單位）
     head("八", "應用題（記得寫「答」）", "每題 5 分（列式 2 分、答 3 分），共 15 分", below=True)
     probs = [
-        T("動物園去年約有 126 萬位遊客，今年約有 143 萬位，今年多了幾萬位？", "去年有 126 萬人，今年有 143 萬人，今年比去年多幾萬人？"),
+        T("動物園去年約有 126 萬位遊客，今年約有 143 萬位，今年約多了幾位？", "去年有 126 萬人，今年有 143 萬人，今年比去年多幾萬人？"),
         # 鑑別題 2：兩步驟（先乘再減），預期錯誤：只算到 1440 就寫答
-        T("1 張門票 45 元，\n全班和老師共 32 人。\n老師付了 2000 元，可以找回幾元？","1 張票 45 元，買 32 張，\n付 2000 元，找回幾元？"),
+        T("1 張門票 45 元，全班和老師共 32 人。老師付了 2000 元，可以找回幾元？","1 張票 45 元，買 32 張，\n付 2000 元，找回幾元？"),
         T("飼育員有 470 顆飼料球，每 6 顆裝一袋，可以裝幾袋？還剩幾顆？", "470 顆糖，每 6 顆裝一袋，可以裝幾袋？還剩幾顆？"),
     ]
     for k, txt in enumerate(probs, start=1):
         zp(("(%d) " % k, "n"), txt, indent=0.8, first=-0.8, keep=True)
         zp(("　", "n"), indent=0.8, after=78)
     ck(143 - 126 == 17 and 45 * 32 == 1440 and 2000 - 1440 == 560 and 6 * 78 + 2 == 470, "c8")
-    ANS.append("八、(1) 143－126＝17，17 萬人（位）　(2) 45×32＝1440，2000－1440＝560，560 元（鑑別題）　(3) 470÷6＝78…2，78 袋剩 2 顆")
+    ANS.append("八、(1) 143－126＝17，約 17 萬位（170000 位）　(2) 45×32＝1440，2000－1440＝560，560 元（鑑別題）　(3) 470÷6＝78…2，78 袋剩 2 顆")
     p = zp("□我有仔細讀題目　□我有盡力完成", size=12, before=8, after=0)   # 老師改成兩行
     p.alignment = WD_ALIGN_PARAGRAPH.CENTER
     zp("寫完了，請仔細檢查！", size=12).alignment = WD_ALIGN_PARAGRAPH.CENTER
