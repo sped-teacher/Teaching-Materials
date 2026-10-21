@@ -96,10 +96,10 @@ def angle(deg, rot=0, arm=3.6, arc=0.7, label=None, letter=None, name=None, arms
     return cv.save(name)
 
 
-def protractor(ray, base="right", R=3.0, name=None):
+def protractor(ray, base="right", R=3.0, name=None, fs=1.0):
     """量角器圖：外圈 0 在左、內圈 0 在右。ray＝射線的方向（0＝右邊、逆時針）。
     base='right' 角從右邊那條線量起（讀內圈）；'left' 從左邊量起（讀外圈）"""
-    cv = Canvas(9, 5.5, 4.5, 0.8)
+    cv = Canvas(2 * R + 3, R + 2.5, R + 1.5, 0.8)   # R 變大時畫布跟著變大
     O = (0, 0)
     # 角的扇形
     if base == "right": cv.sector(O, 0.9, 0, ray, (200, 200, 200))
@@ -114,8 +114,8 @@ def protractor(ray, base="right", R=3.0, name=None):
         cv.line(pol(O, R, t), pol(O, R - L, t), 0.012)
         if t % 10 == 0:
             cv.line(pol(O, R - 0.9, t), pol(O, R - 0.75, t), 0.012, (120, 120, 120))
-            cv.text(pol(O, R - 0.48, t), str(180 - t), 6.5)                    # 外圈
-            cv.text(pol(O, R - 1.15, t), str(t), 5.5, fill=(90, 90, 90))     # 內圈
+            cv.text(pol(O, R - 0.48, t), str(180 - t), 6.5 * fs)                    # 外圈
+            cv.text(pol(O, R - 1.15, t), str(t), 5.5 * fs, fill=(90, 90, 90))     # 內圈
     cv.line((-R - 0.6, 0), (R + 0.6, 0), 0.04)   # 角的底邊
     cv.line(O, pol(O, R + 0.6, ray), 0.04)        # 角的另一邊
     cv.dot(O, 0.06)
