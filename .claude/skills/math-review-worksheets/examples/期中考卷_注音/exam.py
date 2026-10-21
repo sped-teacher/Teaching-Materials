@@ -225,20 +225,21 @@ def build(path, ctx):
     ANS.append("五、(1) 9228　(2) 3744　(3) 801　(4) 32 餘 22（鑑別題）")
 
     # 六、看圖回答
-    head("六", "看圖回答問題", "(1)(2)(4)(5) 每題 2 分，(3) 每格 2 分，共 12 分", below=True)
+    head("六", "看圖回答問題", "每格 2 分，共 12 分")
     if ctx: zp("小芸用量角器量園區地圖上的角。", size=13)
-    cells([[("img", figs.protractor(40, "right"), 0.66), ("z", ("(1) ", "n"), "角是", ("（　　）度", "n"))],
-           [("img", figs.protractor(70, "left"), 0.66), ("z", ("(2) ", "n"), "角是", ("（　　）度", "n"))]], W)
+    BOT = WD_CELL_VERTICAL_ALIGNMENT.BOTTOM
+    cells([[("img", figs.protractor(40, "right"), 0.66)], [("img", figs.protractor(70, "left"), 0.66)]], W, valign=BOT)
+    cells([[("z", ("(1) ", "n"), "角是", ("（　　）度", "n"))], [("z", ("(2) ", "n"), "角是", ("（　　）度", "n"))]], W)
     zp("用量角器量量看，在（　）裡寫出幾度，再寫出是銳角、直角，還是鈍角。", size=13, keep=True)
     cells([[("img", figs.angle(130, rot=15, arm=3.0))],
            [("z", ("(3)（　　）度，", "n")), ("z", ("　　", "n"), "是", ("（　　）", "n"), "角")]], W,
           valign=WD_CELL_VERTICAL_ALIGNMENT.BOTTOM)
     cells([[("z", ("(4) ", "n"), "∠ㄅ是幾度？"),
-            ("img", figs.rays({"rays": [0, 55, 90], "right": [0], "sectors": [(55, 90, "35°", False, 1.0), (0, 55, "ㄅ", "dark", 0.5)]}), 0.55),
-            ("z", ("（　　）度", "n"))],
+            ("img", figs.rays({"rays": [0, 55, 90], "right": [0], "sectors": [(55, 90, "35°", False, 1.0), (0, 55, "ㄅ", "dark", 0.5)]}), 0.55)],
            [("z", ("(5) ", "n"), "∠ㄆ是幾度？"),
-            ("img", figs.rays({"rays": [0, 180, 110], "sectors": [(0, 110, "110°", False, 0.7), (110, 180, "ㄆ", "dark", 0.5)]}), 0.55),
-            ("z", ("（　　）度", "n"))]], W)
+            ("img", figs.rays({"rays": [0, 180, 110], "sectors": [(0, 110, "110°", False, 0.7), (110, 180, "ㄆ", "dark", 0.5)]}), 0.55)]],
+          W, valign=BOT)
+    cells([[("z", ("（　　）度", "n"))], [("z", ("（　　）度", "n"))]], W)
     ANS.append("六、(1) 40　(2) 110　(3) 130°，鈍（角）　(4) 90－35＝55　(5) 180－110＝70（量角題容許 ±2°）")
 
     # 八、畫畫看：從右欄開始（不要拆在兩欄）
