@@ -10,7 +10,7 @@ from docx.enum.section import WD_SECTION
 from docx.enum.text import WD_BREAK
 from lxml import etree
 
-ZS = 14          # 題目字級（注音字型）
+ZS = int(os.environ.get("EXAM_ZS", "14"))   # 題目字級（注音字型）；A4 的複習考用 12（review1.py 設定）
 COLW = 10.6      # 一欄寬（公分）
 ANS = []
 
