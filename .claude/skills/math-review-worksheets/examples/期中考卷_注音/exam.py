@@ -82,7 +82,7 @@ def choice(n, stem, opts, img=None, img_w=3.0):
         q = lib.doc.add_paragraph(); q.paragraph_format.left_indent = Cm(1.6)
         q.paragraph_format.space_after = Pt(0); q.paragraph_format.keep_with_next = True
         q.add_run().add_picture(img[0], width=Cm(img_w))
-    if sum(len(o) for o in opts) <= 14:
+    if sum(len(o) for o in opts) <= 16:
         zp(*sum([[("%s" % "①②③④"[i], "n"), o, ("　", "n")] for i, o in enumerate(opts)], []), indent=1.6, after=4, size=ZS)
         return
     if any(len(o) > 6 and not o.isdigit() for o in opts):   # 文字選項很長（例如「等腰直角三角形」）：一行一個，才不會斷字
@@ -174,12 +174,13 @@ def build(path, ctx):
            ["7萬", "70萬", "7千", "700"])
     choice(2, T("下面是 4 間動物園的遊客人數，哪一個最多？", "下面哪一個數最大？"),
            ["9999999", "10000000", "9900000", "999999"])
-    choice(3, T("集合時間到了！時鐘的分針從 12 順時針轉到 4，轉了幾度？", "分針從 12 順時針轉到 4，轉了幾度？"),
-           ["60°", "90°", "120°", "150°"], img=figs.clock(0, 4))   # 老師：時鐘題附圖
-    ck(4 * 30 == 120, "c3")
+    # 不從 12 開始轉（老師 2026-10-22）；④180° 是「轉到 6 就算 6×30」的誘答
+    choice(3, T("集合時間到了！時鐘的分針從 2 順時針轉到 6，轉了幾度？", "分針從 2 順時針轉到 6，轉了幾度？"),
+           ["90°", "120°", "150°", "180°"], img=figs.clock(2, 6))   # 老師：時鐘題附圖
+    ck((6 - 2) * 30 == 120, "c3")
     choice(4, T("告示牌是三角形，3 個邊都一樣長，它是什麼三角形？", "3 個邊都一樣長的三角形，叫作什麼？"),
            ["直角三角形", "正三角形", "鈍角三角形", "等腰直角三角形"])
-    ANS.append("二、(1) ①　(2) ②　(3) ③　(4) ②")
+    ANS.append("二、(1) ①　(2) ②　(3) ②（4 大格；選 ④ 是用 6×30）　(4) ②")
 
     # 三、連連看
     head("三", "把一樣的數連起來", "每題 2 分，共 8 分", below=True)
