@@ -291,11 +291,19 @@ def build(path, ctx):
     head("七", "畫畫看", "(1) 3 分，(2) 4 分，共 7 分")
     # 兩題左右並排（右欄放不下上下排）：上列題目、下列留空和底線（底線靠下對齊）
     W2 = [COLW / 2] * 2
-    cells([[("z", ("(1) ", "n"), "用量角器從頂點畫一個 70° 的角。")],
-           [("z", ("(2) ", "n"), "畫一個兩邊\n都是 3 公分的\n等腰三角形。")]], W2)   # 半欄窄：手動換行，「等腰」不要被切開
-    gap = lambda n: ("fn", lambda c: [c.add_paragraph() for _ in range(n)])
-    cells([[gap(5 if ctx else DRAW_GAP), ("img", figs.baseline(4.0))], [gap(6 if ctx else DRAW_GAP + 1)]], W2,
-          valign=WD_CELL_VERTICAL_ALIGNMENT.BOTTOM)
+    if ctx:
+        cells([[("z", ("(1) ", "n"), "用量角器從頂點畫一個 70° 的角。")],
+               [("z", ("(2) ", "n"), "畫一個兩邊\n都是 3 公分的\n等腰三角形。")]], W2)   # 半欄窄：手動換行，「等腰」不要被切開
+        gap = lambda n: ("fn", lambda c: [c.add_paragraph() for _ in range(n)])
+        cells([[gap(5), ("img", figs.baseline(4.0))], [gap(6)]], W2, valign=WD_CELL_VERTICAL_ALIGNMENT.BOTTOM)
+    else:   # B 版：上下排（左欄下面空間比較高、比較窄）（老師 2026-10-27）
+        zp(("(1) ", "n"), "用量角器從頂點畫一個 70° 的角。", indent=0.8, first=-0.8, keep=True)
+        for _ in range(DRAW_GAP // 2):
+            e = lib.doc.add_paragraph(); e.paragraph_format.keep_with_next = True
+        image(figs.baseline(4.0))
+        zp(("(2) ", "n"), "畫一個兩邊都是 3 公分的等腰三角形。", indent=0.8, first=-0.8, before=6, keep=True)
+        for _ in range(DRAW_GAP // 2 + 1):
+            lib.doc.add_paragraph()
     ANS.append("七、(1) 畫出 70° 的角（容許 68°～72°）　(2) 兩邊都是 3 公分（容許 ±0.2 公分），三邊連成三角形")
 
     # 八、應用題（3 題，數字比較小；只給「列式」和「答」，不印單位）
