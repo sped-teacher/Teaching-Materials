@@ -34,8 +34,8 @@ def build(path):
 
     # 一、是非
     hp = zp(("一、", "b"), ("對的畫○，錯的畫", "b"), size=15, before=2, after=0, keep=True)
-    sr = hp.add_run(); sr.font.size = Pt(15)
-    sym = OxmlElement("w:sym"); sym.set(qn("w:font"), "Wingdings 2"); sym.set(qn("w:char"), "F0CD"); sr._element.append(sym)
+    sr = hp.add_run(); sr.font.size = Pt(15); sr.bold = True; E.thicken(sr)   # 叉也要粗體
+    sym = OxmlElement("w:sym"); sym.set(qn("w:font"), "Wingdings 2"); sym.set(qn("w:char"), "F0D1"); sr._element.append(sym)
     zp(("每題 2 分，共 6 分", "s"), size=11, after=2, keep=True).alignment = WD_ALIGN_PARAGRAPH.RIGHT
     for k, st in enumerate(["9999999 再加 1 就是一千萬。", "角的兩邊畫得越長，角就越大。", "1 個周角等於 2 個平角。"], 1):
         zp(("（　）(%d) " % k, "n"), st, indent=1.6, first=-1.6, after=3)
