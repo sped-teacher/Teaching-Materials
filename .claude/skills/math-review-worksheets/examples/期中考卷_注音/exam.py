@@ -1,4 +1,4 @@
-# 四上數學期中考（潛能教室）：同一組題目，情境版／精簡版
+﻿# 四上數學期中考（潛能教室）：同一組題目，情境版／精簡版
 import sys, os
 sys.path.insert(0, r"C:\Users\class\Documents\teaching-materials\.claude\skills\math-review-worksheets\scripts")
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
@@ -259,7 +259,7 @@ def build(path, ctx):
             q = c.add_paragraph(); q.paragraph_format.left_indent = Cm(0.6); run(q, txt, size=13)
             blank(n)(c)
         return f
-    g1, g2 = (6, 8) if ctx else (4, 6)   # B 版直式在第一頁右欄，空間少一點
+    g1, g2 = (6, 8) if ctx else (5, 5)   # B 版直式在第一頁右欄：四題空白行數一樣（老師 2026-10-27 改的）
     side([(["(1) 2307×4"], ans_line("＝（　　　　）", g1)), (["(2) 234×16"], ans_line("＝（　　　　）", g1))], widths=W, keep=False)
     side([(["(3) 6408÷8"], ans_line("＝（　　　　）", g2)), (["(4) 758÷23"], ans_line("＝（　 ）…（　 ）", g2))], widths=W, keep=False)
     ck(2307 * 4 == 9228 and 234 * 16 == 3744 and 8 * 801 == 6408 and 23 * 32 + 22 == 758 and 22 < 23, "c5b")   # (4) 三位÷二位、商二位數（鑑別題，老師 2026-10-20）
