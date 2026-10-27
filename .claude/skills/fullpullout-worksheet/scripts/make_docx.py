@@ -307,7 +307,8 @@ def page_phrase_pullout(no, newpage):
                 add(p, ph['model'][i], size=13, fill=COLOR[b.get('c', b['k'])]); add(p, ' ', size=13)
             else:
                 add(p, b + ' ', size=13)
-        sc = ph['scenes'][:NSC]
+        # 跟課文短語一樣的情境不出（課文已經給答案了）
+        sc = [s for s in ph['scenes'] if s['ans'] != ph['model']][:NSC]
         used = {}
         for s in sc:
             for i, b in enumerate(blocks):
