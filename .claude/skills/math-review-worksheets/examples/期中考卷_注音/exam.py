@@ -170,10 +170,12 @@ def build(path, ctx):
     # 題型順序（老師 2026-10-15）：由易到難——正面都是短題（選擇、是非、連連看、填充），花力氣的（計算、量角、作圖、應用題）在背面。
     # 題量對照學校前兩次潛能教室考卷：短題多、大計算約 5 題（計算 3＋應用 3 題數字小）；考試不給直式格和提示。
     # 一、是非
-    # 標題的「×」用 Wingdings 2 的粗叉 F0D1（老師 2026-10-21 改用 Wingdings 2；F0CD 太細，和粗體標題不搭）
+    # 標題的叉：✕（Segoe UI Symbol 17 號）
     hp = zp(("一、", "b"), ("對的畫○，錯的畫", "b"), size=15, before=6, after=0, keep=True)
-    sr = hp.add_run(); sr.font.size = Pt(15); sr.bold = True; thicken(sr)   # 叉也要粗體
-    sym = OxmlElement("w:sym"); sym.set(qn("w:font"), "Wingdings 2"); sym.set(qn("w:char"), "F0D1"); sr._element.append(sym)
+    sr = hp.add_run("✕"); sr.font.size = Pt(17); sr.bold = True; sr.font.name = "Segoe UI Symbol"   # 老師 2026-10-27：用 ✕，大小和 ○ 差不多
+    rf = sr._element.get_or_add_rPr().get_or_add_rFonts()
+    for a in ("w:ascii", "w:hAnsi", "w:eastAsia", "w:cs"): rf.set(qn(a), "Segoe UI Symbol")
+    thicken(sr)
     zp(("每題 2 分，共 6 分", "s"), size=11, after=2, keep=True).alignment = WD_ALIGN_PARAGRAPH.RIGHT
     for k, st in enumerate(["直角三角形有 2 個直角。", "正三角形的 3 個角都是 60°。", "等腰三角形的 2 個底角\n一樣大。"], 1):
         zp(("（　）(%d) " % k, "n"), st, indent=1.6, first=-1.6, after=3)   # 加題號（老師 2026-10-21）
