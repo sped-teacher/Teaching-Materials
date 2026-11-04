@@ -562,19 +562,36 @@ def ruby(p, base, rt, size=14):
 
 
 def page_review_extra(no, newpage):
-    """綜合練習（一面）：短文裡看注音寫國字、改錯字 → 用短文的情境套用句型造句
-    text 標記：〔字〕＝印注音、學生在（　）裡寫國字；【錯>正】＝印錯字，學生圈出來訂正。"""
+    """綜合練習（一面）：一篇短文裡看注音寫國字、改錯字、填成語代號 → 用短文的內容套用句型造句
+    text 標記：〔字〕＝印注音、學生在（　）裡寫國字；【錯>正】＝印錯字，學生圈出來訂正；
+    《成語》＝［　］讓學生填代號。成語表＝網站 idioms 六個（A～F），挖掉本課生字（idioms[].blank）。"""
     R = XD['review']
     zy = {ch['c']: ch['zy'] for ch in L['chars']}
     nerr = len(re.findall(r'【', R['text']))
-    header(no, '綜合練習', '先讀短文，寫出國字、改正錯字，再用學過的句型造句。', newpage=newpage)
+    ids = L['idioms']
+    code = {d['idiom']: 'ABCDEF'[k] for k, d in enumerate(ids)}
+    header(no, '綜合練習', '先讀短文，寫出國字、改正錯字、填成語，再用學過的句型造句。', newpage=newpage)
     t = table(1, 1, [WIDTH])
     c = t.cell(0, 0)
     step(c, '一、看注音，在（　）裡寫出國字。', first=True)
     step(c, f'二、短文裡有 {nerr} 個錯字，把錯字圈起來，在下面寫出正確的字。')
-    p = para(c, before=4, line=1.9)
+    step(c, '三、先在成語的底線寫出缺少的字，再把成語的代號填進短文的［　］裡。')
+    inner = c.add_table(rows=(len(ids) + 2) // 3, cols=3)     # 成語表三欄
+    for k, d in enumerate(ids):
+        p = para(inner.cell(k // 3, k % 3), True, WD_ALIGN_PARAGRAPH.CENTER, before=2, after=0)
+        add(p, 'ABCDEF'[k] + '. ', size=13, bold=True, color=NAVY)
+        ch = d['idiom'][d['blank']]
+        for j, x in enumerate(d['idiom']):
+            if x == ch:                       # 同一個字出現兩次（例：傾國傾城）兩個都挖
+                if j and d['idiom'][j - 1] == ch:
+                    add(p, ' ', size=13)      # 戰戰兢兢：兩條底線中間空一點
+                blank(p, 2, size=13)
+            else:
+                add(p, x, size=13)
+    tiny(c)
+    p = para(c, before=0, line=1.45)
     add(p, '　　', size=14)
-    for part in re.split(r'(〔[^〕]+〕|【[^】]+】)', R['text']):
+    for part in re.split(r'(〔[^〕]+〕|【[^】]+】|《[^》]+》)', R['text']):
         if part.startswith('〔'):
             ch = part[1:-1]
             if ch not in zy:
@@ -582,25 +599,29 @@ def page_review_extra(no, newpage):
             ruby(p, '（　　）', zy.get(ch, '？'))
         elif part.startswith('【'):
             add(p, part[1:-1].split('>')[0], size=14)
+        elif part.startswith('《'):
+            if part[1:-1] not in code:
+                warn.append(part[1:-1] + '（不是本課成語）')
+            add(p, '［　　］', size=14, color=NAVY)
         elif part:
             add(p, part, size=14)
     step(c, '訂正：')
     inner = c.add_table(rows=(nerr + 1) // 2, cols=2)        # 訂正格兩欄對齊
     for k in range(nerr):
-        p = para(inner.cell(k // 2, k % 2), True, WD_ALIGN_PARAGRAPH.CENTER, before=2, after=6)
+        p = para(inner.cell(k // 2, k % 2), True, WD_ALIGN_PARAGRAPH.CENTER, before=2, after=4)
         add(p, f'{k + 1}. 錯字（　　）→ 正確（　　）', size=13)
     tiny(c)
-    sp = para(doc); sp.paragraph_format.line_spacing = Pt(8)
+    sp = para(doc); sp.paragraph_format.line_spacing = Pt(6)
     t = table(1, 1, [WIDTH])
     c = t.cell(0, 0)
-    step(c, '三、想一想短文的內容，用句型寫一句話。', first=True)
+    step(c, '四、想一想短文的內容，用句型寫一句話。', first=True)
     many = len(R['sentences']) > 2
     for k, s in enumerate(R['sentences'], 1):
-        p = para(c, before=8 if many else 12, line=1.2)
+        p = para(c, before=4 if many else 6, line=1.2)
         add(p, f'{k}. ', size=13)
         add(p, s['pattern'], size=13, bold=True, fill='tag')
         add(p, '　' + s['task'], size=13)
-        write_line(c, 1 if many else 2, length=35, before=14 if many else 10)
+        write_line(c, 1 if many else 2, length=35, before=10 if many else 8)
     para(c).paragraph_format.line_spacing = Pt(4)
     tiny(doc)
 
