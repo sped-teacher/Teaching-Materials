@@ -535,13 +535,85 @@ def page_sentence_extra(no, newpage):
     sp.paragraph_format.line_spacing = Pt(1)   # 最後一張卡片後面的空行縮到最小，才不會多跑出一頁
 
 
+def ruby(p, base, rt, size=14):
+    """注音印在（　）上面（Word 的注音標示），不會跟括號分到兩行。"""
+    def run(text, sz, color=None):
+        r = OxmlElement('w:r'); rPr = OxmlElement('w:rPr')
+        f = OxmlElement('w:rFonts')
+        for a in ('w:ascii', 'w:hAnsi', 'w:eastAsia'):
+            f.set(qn(a), KAI)
+        rPr.append(f)
+        if color:
+            c_ = OxmlElement('w:color'); c_.set(qn('w:val'), color); rPr.append(c_)
+        z = OxmlElement('w:sz'); z.set(qn('w:val'), str(sz)); rPr.append(z)
+        r.append(rPr)
+        t = OxmlElement('w:t'); t.text = text; r.append(t)
+        return r
+    hs = int(size * 2)
+    outer = OxmlElement('w:r'); rb = OxmlElement('w:ruby')
+    pr = OxmlElement('w:rubyPr')
+    for tag, val in (('rubyAlign', 'center'), ('hps', '22'), ('hpsRaise', str(hs)), ('hpsBaseText', str(hs)), ('lid', 'zh-TW')):
+        e = OxmlElement('w:' + tag); e.set(qn('w:val'), val); pr.append(e)
+    rb.append(pr)
+    rtel = OxmlElement('w:rt'); rtel.append(run(rt, 22, '44607D')); rb.append(rtel)
+    be = OxmlElement('w:rubyBase'); be.append(run(base, hs)); rb.append(be)
+    outer.append(rb)
+    p._p.append(outer)
+
+
+def page_review_extra(no, newpage):
+    """綜合練習（一面）：短文裡看注音寫國字、改錯字 → 用短文的情境套用句型造句
+    text 標記：〔字〕＝印注音、學生在（　）裡寫國字；【錯>正】＝印錯字，學生圈出來訂正。"""
+    R = XD['review']
+    zy = {ch['c']: ch['zy'] for ch in L['chars']}
+    nerr = len(re.findall(r'【', R['text']))
+    header(no, '綜合練習', '先讀短文，寫出國字、改正錯字，再用學過的句型造句。', newpage=newpage)
+    t = table(1, 1, [WIDTH])
+    c = t.cell(0, 0)
+    step(c, '一、看注音，在（　）裡寫出國字。', first=True)
+    step(c, f'二、短文裡有 {nerr} 個錯字，把錯字圈起來，在下面寫出正確的字。')
+    p = para(c, before=4, line=1.9)
+    add(p, '　　', size=14)
+    for part in re.split(r'(〔[^〕]+〕|【[^】]+】)', R['text']):
+        if part.startswith('〔'):
+            ch = part[1:-1]
+            if ch not in zy:
+                warn.append(ch + '（不是生字，沒有注音）')
+            ruby(p, '（　　）', zy.get(ch, '？'))
+        elif part.startswith('【'):
+            add(p, part[1:-1].split('>')[0], size=14)
+        elif part:
+            add(p, part, size=14)
+    step(c, '訂正：')
+    inner = c.add_table(rows=(nerr + 1) // 2, cols=2)        # 訂正格兩欄對齊
+    for k in range(nerr):
+        p = para(inner.cell(k // 2, k % 2), True, WD_ALIGN_PARAGRAPH.CENTER, before=2, after=6)
+        add(p, f'{k + 1}. 錯字（　　）→ 正確（　　）', size=13)
+    tiny(c)
+    sp = para(doc); sp.paragraph_format.line_spacing = Pt(8)
+    t = table(1, 1, [WIDTH])
+    c = t.cell(0, 0)
+    step(c, '三、想一想短文的內容，用句型寫一句話。', first=True)
+    many = len(R['sentences']) > 2
+    for k, s in enumerate(R['sentences'], 1):
+        p = para(c, before=8 if many else 12, line=1.2)
+        add(p, f'{k}. ', size=13)
+        add(p, s['pattern'], size=13, bold=True, fill='tag')
+        add(p, '　' + s['task'], size=13)
+        write_line(c, 1 if many else 2, length=35, before=14 if many else 10)
+    para(c).paragraph_format.line_spacing = Pt(4)
+    tiny(doc)
+
+
 if GROUP == 'extra':
     XD = json.loads((EXTRA_DATA / f'{LID}.json').read_text(encoding='utf-8'))
     page_summary('①', False, zhuyin=False)   # 外加組段落大意不標注音
     page_look('②', True)
     page_phrase_extra('③', True)
     page_sentence_extra('④', True)
-    page_idiom_extra('⑤', True)          # 成語造句放最後（老師決定）
+    page_idiom_extra('⑤', True)          # 成語造句放在一般練習最後（老師決定）
+    if XD.get('review'):                  # 第 7 課起多一面綜合練習
+        page_review_extra('⑥', True)
     docx_path = OUT / f'第{LID}課_外加學習單.docx'
 else:
     page_look('①', False)
