@@ -18,6 +18,7 @@
 
 設定檔格式：{ "lesson": "01", "cards": [ { "name": 語詞, "scene": 英文畫面描述 } ] }
 圖片裁成正方形 640×640，存成 images/lessonXX/語詞.webp（每張約 30 KB）。
+別的網站用：設定檔改寫 "dir": "metaphor/images"（repo 根目錄算起），圖就存到那裡。
 帳號憑證、token 絕對不要寫進這個檔案或 repo。
 """
 import json
@@ -101,9 +102,14 @@ def save_webp(img: Image.Image, out: Path):
     img.save(out, 'WEBP', quality=80, method=6)
 
 
-def make(lesson: str, name: str, scene: str, engine) -> Path:
+def out_path(conf: dict, name: str) -> Path:
+    if conf.get('dir'):
+        return ROOT.parent / conf['dir'] / f'{name}.webp'
+    return ROOT / 'images' / f'lesson{conf["lesson"]}' / f'{name}.webp'
+
+
+def make(out: Path, scene: str, engine) -> Path:
     img = engine(f'{STYLE} {scene.strip()} {NO_TEXT}')
-    out = ROOT / 'images' / f'lesson{lesson}' / f'{name}.webp'
     save_webp(img, out)
     return out
 
@@ -117,17 +123,17 @@ if __name__ == '__main__':
         print(__doc__)
         sys.exit(1)
     conf = json.loads(Path(args[0]).read_text(encoding='utf-8'))
-    only, lesson = set(args[1:]), conf['lesson']
+    only = set(args[1:])
     for card in conf['cards']:
         name = card['name']
-        out = ROOT / 'images' / f'lesson{lesson}' / f'{name}.webp'
+        out = out_path(conf, name)
         if only and name not in only:
             continue
         if not only and not redo and out.exists():
             print(f'略過（已有圖）：{name}')
             continue
         try:
-            print(f'完成：{make(lesson, name, card["scene"], engine)}', flush=True)
+            print(f'完成：{make(out, card["scene"], engine)}', flush=True)
         except Exception as e:  # 額度用完或服務忙碌時，先停下來
             print(f'失敗：{name}：{e}', flush=True)
             sys.exit(2)
