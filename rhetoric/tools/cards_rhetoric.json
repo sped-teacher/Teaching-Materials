@@ -174,6 +174,54 @@
     {
       "name": "生日蛋糕",
       "scene": "A birthday cake with white cream, strawberries and lit candles glowing, children around it."
+    },
+    {
+      "name": "時間",
+      "scene": "A large hourglass with sand quickly flowing from the top to the bottom, with a few falling leaves and a small sun and moon nearby to show days passing."
+    },
+    {
+      "name": "流水",
+      "scene": "A clear stream of water flowing quickly over smooth stones in a forest, always moving forward, with small ripples."
+    },
+    {
+      "name": "書",
+      "scene": "A big open book with pages fanning, small glowing sparkles and tiny pictures (a planet, a tree, an animal) floating up out of the pages."
+    },
+    {
+      "name": "寶庫",
+      "scene": "A treasure room with an open treasure chest overflowing with gold coins, jewels and pearls, glowing warmly."
+    },
+    {
+      "name": "他的話",
+      "scene": "Two children: one child frowning and pointing while speaking angrily, sharp zigzag lines coming from his mouth; the other child holding her chest and looking hurt and sad. No speech bubbles."
+    },
+    {
+      "name": "刀子",
+      "scene": "A simple kitchen knife lying on a wooden cutting board next to a few sliced vegetables."
+    },
+    {
+      "name": "考試前的心情",
+      "scene": "A nervous student sitting at a desk before a test, holding a pencil tightly, sweat drops, a big red heart beating fast drawn on the chest with motion lines. The paper on the desk is blank."
+    },
+    {
+      "name": "打鼓",
+      "scene": "A child happily hitting a big drum with two drumsticks, motion lines showing loud beats."
+    },
+    {
+      "name": "熱鍋上的螞蟻",
+      "scene": "A cute cartoon ant hopping anxiously on top of a warm cooking pan lid, sweat drops and worried face, running around in circles (cartoon style, not hurt)."
+    },
+    {
+      "name": "飛快的箭",
+      "scene": "A single arrow flying very fast across the sky with long speed lines and a small whoosh trail."
+    },
+    {
+      "name": "老師溫柔的聲音",
+      "scene": "A kind teacher speaking gently to a group of calm, smiling students, soft wavy lines and small flowers floating from her to show a gentle soothing voice. No speech bubbles."
+    },
+    {
+      "name": "春風",
+      "scene": "A gentle spring breeze blowing over a meadow, pink petals and small flowers floating in the soft wind, a child smiling with eyes closed enjoying it."
     }
   ]
 }
