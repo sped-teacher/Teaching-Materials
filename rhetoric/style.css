@@ -1,4 +1,4 @@
-/* 譬喻小教室：iPad 觸控優先、大按鈕、低視覺干擾（配色沿用國語五上學習樂園） */
+/* 修辭小教室：iPad 觸控優先、大按鈕、低視覺干擾（配色沿用國語五上學習樂園） */
 :root {
   --bg: #F6F1E7; --card: #FFFFFF; --ink: #2A2825; --muted: #6E675D; --line: #E4DCCD; --soft: #FBF8F2;
   --accent: #7A5C2E; --accent-soft: #F3EBDD;
@@ -124,3 +124,12 @@ textarea.fin { width: 100%; height: 3.4em; }
   .venn .zone { font-size: 14px; } .tag { font-size: 13px; }
   .formula { font-size: 21px; } .sentence { font-size: 23px; }
 }
+
+/* 首頁：譬喻／摹寫兩張大卡 */
+.menu.big a { padding: 22px; }
+.menu.big .t { font-size: 32px; }
+/* 摹寫：五感放大鏡的五個格子 */
+.sense-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(160px, 1fr)); gap: 8px; margin: 12px 0; }
+.sbox { border: 2px solid var(--line); border-radius: 14px; background: var(--soft); min-height: 96px; }
+.sbox-head { font-weight: 700; font-size: 16px; padding: 4px 10px; border-bottom: 2px solid var(--line); }
+.sbox-body { padding: 8px; display: flex; flex-direction: column; gap: 6px; }

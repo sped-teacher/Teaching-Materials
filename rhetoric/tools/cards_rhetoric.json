@@ -1,0 +1,179 @@
+{
+  "lesson": "rhetoric",
+  "dir": "rhetoric/images",
+  "_說明": "修辭小教室的圖。在有 Codex 的電腦（repo 根目錄）執行：python mandarin/tools/gen_cards.py rhetoric/tools/cards_rhetoric.json；臍帶、香蕉沿用國語網站的圖。畫完看一遍有沒有字。",
+  "cards": [
+    {
+      "name": "月亮",
+      "scene": "A single glowing yellow crescent moon in a dark blue night sky circle, a few tiny stars around it, framed as a round sky picture on white."
+    },
+    {
+      "name": "太陽",
+      "scene": "A big round bright golden-orange sun with soft rays, smiling gently, alone in the center."
+    },
+    {
+      "name": "西瓜",
+      "scene": "A whole round green striped watermelon with one red slice with black seeds placed beside it."
+    },
+    {
+      "name": "雨傘",
+      "scene": "One open colorful umbrella and the same kind of umbrella closed and long beside it."
+    },
+    {
+      "name": "棉花糖",
+      "scene": "A big fluffy white and pink cotton candy on a stick, puffy and soft."
+    },
+    {
+      "name": "彩虹",
+      "scene": "A big arched rainbow with seven colors over green grass after rain, small white clouds at both ends."
+    },
+    {
+      "name": "雲",
+      "scene": "Several soft puffy white clouds floating in a light blue sky patch, fluffy and round shapes."
+    },
+    {
+      "name": "河流",
+      "scene": "Bird's-eye view of a long winding blue river flowing from green land and mountains on one side into the blue sea on the other side, clearly connecting land and ocean."
+    },
+    {
+      "name": "港灣",
+      "scene": "A calm curved harbor bay embraced by land on both sides, small fishing boats resting safely inside on still water, waves outside, warm sunset colors."
+    },
+    {
+      "name": "媽媽的懷抱",
+      "scene": "A mother kneeling and hugging her young child warmly in her arms, the child resting safely and smiling, warm cozy feeling."
+    },
+    {
+      "name": "小船",
+      "scene": "A small curved wooden rowing boat floating on calm blue water, side view, its shape clearly curved like a crescent."
+    },
+    {
+      "name": "橋",
+      "scene": "A curved arched bridge crossing over a small river, connecting the two green banks."
+    },
+    {
+      "name": "雨滴",
+      "scene": "Several large clear round raindrops falling from a small grey cloud, shiny water drops."
+    },
+    {
+      "name": "珍珠",
+      "scene": "A few round shiny white pearls on an open seashell."
+    },
+    {
+      "name": "眼淚",
+      "scene": "Close-up of a sad child's face with tears dropping one by one from the eyes, gentle not scary."
+    },
+    {
+      "name": "火球",
+      "scene": "A big round ball of bright red and orange flames, glowing hot, floating alone."
+    },
+    {
+      "name": "暖爐",
+      "scene": "A small electric room heater glowing warm orange, a child warming hands in front of it, cozy winter room."
+    },
+    {
+      "name": "星星",
+      "scene": "Several twinkling yellow stars in a small round night sky, sparkling with little shine marks."
+    },
+    {
+      "name": "眼睛",
+      "scene": "Close-up of a cute child's face winking one eye playfully, bright twinkle in the open eye."
+    },
+    {
+      "name": "鑽石",
+      "scene": "A sparkling clear diamond gem with shining light reflections."
+    },
+    {
+      "name": "落葉",
+      "scene": "Orange and yellow autumn leaves drifting and twirling down through the air from a tree."
+    },
+    {
+      "name": "蝴蝶",
+      "scene": "A colorful butterfly fluttering in the air with wings open, dotted flight path curve behind it."
+    },
+    {
+      "name": "溜滑梯",
+      "scene": "A long curved playground slide in a park, a child sliding down happily."
+    },
+    {
+      "name": "大象的鼻子",
+      "scene": "A friendly cartoon elephant with its long trunk curved down and outward, side view, the trunk clearly visible."
+    },
+    {
+      "name": "媽媽的手",
+      "scene": "A mother's gentle hands holding a child's small cold hands to warm them, winter clothes, warm feeling."
+    },
+    {
+      "name": "暖暖包",
+      "scene": "A child holding a small white heat pack warmer in both hands, little warm wavy heat lines rising from it."
+    },
+    {
+      "name": "生氣的爸爸",
+      "scene": "A cartoon father with an angry red face, frowning eyebrows, hands on hips, steam puffs from his head, funny not scary."
+    },
+    {
+      "name": "火山",
+      "scene": "A cartoon volcano erupting with red lava and smoke shooting up suddenly."
+    },
+    {
+      "name": "獅子",
+      "scene": "A cartoon lion roaring loudly with mouth wide open, big mane, sound wave lines, not scary."
+    },
+    {
+      "name": "石頭",
+      "scene": "A plain grey rock stone on the ground."
+    },
+    {
+      "name": "鉛筆",
+      "scene": "One plain yellow wooden pencil lying flat."
+    },
+    {
+      "name": "夜市",
+      "scene": "A busy Taiwanese night market at night: rows of food stalls with glowing lights, steam rising from cooking, crowds of families walking, no signs with writing."
+    },
+    {
+      "name": "海邊",
+      "scene": "A sunny beach: blue sea with white waves splashing on golden sand, a child barefoot on the sand, seagulls."
+    },
+    {
+      "name": "麵包店",
+      "scene": "Inside a cozy bakery: shelves full of golden fresh bread, a baker taking a tray of warm bread out of the oven, steam rising."
+    },
+    {
+      "name": "下雨天",
+      "scene": "A rainy day: grey sky, raindrops falling, a child in a yellow raincoat with umbrella stepping in a puddle, wet street."
+    },
+    {
+      "name": "圖書館",
+      "scene": "A quiet library: tall bookshelves, a few children reading silently at a table, one child turning a page."
+    },
+    {
+      "name": "冰淇淋",
+      "scene": "A pink strawberry ice cream scoop on a cone, a little cold mist around it."
+    },
+    {
+      "name": "過年",
+      "scene": "Chinese New Year at home: red decorations without any writing, firecrackers popping outside the window, family at a table with festive dishes."
+    },
+    {
+      "name": "操場",
+      "scene": "A school playground at recess: children running and laughing, a running track, a sunny day, one child wiping sweat."
+    },
+    {
+      "name": "剛出爐的麵包",
+      "scene": "A tray of freshly baked golden bread rolls just out of the oven with steam and warm smell lines rising."
+    },
+    {
+      "name": "小狗",
+      "scene": "A fluffy cute puppy barking happily with little sound lines, a child petting its soft fur."
+    },
+    {
+      "name": "檸檬",
+      "scene": "A bright yellow lemon cut in half, and a child tasting lemon juice with a sour squinting face."
+    },
+    {
+      "name": "生日蛋糕",
+      "scene": "A birthday cake with white cream, strawberries and lit candles glowing, children around it."
+    }
+  ]
+}

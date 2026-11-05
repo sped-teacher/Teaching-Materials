@@ -1,4 +1,4 @@
-/* 譬喻小教室：照上課流程 ①猜猜我是誰 → ②提示卡＋文氏圖 → ③說說看像什麼（題目卡） → ④分辨三種「像」
+/* 修辭小教室：先選譬喻或摹寫，兩種都照上課流程 ①猜猜看 → ②找一找（文氏圖／五感放大鏡） → ③說說看（題目卡） → ④分辨
  * 單人單機：紀錄只存在這台 iPad（localStorage），不存學生姓名。 */
 (function () {
   'use strict';
@@ -82,22 +82,39 @@
     add(app, body);
     window.scrollTo(0, 0);
   }
-  function back() { return h('a', { class: 'btn small', href: '#/' }, '← 回目錄'); }
+  function back(to) { return h('a', { class: 'btn small', href: to || '#/m' }, '← 回目錄'); }
   function fb() { return h('div', { class: 'feedback', role: 'status' }); }
   function setFb(el, ok, text) { el.className = 'feedback ' + (ok ? 'ok' : 'no'); el.textContent = text; speak(text.replace(/[🎉👍💡]/g, '')); }
   function cueTag(k) { var c = MP.cues[k]; return h('span', { class: 'chip' }, c.icon + ' ' + c.name); }
 
-  // ── 首頁 ──
+  // ── 首頁：選譬喻或摹寫 ──
+  function home() {
+    page('', [
+      h('div', { class: 'hero' }, h('h1', {}, '修辭小教室'), h('div', { class: 'muted' }, '康軒國語五上・認識修辭')),
+      h('div', { class: 'menu big' },
+        h('a', { href: '#/m', style: '--c:#6A5AB0' },
+          h('span', { class: 't' }, '🌙 譬喻'), h('span', { class: 'd' }, '兩種不一樣的東西，有相同的地方，拿來比一比。'),
+          h('span', { class: 'n' }, '學習地圖一')),
+        h('a', { href: '#/s', style: '--c:#2E8B6E' },
+          h('span', { class: 't' }, '👀 摹寫'), h('span', { class: 'd' }, '把看到、聽到、聞到、吃到、摸到的感覺，仔細寫出來。'),
+          h('span', { class: 'n' }, '五種感覺'))),
+      h('div', { class: 'row', style: 'margin-top:18px' },
+        h('a', { class: 'btn', href: '#/mine' }, '📒 我造的句子（' + S.mine.length + '）'))
+    ]);
+  }
+
+  // ── 譬喻目錄 ──
   var STEPS = [
     { k: 'guess', n: '①', t: '🔍 猜猜我是誰', d: '一張一張翻提示卡，猜猜是什麼東西', c: '#2F6DB0' },
     { k: 'venn', n: '②', t: '⭕ 找一樣的地方', d: '用四張提示卡和文氏圖，找出兩樣東西相同的地方', c: '#6A5AB0' },
     { k: 'say', n: '③', t: '🎴 說說看像什麼', d: '看題目卡，說出像什麼、為什麼像（等級 1～3）', c: '#D08A2E' },
     { k: 'judge', n: '④', t: '⚖️ 分辨三種「像」', d: '過兩關檢查：是不是譬喻？', c: '#2E8B57' }
   ];
-  function home() {
-    page('', [
+  function metaHome() {
+    page('🌙 譬喻', [
+      h('div', { class: 'row' }, h('a', { class: 'btn small', href: '#/' }, '← 修辭小教室')),
       h('div', { class: 'hero' },
-        h('h1', {}, '譬喻小教室'),
+        h('h1', {}, '🌙 譬喻'),
         h('div', { class: 'muted' }, '學習地圖一：認識修辭──譬喻')),
       h('div', { class: 'card', style: 'margin-bottom:16px' },
         h('div', { class: 'row' }, h('b', {}, '什麼是譬喻？'), sayBtn('兩種不一樣的東西，有相同的地方，就可以拿來比一比，這就是譬喻。')),
@@ -105,12 +122,12 @@
         h('div', { class: 'formula', style: 'margin-top:10px' },
           h('span', { class: 'fa' }, '描寫的東西'), '　像　', h('span', { class: 'fb' }, '相似的東西'), '，因為都　', h('span', { class: 'fm' }, '相同的地方'), '。')),
       h('div', { class: 'menu' }, STEPS.map(function (s) {
-        return h('a', { href: '#/' + s.k, style: '--c:' + s.c },
+        return h('a', { href: '#/m/' + s.k, style: '--c:' + s.c },
           S.done[s.k] ? h('span', { class: 'done', title: '做過了' }, '⭐') : null,
           h('span', { class: 'n' }, '第 ' + s.n + ' 站'), h('span', { class: 't' }, s.t), h('span', { class: 'd' }, s.d));
       })),
       h('div', { class: 'row', style: 'margin-top:18px' },
-        h('a', { class: 'btn', href: '#/teacher' }, '🧑‍🏫 老師題目卡（投影）'),
+        h('a', { class: 'btn', href: '#/m/teacher' }, '🧑‍🏫 老師題目卡（投影）'),
         h('a', { class: 'btn', href: '#/mine' }, '📒 我造的句子（' + S.mine.length + '）'))
     ]);
   }
@@ -173,7 +190,7 @@
         h('p', {}, '譬喻：剛好反過來──看兩樣東西，找到', h('b', {}, '一樣的特點'), '，就能比一比。'),
         h('p', { class: 'muted' }, '剛剛的提示卡，就是找特點的四個方向：'),
         h('div', { class: 'row' }, Object.keys(MP.cues).map(cueTag)),
-        h('div', { class: 'row', style: 'margin-top:14px' }, h('a', { class: 'btn primary', href: '#/venn' }, '下一站：找一樣的地方 →')))
+        h('div', { class: 'row', style: 'margin-top:14px' }, h('a', { class: 'btn primary', href: '#/m/venn' }, '下一站：找一樣的地方 →')))
     ]);
   }
 
@@ -217,7 +234,7 @@
         h('div', { class: 'formula' }, h('span', { class: 'fa' }, v.a), ' 像 ', h('span', { class: 'fb' }, v.b), '，因為都 ', h('span', { class: 'fm' }, v.why), '。'),
         v.book ? h('p', {}, '📖 課本的句子：', h('b', {}, v.sent), ' ', sayBtn(v.sent)) : h('p', {}, '也可以說：', h('b', {}, v.sent), ' ', sayBtn(v.sent)),
         h('div', { class: 'row', style: 'margin-top:8px' },
-          i + 1 < MP.venn.length ? h('button', { class: 'btn primary', onclick: function () { venn(i + 1); } }, '下一組 →') : h('a', { class: 'btn primary', href: '#/say' }, '下一站：說說看像什麼 →'))));
+          i + 1 < MP.venn.length ? h('button', { class: 'btn primary', onclick: function () { venn(i + 1); } }, '下一組 →') : h('a', { class: 'btn primary', href: '#/m/say' }, '下一站：說說看像什麼 →'))));
       speak(sent);
     }
     page('② 找一樣的地方', [
@@ -251,11 +268,11 @@
         ['', '等級 1：選一選', '等級 2：提示卡＋公式', '等級 3：自己說'][n]);
     }));
   }
-  function topicCard(tp, big) {
-    return h('div', { class: 'topic' }, pic(tp.pic, 'big'), h('div', { class: 'tt' }, tp.t), big ? null : sayBtn(tp.t + '，像什麼？'));
+  function topicCard(tp, big, sayText) {
+    return h('div', { class: 'topic' }, pic(tp.pic, 'big'), h('div', { class: 'tt' }, tp.t), big ? null : sayBtn(sayText || tp.t + '，像什麼？'));
   }
   function keep(tp, s, how) {
-    S.mine.unshift({ t: tp.t, s: s, lv: S.level, how: how || '', d: new Date().toLocaleDateString('zh-TW') });
+    S.mine.unshift({ k: 'm', t: tp.t, s: s, lv: S.level, how: how || '', d: new Date().toLocaleDateString('zh-TW') });
     S.mine = S.mine.slice(0, 200); save(S); markDone('say');
   }
   function say(tp) {
@@ -460,12 +477,335 @@
   // ── 我造的句子 ──
   function mine() {
     page('📒 我造的句子', [
-      back(), h('h2', {}, '📒 我造的句子'),
+      back('#/'), h('h2', {}, '📒 我造的句子'),
       S.mine.length ? h('div', { class: 'card' }, h('ol', { class: 'mine' }, S.mine.map(function (m) {
-        return h('li', {}, h('span', { class: 'row' }, h('span', {}, m.s), sayBtn(m.s), h('span', { class: 'muted', style: 'font-size:15px' }, m.d + '・等級 ' + m.lv)));
+        return h('li', {}, h('span', { class: 'row' }, h('span', {}, m.s), sayBtn(m.s), h('span', { class: 'muted', style: 'font-size:15px' }, (m.k === 's' ? '摹寫' : '譬喻') + '・' + m.d + '・等級 ' + m.lv)));
       })), h('div', { class: 'row', style: 'margin-top:10px' }, h('button', { class: 'btn small', onclick: function () {
         if (confirm('要清除這台 iPad 上的所有句子嗎？')) { S.mine = []; save(S); mine(); }
-      } }, '🗑 全部清除'))) : h('div', { class: 'card muted' }, '還沒有句子，到「③ 說說看像什麼」造句吧！')
+      } }, '🗑 全部清除'))) : h('div', { class: 'card muted' }, '還沒有句子，到「③ 說說看」造句吧！')
+    ]);
+  }
+
+  // ══════════ 摹寫 ══════════
+  var MX = window.MX;
+  function senseTag(k) { var x = MX.senses[k]; return h('span', { class: 'chip' }, x.icon + ' ' + x.name); }
+  function senseCards() {
+    return h('div', { class: 'cues senses' }, Object.keys(MX.senses).map(function (k) {
+      var x = MX.senses[k];
+      return h('div', { class: 'cue show' }, h('span', { class: 'ci' }, x.icon), ' ', h('span', { class: 'cn' }, x.long), h('span', { class: 'ct' }, x.ask));
+    }));
+  }
+  var SBACK = '#/s';
+  var S_STEPS = [
+    { k: 'guess', n: '①', t: '🔍 猜猜我在哪裡', d: '翻開五感提示卡，猜猜是哪裡、是什麼', c: '#2F6DB0' },
+    { k: 'scope', n: '②', t: '🔎 五感放大鏡', d: '把句子放進五種感覺的格子，合起來就是一段摹寫', c: '#6A5AB0' },
+    { k: 'say', n: '③', t: '🎴 說說看', d: '看題目卡，用一種感覺仔細說出來（等級 1～3）', c: '#D08A2E' },
+    { k: 'judge', n: '④', t: '⚖️ 有沒有摹寫？', d: '過兩關檢查：有沒有寫出感覺？是哪一種感覺？', c: '#2E8B57' }
+  ];
+  var S_WHAT = '把眼睛看到、耳朵聽到、鼻子聞到、嘴巴吃到、身體摸到的感覺，仔細的寫出來，這就是摹寫。';
+  function senseHome() {
+    page('👀 摹寫', [
+      h('div', { class: 'row' }, h('a', { class: 'btn small', href: '#/' }, '← 修辭小教室')),
+      h('div', { class: 'hero' }, h('h1', {}, '👀 摹寫'), h('div', { class: 'muted' }, '用五種感覺，把東西寫得像真的一樣')),
+      h('div', { class: 'card', style: 'margin-bottom:16px' },
+        h('div', { class: 'row' }, h('b', {}, '什麼是摹寫？'), sayBtn(S_WHAT)),
+        h('div', {}, '把', h('b', {}, '看到、聽到、聞到、吃到、摸到'), '的感覺，', h('b', {}, '仔細'), '的寫出來。'),
+        h('div', { class: 'row center', style: 'margin:8px 0;font-size:28px' }, Object.keys(MX.senses).map(function (k) { return h('span', { title: MX.senses[k].long }, MX.senses[k].icon); })),
+        h('div', { class: 'formula' }, '只說「很好吃」→ ', h('span', { class: 'fm' }, '吃起來甜甜的、有濃濃的奶油香'))),
+      h('div', { class: 'menu' }, S_STEPS.map(function (s) {
+        return h('a', { href: '#/s/' + s.k, style: '--c:' + s.c },
+          S.done['s-' + s.k] ? h('span', { class: 'done', title: '做過了' }, '⭐') : null,
+          h('span', { class: 'n' }, '第 ' + s.n + ' 站'), h('span', { class: 't' }, s.t), h('span', { class: 'd' }, s.d));
+      })),
+      h('div', { class: 'row', style: 'margin-top:18px' },
+        h('a', { class: 'btn', href: '#/s/teacher' }, '🧑‍🏫 老師題目卡（投影）'),
+        h('a', { class: 'btn', href: '#/mine' }, '📒 我造的句子（' + S.mine.length + '）'))
+    ]);
+  }
+
+  // ① 猜猜我在哪裡
+  function sGuess(i) {
+    var list = MX.riddles;
+    if (i >= list.length) return sGuessEnd();
+    var r = list[i], shown = 1, solved = false, msg = fb();
+    var cueBox = h('div', { class: 'cues' }), optBox = h('div', { class: 'opts' });
+    var moreBtn = h('button', { class: 'btn' }, '👉 再翻一張提示');
+    var nextBtn = h('button', { class: 'btn primary', style: 'display:none', onclick: function () { sGuess(i + 1); } }, i + 1 < list.length ? '下一題 →' : '看結果 →');
+    function drawCues() {
+      cueBox.innerHTML = '';
+      r.clues.forEach(function (c, k) {
+        var x = MX.senses[c[0]], open = k < shown || solved;
+        add(cueBox, h('button', { class: 'cue ' + (open ? 'show' : 'hide'), onclick: function () { if (open) speak(c[1]); else if (k === shown) more(); } },
+          h('span', { class: 'ci' }, x.icon), ' ', h('span', { class: 'cn' }, x.long), h('span', { class: 'ct' }, open ? c[1] : '？')));
+      });
+      moreBtn.style.display = shown < r.clues.length && !solved ? '' : 'none';
+    }
+    function more() { if (shown < r.clues.length) { shown++; drawCues(); speak(r.clues[shown - 1][1]); } }
+    moreBtn.onclick = more;
+    shuffle(r.opts).forEach(function (o) {
+      var b = h('button', { class: 'opt' }, pic(o), o);
+      b.onclick = function () {
+        if (solved || b.classList.contains('wrong')) return;
+        if (o === r.ans) {
+          solved = true; b.classList.add('right'); drawCues();
+          setFb(msg, true, '🎉 答對了！是「' + r.ans + '」，你看了 ' + shown + ' 張提示。');
+          nextBtn.style.display = '';
+        } else {
+          b.classList.add('wrong');
+          setFb(msg, false, '不是「' + o + '」喔，' + (shown < r.clues.length ? '再翻一張提示看看。' : '再看一次提示。'));
+        }
+      };
+      add(optBox, b);
+    });
+    drawCues();
+    page('① 猜猜我在哪裡', [
+      h('div', { class: 'row' }, back(SBACK), h('span', { class: 'progress' }, '第 ' + (i + 1) + ' / ' + list.length + ' 題')),
+      h('h2', {}, '🔍 猜猜我在哪裡？'),
+      h('div', { class: 'card' },
+        h('div', { class: 'row' }, h('span', {}, '一張一張翻感覺卡，覺得知道了，就點下面的答案。'), sayBtn('一張一張翻感覺卡，覺得知道了，就點下面的答案。')),
+        h('div', { style: 'margin:12px 0' }, cueBox),
+        h('div', { class: 'row center' }, moreBtn),
+        optBox, msg, h('div', { class: 'row center' }, nextBtn))
+    ]);
+    speak(r.clues[0][1]);
+  }
+  function sGuessEnd() {
+    markDone('s-guess');
+    var t = '你沒有看到圖，只聽到看、聽、聞、吃、摸的感覺，就猜出來了。把感覺仔細寫出來，讀的人就好像真的在那裡，這就是摹寫。';
+    page('① 猜猜我在哪裡', [
+      back(SBACK), h('h2', {}, '🎉 全部猜完了！'),
+      h('div', { class: 'card' },
+        h('div', { class: 'row' }, h('b', {}, '想一想'), sayBtn(t)),
+        h('p', {}, '你沒有看到圖，只讀了', h('b', {}, '感覺'), '，就猜出來了！'),
+        h('p', {}, '把感覺', h('b', {}, '仔細'), '寫出來，讀的人就好像真的在那裡──這就是', h('b', {}, '摹寫'), '。'),
+        senseCards(),
+        h('div', { class: 'row', style: 'margin-top:14px' }, h('a', { class: 'btn primary', href: '#/s/scope' }, '下一站：五感放大鏡 →')))
+    ]);
+  }
+
+  // ② 五感放大鏡：每一句選是哪一種感覺，放進格子，最後合成一段
+  function sScope(i) {
+    var sc = MX.scenes[i], k = 0, msg = fb(), order = shuffle(sc.f);
+    var boxes = {}, grid = h('div', { class: 'sense-grid' });
+    Object.keys(MX.senses).forEach(function (s) {
+      var x = MX.senses[s];
+      boxes[s] = h('div', { class: 'sbox-body' });
+      add(grid, h('div', { class: 'sbox' }, h('div', { class: 'sbox-head' }, x.icon + ' ' + x.long), boxes[s]));
+    });
+    var ask = h('div'), tail = h('div');
+    function q() {
+      ask.innerHTML = ''; msg.className = 'feedback'; msg.textContent = '';
+      if (k >= order.length) return finish();
+      var f = order[k], text = '「' + f[0] + '」是用哪一種感覺？';
+      add(ask, h('div', { class: 'row center', style: 'font-size:24px' }, h('b', {}, text), sayBtn(text)));
+      var opts = h('div', { class: 'opts' });
+      Object.keys(MX.senses).forEach(function (s) {
+        var x = MX.senses[s], b = h('button', { class: 'opt txt' }, x.icon + ' ' + x.name);
+        b.onclick = function () {
+          if (b.classList.contains('wrong') || opts.dataset.done) return;
+          if (s === f[1]) {
+            b.classList.add('right'); opts.dataset.done = 1;
+            add(boxes[s], h('span', { class: 'tag both' }, f[0]));
+            setFb(msg, true, '👍 對！是' + x.long + '。');
+            k++; setTimeout(q, 1200);
+          } else {
+            b.classList.add('wrong');
+            setFb(msg, false, '想一想：「' + f[0] + '」是用眼睛、耳朵、鼻子、嘴巴，還是身體感覺到的？');
+          }
+        };
+        add(opts, b);
+      });
+      add(ask, opts);
+    }
+    function finish() {
+      if (i === MX.scenes.length - 1) markDone('s-scope');
+      var para = '在' + sc.t + '，' + sc.f.map(function (f) { return f[0]; }).join('，') + '。';
+      add(tail, h('div', { class: 'card', style: 'margin-top:12px' },
+        h('div', { class: 'row' }, h('b', {}, '五種感覺合起來，就是一段摹寫：'), sayBtn(para)),
+        h('div', { class: 'formula', style: 'text-align:left' }, para),
+        h('p', {}, '念念看，是不是好像真的在' + sc.t + '？'),
+        h('div', { class: 'row' }, i + 1 < MX.scenes.length ? h('button', { class: 'btn primary', onclick: function () { sScope(i + 1); } }, '下一個地方 →') : h('a', { class: 'btn primary', href: '#/s/say' }, '下一站：說說看 →'))));
+      speak(para);
+    }
+    page('② 五感放大鏡', [
+      h('div', { class: 'row' }, back(SBACK), h('span', { class: 'progress' }, '第 ' + (i + 1) + ' / ' + MX.scenes.length + ' 個地方'),
+        MX.scenes.map(function (x, j) { return h('button', { class: 'btn small' + (j === i ? ' primary' : ''), onclick: function () { sScope(j); } }, x.t); })),
+      h('h2', {}, '🔎 五感放大鏡：' + sc.t),
+      h('div', { class: 'card' },
+        h('div', { class: 'row center' }, pic(sc.pic, 'big')),
+        grid, ask, msg),
+      tail
+    ]);
+    q();
+  }
+
+  // ③ 說說看（題目卡）
+  var sOrder = [], sOi = 0;
+  function sNextTopic() { if (sOi >= sOrder.length) { sOrder = shuffle(MX.topics); sOi = 0; } return sOrder[sOi++]; }
+  var VAGUE = /^(很|好|真|非常)?(好|漂亮|好吃|好聽|好看|棒|美|不錯|香|開心)(的|喔|啊)?$/;
+  function sKeep(tp, s) {
+    S.mine.unshift({ k: 's', t: tp.t, s: s, lv: S.level, d: new Date().toLocaleDateString('zh-TW') });
+    S.mine = S.mine.slice(0, 200); save(S); markDone('s-say');
+  }
+  function sRef(ref, tp) {
+    ref.innerHTML = '';
+    add(ref, h('div', { class: 'card', style: 'background:var(--soft)' }, Object.keys(tp.s).map(function (k) {
+      return h('div', { class: 'row', style: 'margin:6px 0' }, senseTag(k), h('span', { class: 'ref' }, tp.s[k].s), sayBtn(tp.s[k].s));
+    }), h('div', { class: 'muted', style: 'font-size:16px' }, '只要寫出仔細的感覺，別的答案也可以！')));
+  }
+  function sSay(tp) {
+    tp = tp || sNextTopic();
+    var body = h('div'), msg = fb(), sk = pick(Object.keys(tp.s)), x = MX.senses[sk];
+    var nextBtn = h('button', { class: 'btn primary', onclick: function () { sSay(); } }, '換下一張題目卡 →');
+    var card = h('div', { class: 'row center', style: 'margin:10px 0' }, h('span', {}, '感覺卡：'), h('span', { class: 'cue show', style: 'width:auto;min-height:0' }, x.icon + ' ' + x.long + '──' + x.ask));
+    if (S.level === 1) {
+      var t1 = '「' + tp.t + '」' + x.verb + '怎麼樣？';
+      add(body, card, h('div', { class: 'row center' }, h('b', {}, t1), sayBtn(t1)));
+      var o = h('div', { class: 'opts' }), out = h('div');
+      shuffle([tp.s[sk].w].concat(MX.wrong[sk])).forEach(function (w) {
+        var b = h('button', { class: 'opt txt' }, w);
+        b.onclick = function () {
+          if (b.classList.contains('wrong') || o.dataset.done) return;
+          if (w !== tp.s[sk].w) { b.classList.add('wrong'); setFb(msg, false, '「' + w + '」是' + x.name + '得到的嗎？再想想。'); return; }
+          b.classList.add('right'); o.dataset.done = 1;
+          var s = tp.s[sk].s;
+          add(out, h('div', { class: 'formula' }, s, ' ', sayBtn(s)));
+          msg.className = 'feedback ok'; msg.textContent = '🎉 你寫出一句摹寫了！跟著念一次。';
+          speak(s); sKeep(tp, s);
+        };
+        add(o, b);
+      });
+      add(body, o, out);
+    } else if (S.level === 2) {
+      var inp = h('input', { class: 'fin', placeholder: '怎麼樣？', 'aria-label': '寫出感覺', style: 'width:12em' });
+      var out2 = h('div'), ref = h('div', { class: 'reveal' });
+      add(body, card,
+        h('div', { class: 'formula' }, h('span', { class: 'fa' }, tp.t), '，' + x.verb + ' ', inp, ' ', micFor(inp), '。'),
+        h('div', { class: 'muted center', style: 'font-size:16px;margin-top:4px' }, '可以打字，也可以按鍵盤上的 🎤 用說的。'),
+        h('div', { class: 'row center', style: 'margin-top:10px' },
+          h('button', { class: 'btn primary', onclick: function () {
+            var a = inp.value.trim().replace(/[。，！]$/, '');
+            if (!a) { setFb(msg, false, '空格要寫喔。'); return; }
+            if (VAGUE.test(a)) { setFb(msg, false, '「' + a + '」太簡單了，寫得更仔細一點：是什麼顏色、聲音、味道？'); return; }
+            var s = tp.t + '，' + x.verb + a + '。';
+            selfCheck(out2, msg, s, function () { sKeep(tp, s); }, function () { inp.focus(); });
+          } }, '完成，念給我聽'),
+          h('button', { class: 'btn', onclick: function () { sRef(ref, tp); } }, '👀 參考答案')), out2, ref);
+    } else {
+      var ta = h('textarea', { class: 'fin', placeholder: '「' + tp.t + '」看起來、聽起來、聞起來、吃起來、摸起來怎麼樣？', 'aria-label': '自己寫摹寫句' });
+      var hint = h('div'), lv = 0, out3 = h('div'), ref3 = h('div', { class: 'reveal' });
+      var hb = h('button', { class: 'btn', onclick: function () {
+        lv++;
+        if (lv === 1) add(hint, senseCards());
+        if (lv === 2) { add(hint, h('div', { class: 'formula', style: 'margin-top:8px' }, h('span', { class: 'fa' }, tp.t), '，' + x.verb + ' ', h('span', { class: 'slot' }, '？'), '。')); hb.style.display = 'none'; }
+      } }, '💡 提示');
+      add(body, h('div', { class: 'row', style: 'margin-top:10px' }, ta), h('div', { class: 'row center' }, micFor(ta), h('span', { class: 'muted', style: 'font-size:16px' }, '可以打字，也可以按鍵盤上的 🎤 用說的。')), hint,
+        h('div', { class: 'row center', style: 'margin-top:10px' }, h('button', { class: 'btn primary', onclick: function () {
+          var s = ta.value.trim().replace(/\s+/g, '');
+          if (s.length < 6) { setFb(msg, false, '句子太短了，仔細說說看到、聽到、聞到、吃到或摸到什麼。'); return; }
+          if (!/[。！？]$/.test(s)) s += '。';
+          selfCheck(out3, msg, s, function () { sKeep(tp, s); }, function () { ta.focus(); });
+        } }, '完成，念給我聽'), hb, h('button', { class: 'btn', onclick: function () { sRef(ref3, tp); } }, '👀 參考答案')), out3, ref3);
+    }
+    page('③ 說說看', [
+      h('div', { class: 'row' }, back(SBACK)),
+      h('h2', {}, '🎴 說說看'),
+      levelBar(function () { sSay(tp); }),
+      h('div', { class: 'card', style: 'margin-top:12px' }, topicCard(tp, false, tp.t + '。' + x.ask), body, msg, h('div', { class: 'row center', style: 'margin-top:10px' }, nextBtn))
+    ]);
+    speak(tp.t + '。' + x.ask);
+  }
+  function sTeacher(tp) {
+    tp = tp || sNextTopic();
+    var extra = h('div');
+    page('🧑‍🏫 老師題目卡・摹寫', h('div', { class: 'teacher' },
+      h('div', { class: 'row' }, back(SBACK),
+        h('button', { class: 'btn primary', onclick: function () { sTeacher(); } }, '🎲 換一張'),
+        h('button', { class: 'btn', onclick: function () { extra.innerHTML = ''; add(extra, h('div', { style: 'margin-top:12px' }, senseCards())); } }, '💡 五感卡'),
+        h('button', { class: 'btn', onclick: function () { sRef(extra, tp); } }, '👀 參考答案')),
+      h('div', { class: 'card', style: 'margin-top:12px' }, topicCard(tp, true), extra),
+      h('div', { class: 'row', style: 'margin-top:12px' }, MX.topics.map(function (x) { return h('button', { class: 'btn small' + (x === tp ? ' primary' : ''), onclick: function () { sTeacher(x); } }, x.t); }))));
+  }
+
+  // ④ 有沒有摹寫？
+  var S_RULE = '第一關：有沒有仔細寫出感覺？只說很好吃、很漂亮、很開心，不是摹寫。第二關：是哪一種感覺？看、聽、聞、吃，還是摸？';
+  function sJudgeIntro() {
+    page('④ 有沒有摹寫？', [
+      back(SBACK), h('h2', {}, '⚖️ 有沒有摹寫？'),
+      h('div', { class: 'card' },
+        h('div', { class: 'row' }, h('span', {}, '每一句都要過兩關檢查：'), sayBtn(S_RULE)),
+        h('div', { class: 'rule' },
+          h('div', { style: 'background:var(--b-soft)' }, h('b', {}, '第一關：有沒有仔細寫出感覺？'), h('br'), '只說「很好吃、很漂亮、很好聽、很開心」', h('br'), '→ ', h('b', {}, '不是摹寫'), '。', h('br'), h('span', { class: 'muted' }, '例：這個麵包很好吃。')),
+          h('div', { style: 'background:var(--both-soft)' }, h('b', {}, '第二關：是哪一種感覺？'), h('br'), '👀 看　👂 聽　👃 聞　👅 吃　✋ 摸', h('br'), h('span', { class: 'muted' }, '例：雨滴滴答答的打在玻璃上。→ 👂 聽'))),
+        h('div', { class: 'row' }, h('button', { class: 'btn primary', onclick: function () { sJudge(shuffle(MX.judge), 0, 0); } }, '開始檢查 →')))
+    ]);
+  }
+  function sJudge(list, i, score) {
+    if (i >= list.length) return sJudgeEnd(list.length, score);
+    var j = list[i], msg = fb(), stage = h('div'), first = true;
+    var c1 = h('span', { class: 'check cur' }, '第一關 有沒有感覺'), c2 = h('span', { class: 'check' }, '第二關 哪一種');
+    var nextBtn = h('button', { class: 'btn primary', style: 'display:none', onclick: function () { sJudge(list, i + 1, score + (first ? 1 : 0)); } }, i + 1 < list.length ? '下一句 →' : '看結果 →');
+    function result(cls, title, why) {
+      add(stage, h('div', { class: 'result ' + cls }, h('b', {}, title), h('br'), why, ' ', sayBtn(title + '。' + why)));
+      speak(title + '。' + why);
+      msg.className = 'feedback'; msg.textContent = '';
+      nextBtn.style.display = '';
+    }
+    function ask2() {
+      stage.innerHTML = '';
+      var t = '這句話是用哪一種感覺寫的？';
+      add(stage, h('div', { class: 'row center', style: 'font-size:22px' }, h('b', {}, t), sayBtn(t)));
+      var box = h('div', { class: 'opts' });
+      Object.keys(MX.senses).forEach(function (s) {
+        var x = MX.senses[s], b = h('button', { class: 'opt txt' }, x.icon + ' ' + x.name);
+        b.onclick = function () {
+          if (b.classList.contains('wrong') || box.dataset.done) return;
+          if (s === j.k) { b.classList.add('right'); box.dataset.done = 1; c2.className = 'check pass'; result('meta', '🎉 是摹寫！', '用了' + x.long + '：「' + j.key + '」。'); }
+          else { b.classList.add('wrong'); first = false; setFb(msg, false, '找找看「' + j.key + '」，是用身體哪個地方感覺到的？'); }
+        };
+        add(box, b);
+      });
+      add(stage, box);
+    }
+    var t1 = '有沒有仔細寫出看到、聽到、聞到、吃到或摸到的感覺？';
+    add(stage, h('div', { class: 'row center', style: 'font-size:22px' }, h('b', {}, t1), sayBtn(t1)));
+    var box1 = h('div', { class: 'opts' });
+    [['有，寫出了感覺', true], ['沒有，只說好不好', false]].forEach(function (o) {
+      var b = h('button', { class: 'opt txt' }, o[0]);
+      b.onclick = function () {
+        if (b.classList.contains('wrong') || box1.dataset.done) return;
+        if (o[1] === (j.k !== 'none')) {
+          b.classList.add('right'); box1.dataset.done = 1;
+          if (j.k === 'none') result('guess', '不是摹寫', j.tip + '可以改成：' + j.fix);
+          else { c1.className = 'check pass'; c2.className = 'check cur'; setTimeout(ask2, 600); }
+        } else {
+          b.classList.add('wrong'); first = false;
+          setFb(msg, false, j.k === 'none' ? '「很好、很漂亮」只說了好不好，有寫出是什麼顏色、聲音、味道嗎？' : '找找看，句子裡有「' + j.key + '」喔。');
+        }
+      };
+      add(box1, b);
+    });
+    add(stage, box1);
+    page('④ 有沒有摹寫？', [
+      h('div', { class: 'row' }, back(SBACK), h('span', { class: 'progress' }, '第 ' + (i + 1) + ' / ' + list.length + ' 句')),
+      h('div', { class: 'card', style: 'margin-top:10px' },
+        h('div', { class: 'sentence' }, j.s, ' ', sayBtn(j.s)),
+        h('div', { class: 'checks' }, c1, c2),
+        stage, msg, h('div', { class: 'row center', style: 'margin-top:10px' }, nextBtn))
+    ]);
+    speak(j.s);
+  }
+  function sJudgeEnd(n, score) {
+    markDone('s-judge');
+    var stars = score >= n - 1 ? 3 : score >= n * 0.7 ? 2 : 1;
+    page('④ 有沒有摹寫？', [
+      back(SBACK), h('h2', {}, '🎉 檢查完了！'),
+      h('div', { class: 'card center' },
+        h('div', { class: 'stars' }, '⭐'.repeat(stars) + '☆'.repeat(3 - stars)),
+        h('p', {}, n + ' 句裡，一次就答對 ' + score + ' 句。'),
+        h('div', { class: 'row center' },
+          h('button', { class: 'btn primary', onclick: function () { sJudge(shuffle(MX.judge), 0, 0); } }, '再玩一次'),
+          h('button', { class: 'btn', onclick: sJudgeIntro }, '看兩關規則')))
     ]);
   }
 
@@ -473,11 +813,18 @@
   function route() {
     if (window.speechSynthesis) speechSynthesis.cancel();
     var r = (location.hash || '#/').slice(2);
-    if (r === 'guess') guess(0);
-    else if (r === 'venn') venn(0);
-    else if (r === 'say') say();
-    else if (r === 'teacher') teacher();
-    else if (r === 'judge') judgeIntro();
+    if (r === 'm') metaHome();
+    else if (r === 'm/guess') guess(0);
+    else if (r === 'm/venn') venn(0);
+    else if (r === 'm/say') say();
+    else if (r === 'm/teacher') teacher();
+    else if (r === 'm/judge') judgeIntro();
+    else if (r === 's') senseHome();
+    else if (r === 's/guess') sGuess(0);
+    else if (r === 's/scope') sScope(0);
+    else if (r === 's/say') sSay();
+    else if (r === 's/teacher') sTeacher();
+    else if (r === 's/judge') sJudgeIntro();
     else if (r === 'mine') mine();
     else home();
   }
