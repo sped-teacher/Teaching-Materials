@@ -414,7 +414,7 @@
   var J_ROUND = 7, jPool = [];
   function jRound(src, pool) { if (pool.length < J_ROUND) { pool.length = 0; shuffle(src).forEach(function (x) { pool.push(x); }); } return pool.splice(0, J_ROUND); }
   function mark(s, kw) {
-    var m = kw ? [kw] : s.match(/像是|好像|彷彿|如同|宛如|好比|成了|像/);
+    var m = kw ? [kw] : s.match(/像是|好像|彷彿|如同|宛如|好比|像/);
     if (!m) return [s];
     var k = s.indexOf(m[0]);
     return [s.slice(0, k), h('u', {}, m[0]), s.slice(k + m[0].length)];
@@ -447,7 +447,7 @@
       nextBtn.style.display = '';
     }
     // 第一關：關鍵字後面接的是東西，還是一件事？
-    var kw = j.kw || (j.s.match(/像是|好像|彷彿|如同|宛如|好比|成了|像/) || ['像'])[0];
+    var kw = j.kw || (j.s.match(/像是|好像|彷彿|如同|宛如|好比|像/) || ['像'])[0];
     ask('「' + kw + '」後面接的是什麼？', ['一樣東西、一個人', '一件事（猜猜看發生什麼事）'], j.k === 'guess' ? 1 : 0, function () {
       if (j.k === 'guess') {
         c1.className = 'check cur';
