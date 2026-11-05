@@ -108,7 +108,7 @@
     { k: 'guess', n: '①', t: '🔍 猜猜我是誰', d: '一張一張翻提示卡，猜猜是什麼東西', c: '#2F6DB0' },
     { k: 'venn', n: '②', t: '⭕ 找一樣的地方', d: '用四張提示卡和文氏圖，找出兩樣東西相同的地方', c: '#6A5AB0' },
     { k: 'say', n: '③', t: '🎴 說說看像什麼', d: '看題目卡，說出像什麼、為什麼像（等級 1～3）', c: '#D08A2E' },
-    { k: 'judge', n: '④', t: '⚖️ 分辨三種「像」', d: '過兩關檢查：是不是譬喻？', c: '#2E8B57' }
+    { k: 'judge', n: '④', t: '⚖️ 是不是譬喻？', d: '有關鍵字就是譬喻嗎？過兩關檢查', c: '#2E8B57' }
   ];
   function metaHome() {
     page('🌙 譬喻', [
@@ -121,6 +121,11 @@
         h('div', {}, '兩種', h('b', {}, '不一樣'), '的東西，有', h('b', {}, '相同的地方'), '，就可以拿來比一比。'),
         h('div', { class: 'formula', style: 'margin-top:10px' },
           h('span', { class: 'fa' }, '描寫的東西'), '　像　', h('span', { class: 'fb' }, '相似的東西'), '，因為都　', h('span', { class: 'fm' }, '相同的地方'), '。')),
+      // 譬喻的關鍵字：不只「像」；但有關鍵字不一定是譬喻，要過第④站的兩關檢查
+      h('div', { class: 'card', style: 'margin-bottom:16px' },
+        h('div', { class: 'row' }, h('b', {}, '🔑 譬喻的關鍵字'), sayBtn('譬喻的關鍵字有：' + MP.keywords.join('、') + '。看到這些字，還要檢查一下，才知道是不是譬喻。')),
+        h('div', { class: 'kw-list' }, MP.keywords.map(function (k) { return h('span', { class: 'kw' }, k); })),
+        h('div', { class: 'muted', style: 'font-size:16px;margin-top:6px' }, '看到這些字，還要用第④站的兩關檢查，才知道是不是譬喻。')),
       h('div', { class: 'menu' }, STEPS.map(function (s) {
         return h('a', { href: '#/m/' + s.k, style: '--c:' + s.c },
           S.done[s.k] ? h('span', { class: 'done', title: '做過了' }, '⭐') : null,
@@ -385,28 +390,31 @@
       h('div', { class: 'row' }, back(),
         h('button', { class: 'btn primary', onclick: function () { teacher(); } }, '🎲 換一張'),
         h('button', { class: 'btn', onclick: function () { extra.innerHTML = ''; add(extra, h('div', { class: 'cues', style: 'margin-top:12px' }, Object.keys(MP.cues).map(function (c) { var x = MP.cues[c]; return h('div', { class: 'cue show' }, h('span', { class: 'ci' }, x.icon), ' ', h('span', { class: 'cn' }, x.name), h('span', { class: 'ct' }, x.ask)); }))); } }, '💡 提示卡'),
-        h('button', { class: 'btn', onclick: function () { extra.innerHTML = ''; add(extra, h('div', { class: 'formula', style: 'margin-top:12px' }, h('span', { class: 'fa' }, tp.t), ' 像 ', h('span', { class: 'slot' }, '？'), '，因為都 ', h('span', { class: 'slot' }, '？'), '。')); } }, '📝 公式'),
+        h('button', { class: 'btn', onclick: function () { extra.innerHTML = ''; add(extra, h('div', { class: 'formula', style: 'margin-top:12px' }, h('span', { class: 'fa' }, tp.t), ' 像 ', h('span', { class: 'slot' }, '？'), '，因為都 ', h('span', { class: 'slot' }, '？'), '。'), h('div', { class: 'muted', style: 'margin-top:8px' }, '「像」也可以換成：' + MP.keywords.filter(function (k) { return k !== '像'; }).join('、'))); } }, '📝 公式'),
         h('button', { class: 'btn', onclick: function () { showRef(extra, tp); } }, '👀 參考答案')),
       h('div', { class: 'card', style: 'margin-top:12px' }, topicCard(tp, true), extra),
       h('div', { class: 'row', style: 'margin-top:12px' }, MP.topics.map(function (x) { return h('button', { class: 'btn small' + (x === tp ? ' primary' : ''), onclick: function () { teacher(x); } }, x.t); }))));
   }
 
-  // ── ④ 分辨三種「像」 ──
+  // ── ④ 是不是譬喻？（分辨：譬喻、在猜、同一類）──
   var RULE = '先過第一關：把「像」換成「好像」，後面接的是一件事，那是在猜，不是譬喻。再過第二關：前後兩樣是同一類，例如人和人，那是長得相像，不是譬喻。兩關都過，才是譬喻。';
   function judgeIntro() {
-    page('④ 分辨三種「像」', [
-      back(), h('h2', {}, '⚖️ 分辨三種「像」'),
+    page('④ 是不是譬喻？', [
+      back(), h('h2', {}, '⚖️ 是不是譬喻？'),
       h('div', { class: 'card' },
-        h('div', { class: 'row' }, h('span', {}, '有「像」的句子，不一定是譬喻。要過兩關檢查：'), sayBtn(RULE)),
+        h('div', { class: 'row' }, h('span', {}, '有譬喻關鍵字（像、好像、彷彿、是……）的句子，不一定是譬喻。要過兩關檢查：'), sayBtn(RULE)),
         h('div', { class: 'rule' },
-          h('div', { style: 'background:var(--b-soft)' }, h('b', {}, '第一關：換字檢查'), h('br'), '「像」後面接的是', h('b', {}, '一件事'), '，可以換成「好像、大概」？', h('br'), '→ 是在', h('b', {}, '猜'), '（似乎），不是譬喻。', h('br'), h('span', { class: 'muted' }, '例：小貓像是快睡著了。')),
-          h('div', { style: 'background:var(--a-soft)' }, h('b', {}, '第二關：同類檢查'), h('br'), '前後兩樣是', h('b', {}, '同一類'), '（人和人、狗和狗）？', h('br'), '→ 是長得', h('b', {}, '相像'), '，不是譬喻。', h('br'), h('span', { class: 'muted' }, '例：小宇長得像他的爸爸。')),
+          h('div', { style: 'background:var(--b-soft)' }, h('b', {}, '第一關：換字檢查'), h('br'), '關鍵字後面接的是', h('b', {}, '一件事'), '，可以換成「大概」？', h('br'), '→ 是在', h('b', {}, '猜'), '（似乎），不是譬喻。', h('br'), h('span', { class: 'muted' }, '例：小貓像是快睡著了。')),
+          h('div', { style: 'background:var(--a-soft)' }, h('b', {}, '第二關：同類檢查'), h('br'), '前後兩樣是', h('b', {}, '同一類'), '（人和人、狗和狗）？', h('br'), '→ ', h('b', {}, '不是譬喻'), '。', h('br'), h('span', { class: 'muted' }, '例：小宇長得像他的爸爸。他是我的哥哥。')),
           h('div', { style: 'background:var(--both-soft)' }, h('b', {}, '兩關都過'), h('br'), '兩樣', h('b', {}, '不一樣'), '的東西，有一樣的地方', h('br'), '→ ', h('b', {}, '是譬喻！'), h('br'), h('span', { class: 'muted' }, '例：河流像臍帶。'))),
-        h('div', { class: 'row' }, h('button', { class: 'btn primary', onclick: function () { judge(shuffle(MP.judge), 0, 0); } }, '開始檢查 →')))
+        h('div', { class: 'row' }, h('button', { class: 'btn primary', onclick: function () { judge(jRound(MP.judge, jPool), 0, 0); } }, '開始檢查（7 句）→')))
     ]);
   }
-  function mark(s) {
-    var m = s.match(/像是|好像|彷彿|像/);
+  // 第④站一回 7 句（資源班學生注意力），輪流出、不重複
+  var J_ROUND = 7, jPool = [];
+  function jRound(src, pool) { if (pool.length < J_ROUND) { pool.length = 0; shuffle(src).forEach(function (x) { pool.push(x); }); } return pool.splice(0, J_ROUND); }
+  function mark(s, kw) {
+    var m = kw ? [kw] : s.match(/像是|好像|彷彿|如同|宛如|好比|成了|像/);
     if (!m) return [s];
     var k = s.indexOf(m[0]);
     return [s.slice(0, k), h('u', {}, m[0]), s.slice(k + m[0].length)];
@@ -418,6 +426,7 @@
     var nextBtn = h('button', { class: 'btn primary', style: 'display:none', onclick: function () { judge(list, i + 1, score + (first ? 1 : 0)); } }, i + 1 < list.length ? '下一句 →' : '看結果 →');
     function ask(text, opts, right, onRight, wrongTip) {
       stage.innerHTML = '';
+      msg.className = 'feedback'; msg.textContent = '';  // 換下一關時，上一關的提示要清掉
       add(stage, h('div', { class: 'row center', style: 'font-size:22px' }, h('b', {}, text), sayBtn(text)));
       var box = h('div', { class: 'opts' });
       opts.forEach(function (o, k) {
@@ -437,24 +446,25 @@
       msg.className = 'feedback'; msg.textContent = '';
       nextBtn.style.display = '';
     }
-    // 第一關：「像」後面接的是東西，還是一件事？
-    ask('「像」後面接的是什麼？', ['一樣東西、一個人', '一件事（猜猜看發生什麼事）'], j.k === 'guess' ? 1 : 0, function () {
+    // 第一關：關鍵字後面接的是東西，還是一件事？
+    var kw = j.kw || (j.s.match(/像是|好像|彷彿|如同|宛如|好比|成了|像/) || ['像'])[0];
+    ask('「' + kw + '」後面接的是什麼？', ['一樣東西、一個人', '一件事（猜猜看發生什麼事）'], j.k === 'guess' ? 1 : 0, function () {
       if (j.k === 'guess') {
         c1.className = 'check cur';
-        return result('guess', '不是譬喻：這是在「猜」', '「像」後面接的是一件事「' + j.after + '」。換成「好像」也通：' + j.swap);
+        return result('guess', '不是譬喻：這是在「猜」', '「' + kw + '」後面接的是一件事「' + j.after + '」。換成「大概、好像」也通：' + j.swap);
       }
       c1.className = 'check pass'; c2.className = 'check cur';
       // 第二關：前後是同一類嗎？
       ask('「' + j.a + '」和「' + j.b + '」是同一類嗎？', ['是同一類', '不是同一類'], j.k === 'same' ? 0 : 1, function () {
-        if (j.k === 'same') return result('same', '不是譬喻：這是「相像」', '「' + j.a + '」和「' + j.b + '」' + j.kind + '，是同一類。');
+        if (j.k === 'same') return result('same', '不是譬喻：前後是同一類', '「' + j.a + '」和「' + j.b + '」' + j.kind + '，是同一類。');
         c2.className = 'check pass';
         result('meta', '🎉 是譬喻！', '「' + j.a + '」和「' + j.b + '」不一樣，但是' + j.why + '。');
       }, j.k === 'same' ? '想想看：「' + j.a + '」和「' + j.b + '」是不是同一種？' : '「' + j.a + '」和「' + j.b + '」是同一種東西嗎？');
-    }, j.k === 'guess' ? '把「像」換成「好像」念念看，後面是不是在猜發生什麼事？' : '「像」後面的「' + j.b + '」是一樣東西（或人）喔。');
-    page('④ 分辨三種「像」', [
+    }, j.k === 'guess' ? '把「' + kw + '」換成「大概」念念看，後面是不是在猜發生什麼事？' : '「' + kw + '」後面的「' + j.b + '」是一樣東西（或人）喔。');
+    page('④ 是不是譬喻？', [
       h('div', { class: 'row' }, back(), h('span', { class: 'progress' }, '第 ' + (i + 1) + ' / ' + list.length + ' 句')),
       h('div', { class: 'card', style: 'margin-top:10px' },
-        h('div', { class: 'sentence' }, mark(j.s), ' ', sayBtn(j.s)),
+        h('div', { class: 'sentence' }, mark(j.s, j.kw), ' ', sayBtn(j.s)),
         h('div', { class: 'checks' }, c1, c2),
         stage, msg, h('div', { class: 'row center', style: 'margin-top:10px' }, nextBtn))
     ]);
@@ -463,13 +473,13 @@
   function judgeEnd(n, score) {
     markDone('judge');
     var stars = score >= n - 1 ? 3 : score >= n * 0.7 ? 2 : 1;
-    page('④ 分辨三種「像」', [
+    page('④ 是不是譬喻？', [
       back(), h('h2', {}, '🎉 檢查完了！'),
       h('div', { class: 'card center' },
         h('div', { class: 'stars' }, '⭐'.repeat(stars) + '☆'.repeat(3 - stars)),
         h('p', {}, n + ' 句裡，一次就答對 ' + score + ' 句。'),
         h('div', { class: 'row center' },
-          h('button', { class: 'btn primary', onclick: function () { judge(shuffle(MP.judge), 0, 0); } }, '再玩一次'),
+          h('button', { class: 'btn primary', onclick: function () { judge(jRound(MP.judge, jPool), 0, 0); } }, '再來 7 句'),
           h('button', { class: 'btn', onclick: judgeIntro }, '看兩關規則')))
     ]);
   }
@@ -662,7 +672,11 @@
       var t1 = '「' + tp.t + '」' + x.verb + '怎麼樣？';
       add(body, card, h('div', { class: 'row center' }, h('b', {}, t1), sayBtn(t1)));
       var o = h('div', { class: 'opts' }), out = h('div');
-      shuffle([tp.s[sk].w].concat(MX.wrong[sk])).forEach(function (w) {
+      var right = tp.s[sk].w, others = [];
+      MX.topics.forEach(function (t2) { Object.keys(t2.s).forEach(function (k2) { if (k2 !== sk && others.indexOf(t2.s[k2].w) < 0) others.push(t2.s[k2].w); }); });
+      // 挑長度最接近答案的兩個（同一種感覺的不用）
+      var wrongs = shuffle(others).sort(function (a, b) { return Math.abs(a.length - right.length) - Math.abs(b.length - right.length); }).slice(0, 2);
+      shuffle([right].concat(wrongs)).forEach(function (w) {
         var b = h('button', { class: 'opt txt' }, w);
         b.onclick = function () {
           if (b.classList.contains('wrong') || o.dataset.done) return;
@@ -737,9 +751,10 @@
         h('div', { class: 'rule' },
           h('div', { style: 'background:var(--b-soft)' }, h('b', {}, '第一關：有沒有仔細寫出感覺？'), h('br'), '只說「很好吃、很漂亮、很好聽、很開心」', h('br'), '→ ', h('b', {}, '不是摹寫'), '。', h('br'), h('span', { class: 'muted' }, '例：這個麵包很好吃。')),
           h('div', { style: 'background:var(--both-soft)' }, h('b', {}, '第二關：是哪一種感覺？'), h('br'), '👀 看　👂 聽　👃 聞　👅 吃　✋ 摸', h('br'), h('span', { class: 'muted' }, '例：雨滴滴答答的打在玻璃上。→ 👂 聽'))),
-        h('div', { class: 'row' }, h('button', { class: 'btn primary', onclick: function () { sJudge(shuffle(MX.judge), 0, 0); } }, '開始檢查 →')))
+        h('div', { class: 'row' }, h('button', { class: 'btn primary', onclick: function () { sJudge(jRound(MX.judge, sjPool), 0, 0); } }, '開始檢查（7 句）→')))
     ]);
   }
+  var sjPool = [];
   function sJudge(list, i, score) {
     if (i >= list.length) return sJudgeEnd(list.length, score);
     var j = list[i], msg = fb(), stage = h('div'), first = true;
@@ -752,7 +767,7 @@
       nextBtn.style.display = '';
     }
     function ask2() {
-      stage.innerHTML = '';
+      stage.innerHTML = ''; msg.className = 'feedback'; msg.textContent = '';  // 上一關的提示清掉
       var t = '這句話是用哪一種感覺寫的？';
       add(stage, h('div', { class: 'row center', style: 'font-size:22px' }, h('b', {}, t), sayBtn(t)));
       var box = h('div', { class: 'opts' });
@@ -804,7 +819,7 @@
         h('div', { class: 'stars' }, '⭐'.repeat(stars) + '☆'.repeat(3 - stars)),
         h('p', {}, n + ' 句裡，一次就答對 ' + score + ' 句。'),
         h('div', { class: 'row center' },
-          h('button', { class: 'btn primary', onclick: function () { sJudge(shuffle(MX.judge), 0, 0); } }, '再玩一次'),
+          h('button', { class: 'btn primary', onclick: function () { sJudge(jRound(MX.judge, sjPool), 0, 0); } }, '再來 7 句'),
           h('button', { class: 'btn', onclick: sJudgeIntro }, '看兩關規則')))
     ]);
   }
