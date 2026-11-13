@@ -3,7 +3,7 @@
 注音用「文鼎標楷注音」字型（破音一～五換讀音），程式會自動選對讀音的字型；
 老師在 Word 裡看到注音不對，把那個字的字型換成「文鼎標楷注音破音一／二…」就可以。
 """
-import io, json, os, re, sys
+import io, json, os, random, re, sys
 from pathlib import Path
 from docx import Document
 from docx.enum.section import WD_SECTION
@@ -241,6 +241,18 @@ def shuffled(items, seed):
     return items[::-1]
 
 
+def unordered(qs, key):
+    """形近字題目打亂：網站資料的答案常照字組順序（坦→但），學生會猜。
+    固定的亂數（每次產生一樣），而且一定和原本順序不同；兩題就對調。"""
+    if len(qs) < 2:
+        return qs
+    rnd = random.Random(f'{L["id"]}-{key}')
+    out = qs[:]
+    while out == qs or out[0] == qs[0]:
+        rnd.shuffle(out)
+    return out
+
+
 def page_look(no, newpage):
     """形近字・多音字（全抽、外加一樣）"""
     header(no, '形近字・多音字', '先圈出每組字不一樣的地方，再想一想句子的意思，把正確的字寫在底線上。', newpage=newpage)
@@ -258,7 +270,7 @@ def page_look(no, newpage):
         shade(p._p.get_or_add_pPr(), FILL['gray'])
         qs = [q['sentence'] for q in L['lookalikes'] if q['fam'] == f['id'] and not q.get('poly')]
         qs += [e['sentence'] for e in EX.get('extraLook', []) if e['fam'] == f['id']]
-        for s in qs:
+        for s in unordered(qs, f['id']):
             n += 1
             p = para(c, line=1.25 if (LEVEL < 3 and GROUP != 'extra') else 1.1)
             add(p, f'{n}. ', size=10, color=GRAY)
