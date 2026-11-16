@@ -1,0 +1,55 @@
+{
+  "lesson": "hatch",
+  "dir": "hatch/images",
+  "_說明": "念課文孵寵物的寵物圖（台灣原生動物寶寶，原創）。repo 根目錄執行：python mandarin/tools/gen_cards.py hatch/tools/pets.json；畫完看一遍有沒有字。",
+  "cards": [
+    {
+      "name": "台灣藍鵲",
+      "scene": "A cute chubby round baby version, big shiny eyes, happy, sitting, full body, alone in the center, small soft shadow under it. The animal is a baby Formosan blue magpie chick with bright blue feathers, red beak, red feet and a long blue-and-white tail."
+    },
+    {
+      "name": "石虎",
+      "scene": "A cute chubby round baby version, big shiny eyes, happy, sitting, full body, alone in the center, small soft shadow under it. The animal is a baby leopard cat kitten with spotted tan fur, white stripes on its forehead and round ears with white spots behind."
+    },
+    {
+      "name": "台灣黑熊",
+      "scene": "A cute chubby round baby version, big shiny eyes, happy, sitting, full body, alone in the center, small soft shadow under it. The animal is a baby Formosan black bear cub with black fur and a white V-shaped mark on its chest."
+    },
+    {
+      "name": "穿山甲",
+      "scene": "A cute chubby round baby version, big shiny eyes, happy, sitting, full body, alone in the center, small soft shadow under it. The animal is a baby pangolin curled half open with brown overlapping scales and a small pink nose."
+    },
+    {
+      "name": "梅花鹿",
+      "scene": "A cute chubby round baby version, big shiny eyes, happy, sitting, full body, alone in the center, small soft shadow under it. The animal is a baby sika deer fawn with brown fur covered in white spots, big ears."
+    },
+    {
+      "name": "帝雉",
+      "scene": "A cute chubby round baby version, big shiny eyes, happy, sitting, full body, alone in the center, small soft shadow under it. The animal is a baby Mikado pheasant chick with dark blue-black feathers, small red face patch and a long striped tail."
+    },
+    {
+      "name": "綠蠵龜",
+      "scene": "A cute chubby round baby version, big shiny eyes, happy, sitting, full body, alone in the center, small soft shadow under it. The animal is a baby green sea turtle with a green-brown shell and little flippers, on a patch of sand."
+    },
+    {
+      "name": "台灣獼猴",
+      "scene": "A cute chubby round baby version, big shiny eyes, happy, sitting, full body, alone in the center, small soft shadow under it. The animal is a baby Formosan rock macaque monkey with grey-brown fur and a pink face."
+    },
+    {
+      "name": "黑面琵鷺",
+      "scene": "A cute chubby round baby version, big shiny eyes, happy, sitting, full body, alone in the center, small soft shadow under it. The animal is a baby black-faced spoonbill chick with white feathers, black face and a long flat spoon-shaped black bill."
+    },
+    {
+      "name": "領角鴞",
+      "scene": "A cute chubby round baby version, big shiny eyes, happy, sitting, full body, alone in the center, small soft shadow under it. The animal is a baby collared scops owl, fluffy grey-brown feathers, small ear tufts and big orange eyes."
+    },
+    {
+      "name": "白海豚",
+      "scene": "A cute chubby round baby version, big shiny eyes, happy, sitting, full body, alone in the center, small soft shadow under it. The animal is a baby pink-and-white Chinese white dolphin jumping out of a small splash of blue water."
+    },
+    {
+      "name": "櫻花鉤吻鮭",
+      "scene": "A cute chubby round baby version, big shiny eyes, happy, sitting, full body, alone in the center, small soft shadow under it. The animal is a baby Formosan landlocked salmon fish with pink-silver body and dark oval spots, swimming in a small bubble of clear water."
+    }
+  ]
+}
