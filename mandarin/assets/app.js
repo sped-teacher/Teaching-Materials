@@ -1863,7 +1863,8 @@
         append(grid, h('div', { class: 'lesson-tile off' }, h('span', { class: 'no' }, no), h('span', { class: 't' }, l.title),
           h('span', { class: 'meta' }, '練習準備中', hasRead ? h('span', { class: 'spacer' }) : null,
             hasRead ? h('a', { class: 'btn btn-read btn-sm', href: '#/read/' + l.id }, '📖 課文點讀') : null,
-            hasRead ? h('a', { class: 'btn btn-score btn-sm', href: '#/score/' + l.id }, '🎙️ 朗讀挑戰') : null)));
+            hasRead ? h('a', { class: 'btn btn-score btn-sm', href: '#/score/' + l.id }, '🎙️ 朗讀挑戰') : null,
+            hasRead ? h('a', { class: 'btn btn-hatch btn-sm', href: '../hatch/#/l/' + l.id }, '🥚 孵寵物') : null)));
         return;
       }
       var done = 0, total = 0, stars = 0;
@@ -1961,7 +1962,9 @@
           (hasR ? [] : LK.reads || []).map(function (r) { return h('a', { class: 'btn btn-read', href: r.url, target: '_blank', rel: 'noopener' }, r.text); }),
           // 朗讀挑戰改用網站內建的語音辨識評分（原本的 Gemini 版本不穩定）
           hasR ? h('a', { class: 'btn btn-score', href: '#/score/' + lid }, lock + '🎙️ 朗讀挑戰（評分）')
-            : LK.score ? h('a', { class: 'btn btn-score', href: LK.score.url, target: '_blank', rel: 'noopener' }, LK.score.text) : null));
+            : LK.score ? h('a', { class: 'btn btn-score', href: LK.score.url, target: '_blank', rel: 'noopener' }, LK.score.text) : null,
+          // 念課文孵寵物（另一個頁面 ../hatch/，同一份加密課文、同一把教室金鑰）
+          hasR ? h('a', { class: 'btn btn-hatch', href: '../hatch/#/l/' + lid }, lock + '🥚 念課文孵寵物') : null));
     }
     append(main, h('div', { class: 'section-label' }, '🔗 延伸資源（會開新視窗）'),
       h('div', { class: 'extra-links' },

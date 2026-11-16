@@ -541,11 +541,17 @@
   function route() {
     stopRec(); stopSpeak();
     window.scrollTo(0, 0);
+    var m = location.hash.replace(/^#\/?/, '').split('/');
+    // 左上角回國語網站：在某一課就回那一課
+    var back = document.querySelector('.top-back');
+    if (back) {
+      back.href = m[0] === 'l' && m[1] ? '../mandarin/#/lesson/' + m[1] : '../mandarin/';
+      back.textContent = m[0] === 'l' && m[1] ? '← 回國語第 ' + parseInt(m[1], 10) + ' 課' : '← 國語學習樂園';
+    }
     if (!Object.keys(READINGS).length) {
       unlockFromStore().then(function (ok) { if (ok) route(); else renderUnlock(); });
       return;
     }
-    var m = location.hash.replace(/^#\/?/, '').split('/');
     if (m[0] === 'l' && READINGS[m[1]]) {
       if (m[2] != null && m[2] !== '') renderEgg(m[1], parseInt(m[2], 10));
       else renderLesson(m[1]);

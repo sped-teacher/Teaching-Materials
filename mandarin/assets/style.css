@@ -314,6 +314,7 @@ h3 { font-size: 21px; }
 .reader-p .hl-read { background: var(--reveal-soft); box-shadow: 0 0 0 2px var(--reveal-soft); }
 @media (max-width: 640px) { .reader-text { font-size: 26px; } }
 .btn-score { background: #8C9E74; color: #fff; }
+.btn-hatch { background: #E8894A; color: #fff; }
 /* ── 朗讀挑戰 ── */
 .score-head { margin-bottom: 10px; font-size: 18px; }
 .score-dots { display: flex; flex-wrap: wrap; gap: 6px; margin-top: 8px; }
