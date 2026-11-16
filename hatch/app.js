@@ -249,7 +249,34 @@
     var t = (READINGS[lid].title || '').split('　')[0].replace(/^[一二三四五六七八九十]+、/, '');
     return t || ('第 ' + parseInt(lid, 10) + ' 課');
   }
+  // 蛋殼的樣子（固定）；蛋裡是哪一隻，破蛋時才決定（還沒收集過的優先）
   function petOf(lid, pi) { return PETS[(parseInt(lid, 10) * 5 + pi) % PETS.length]; }
+  var FOODS = ['🍓', '🍎', '🍇', '🌽', '🫐', '🍌', '🥕', '🍯'];
+  function foodOf(lid, pi) { return FOODS[(parseInt(lid, 10) * 3 + pi) % FOODS.length]; }
+  function petByName(n) { return PETS.filter(function (p) { return p.name === n; })[0]; }
+  function hatchedPet(lid, pi) {
+    var r = S.hatched[lid] && S.hatched[lid][pi];
+    if (!r) return null;
+    if (typeof r === 'object' && petByName(r.p)) return { pet: petByName(r.p), gold: !!r.g };
+    return { pet: petOf(lid, pi), gold: false };   // 舊紀錄
+  }
+  function collected() {
+    var c = {};
+    Object.keys(S.hatched).forEach(function (l) {
+      Object.keys(S.hatched[l]).forEach(function (pi) {
+        var hp = hatchedPet(l, parseInt(pi, 10));
+        if (!hp) return;
+        var k = c[hp.pet.name] = c[hp.pet.name] || { n: 0, g: 0 };
+        k.n++; if (hp.gold) k.g++;
+      });
+    });
+    return c;
+  }
+  function choosePet() {
+    var c = collected(), left = PETS.filter(function (p) { return !c[p.name]; }), pool = left.length ? left : PETS;
+    return pool[Math.floor(Math.random() * pool.length)];
+  }
+  function petName(hp) { return (hp.gold ? '金色' : '') + hp.pet.name; }
   function bestOf(lid, pi) {
     var b = S.best[lid] = S.best[lid] || {}, lv = b[S.level] = b[S.level] || {};
     return lv[pi] = lv[pi] || {};
@@ -293,7 +320,8 @@
       h('p', {}, '每一個自然段都是一顆神祕寵物蛋。大聲把課文一句一句念出來，就能餵蛋裡的小寵物，讓牠長大、破蛋出生！'),
       h('ul', { class: 'rules' },
         h('li', {}, '🍒 念得很好餵 3 個、很接近餵 2 個、有開口餵 1 個'),
-        h('li', {}, '🥚 每一句都念過、飽食度滿了，蛋就會破掉'),
+        h('li', {}, '🥚 每一句都念過、飽食度滿了，蛋就會破掉；先孵出還沒收集過的寶寶'),
+        h('li', {}, '✨ 每一句都念到 100 分，有機會孵出金色寶寶'),
         h('li', {}, '💛 念不好沒關係，按「🔊 聽示範」再念一次'))));
     var grid = h('div', { class: 'lessons' });
     lessonIds().forEach(function (lid) {
@@ -305,7 +333,7 @@
         h('div', { class: 'l-title' }, lessonTitle(lid)),
         h('div', { class: 'l-eggs' }, eggs.map(function (e, pi) {
           var st = eggState(lid, pi, e);
-          return st.hatched ? h('span', { class: 'mini' }, petOf(lid, pi).emoji) : h('span', { class: 'mini egg-dot', style: '--egg:' + petOf(lid, pi).egg[0] + ';--spot:' + petOf(lid, pi).egg[1] });
+          return st.hatched ? h('span', { class: 'mini' + (hatchedPet(lid, pi).gold ? ' gold-mini' : '') }, hatchedPet(lid, pi).pet.emoji) : h('span', { class: 'mini egg-dot', style: '--egg:' + petOf(lid, pi).egg[0] + ';--spot:' + petOf(lid, pi).egg[1] });
         })),
         h('div', { class: 'l-count muted' }, '孵出 ' + n + '／' + eggs.length)));
     });
@@ -329,12 +357,12 @@
     app.innerHTML = '';
     var grid = h('div', { class: 'nest' });
     eggs.forEach(function (e, pi) {
-      var pet = petOf(lid, pi), st = eggState(lid, pi, e);
+      var pet = petOf(lid, pi), st = eggState(lid, pi, e), hp = hatchedPet(lid, pi);
       add(grid, h('a', { class: 'nest-item card' + (st.hatched ? ' done' : ''), href: '#/l/' + lid + '/' + pi },
-        st.hatched ? petImg(pet, 'pet-s') : eggEl(pet, stageOf(st), 's'),
+        hp ? petImg(hp.pet, 'pet-s' + (hp.gold ? ' gold' : '')) : eggEl(pet, stageOf(st), 's'),
         h('div', { class: 'n-label' }, '第 ' + (pi + 1) + ' 顆'),
         e.h ? h('div', { class: 'n-sec' }, e.h.split('　')[0]) : null,
-        h('div', { class: 'muted' }, st.hatched ? pet.name : (st.read ? '念了 ' + st.read + '／' + e.chunks.length + ' 句' : e.chunks.length + ' 句'))));
+        h('div', { class: 'muted' }, hp ? petName(hp) : (st.read ? '念了 ' + st.read + '／' + e.chunks.length + ' 句' : e.chunks.length + ' 句'))));
     });
     add(app, h('div', { class: 'crumbs' }, h('a', { href: '#/' }, '← 選課')),
       h('h2', { class: 'center' }, '第 ' + parseInt(lid, 10) + ' 課　' + lessonTitle(lid)),
@@ -347,7 +375,7 @@
   function renderEgg(lid, pi) {
     var eggs = eggsOf(lid), egg = eggs[pi];
     if (!egg) { location.hash = '#/l/' + lid; return; }
-    var pet = petOf(lid, pi), best = bestOf(lid, pi);
+    var pet = petOf(lid, pi), food = foodOf(lid, pi), best = bestOf(lid, pi);
     var SR = window.SpeechRecognition || window.webkitSpeechRecognition;
     var at = 0;
     for (var q = 0; q < egg.chunks.length; q++) if (best[q] == null) { at = q; break; }
@@ -355,14 +383,15 @@
     var stageBox = h('div', { class: 'stage' }), bar = h('div', { class: 'bar' }), dots = h('div', { class: 'dots' });
     var body = h('div', { class: 'card read' });
     add(app, h('div', { class: 'crumbs' }, h('a', { href: '#/l/' + lid }, '← 第 ' + parseInt(lid, 10) + ' 課的蛋')),
-      h('div', { class: 'egg-head' }, h('b', {}, '第 ' + (pi + 1) + ' 顆蛋' + (egg.h ? '（' + egg.h.split('　')[0] + '）' : '')), h('span', { class: 'muted' }, '　餵 ' + pet.food + ' 就會長大')),
+      h('div', { class: 'egg-head' }, h('b', {}, '第 ' + (pi + 1) + ' 顆蛋' + (egg.h ? '（' + egg.h.split('　')[0] + '）' : '')), h('span', { class: 'muted' }, '　餵 ' + food + ' 就會長大')),
       stageBox, bar, dots, body);
 
     function drawStage(fed) {
       var st = eggState(lid, pi, egg);
       stageBox.innerHTML = '';
-      if (st.hatched) {
-        add(stageBox, h('div', { class: 'hatched' }, petImg(pet, 'pet-l pop'), h('div', { class: 'bubble' }, '我是' + pet.name + '！' + pet.say)));
+      var hp = hatchedPet(lid, pi);
+      if (hp) {
+        add(stageBox, h('div', { class: 'hatched' }, petImg(hp.pet, 'pet-l pop' + (hp.gold ? ' gold' : '')), h('div', { class: 'bubble' }, '我是' + petName(hp) + '！' + hp.pet.say)));
       } else {
         var e = eggEl(pet, stageOf(st), 'l');
         if (fed) e.classList.add('wobble');
@@ -370,7 +399,7 @@
       }
       bar.innerHTML = '';
       add(bar, h('span', { class: 'bar-label' }, '飽食度'));
-      for (var i = 0; i < st.need; i++) add(bar, h('span', { class: 'slot' + (i < st.food ? ' full' : '') }, i < st.food ? pet.food : ''));
+      for (var i = 0; i < st.need; i++) add(bar, h('span', { class: 'slot' + (i < st.food ? ' full' : '') }, i < st.food ? food : ''));
       dots.innerHTML = '';
       egg.chunks.forEach(function (c, ci) {
         var p = best[ci];
@@ -384,7 +413,7 @@
       // 食物從按鈕飛到蛋
       var target = stageBox.getBoundingClientRect();
       for (var i = 0; i < n; i++) {
-        var f = h('span', { class: 'fly', style: 'left:' + (x0 + i * 26) + 'px;top:' + y0 + 'px' }, pet.food);
+        var f = h('span', { class: 'fly', style: 'left:' + (x0 + i * 26) + 'px;top:' + y0 + 'px' }, food);
         document.body.appendChild(f);
         (function (f, i) {
           setTimeout(function () {
@@ -397,7 +426,12 @@
       }
     }
     function hatchNow() {
-      S.hatched[lid] = S.hatched[lid] || {}; S.hatched[lid][pi] = Date.now(); save();
+      // 每一句都念到 100 分：一半機會孵出金色寶寶
+      var perfect = egg.chunks.every(function (c, ci) { return best[ci] === 100; });
+      var got = { p: choosePet().name, g: perfect && Math.random() < 0.5 ? 1 : 0, t: Date.now() };
+      var isNew = !collected()[got.p];
+      S.hatched[lid] = S.hatched[lid] || {}; S.hatched[lid][pi] = got; save();
+      var hp = hatchedPet(lid, pi);
       var e = stageBox.querySelector('.egg');
       if (e) e.classList.add('shake');
       setTimeout(function () {
@@ -405,9 +439,10 @@
         drawStage();
         body.innerHTML = '';
         var next = pi + 1 < eggs.length ? h('a', { class: 'btn btn-main', href: '#/l/' + lid + '/' + (pi + 1) }, '下一顆蛋 →') : h('a', { class: 'btn btn-main', href: '#/l/' + lid }, '這課的蛋都看看 →');
-        add(body, h('div', { class: 'center' }, h('h2', {}, '🎉 破蛋了！孵出「' + pet.name + '」'), h('p', { class: 'muted' }, '已經收進圖鑑。'),
+        add(body, h('div', { class: 'center' }, h('h2', {}, (hp.gold ? '✨ ' : '🎉 ') + '破蛋了！孵出「' + petName(hp) + '」'),
+          h('p', { class: 'muted' }, (isNew ? '新朋友！已經收進圖鑑。' : '已經收進圖鑑。') + (hp.gold ? '每一句都念到 100 分，才有機會孵出金色寶寶喔！' : (perfect ? '' : '每一句都念到 100 分，就有機會孵出金色寶寶！'))),
           h('div', { class: 'row' }, next, h('a', { class: 'btn', href: '#/dex' }, '🐾 看圖鑑'))));
-        speak('破蛋了！孵出' + pet.name + '。' + pet.say);
+        speak('破蛋了！孵出' + petName(hp) + '。' + hp.pet.say);
       }, 1400);
     }
     function show() {
@@ -440,7 +475,7 @@
         var r = mic.getBoundingClientRect();
         result.innerHTML = '';
         var words = n === 3 ? '念得好棒！' : n === 2 ? '很接近了！' : '有開口就很棒！';
-        add(result, h('div', { class: 'res' }, h('b', {}, pct + ' 分'), h('span', {}, words + ' 餵 ' + n + ' 個' + pet.food),
+        add(result, h('div', { class: 'res' }, h('b', {}, pct + ' 分'), h('span', {}, words + ' 餵 ' + n + ' 個' + food),
           res.some(function (x) { return !x; }) ? h('span', { class: 'muted' }, '紅色的字沒聽到。') : null,
           res.some(function (x) { return x === 'tone'; }) ? h('span', { class: 'muted' }, '橘色的字聲調不對。') : null));
         if (old != null && gain <= 0) add(result, h('div', { class: 'muted small' }, '這句之前念得比較好（' + old + ' 分），飽食度算最好的一次。'));
@@ -486,25 +521,20 @@
   // ── 圖鑑 ────────────────────────────────
   function renderDex() {
     app.innerHTML = '';
-    var got = {};
-    Object.keys(S.hatched).forEach(function (lid) {
-      Object.keys(S.hatched[lid]).forEach(function (pi) {
-        var p = petOf(lid, parseInt(pi, 10));
-        (got[p.name] = got[p.name] || []).push('第' + parseInt(lid, 10) + '課第' + (parseInt(pi, 10) + 1) + '段');
-      });
-    });
-    var kinds = Object.keys(got).length;
+    var got = collected(), kinds = Object.keys(got).length, golds = 0;
+    Object.keys(got).forEach(function (k) { if (got[k].g) golds++; });
     var grid = h('div', { class: 'dex' });
     PETS.forEach(function (p) {
       var have = got[p.name];
       add(grid, h('div', { class: 'dex-item card' + (have ? '' : ' locked') },
-        have ? petImg(p, 'pet-m') : eggEl(p, 0, 's'),
-        h('b', {}, have ? p.name : '？？？'),
-        h('div', { class: 'muted small' }, have ? '孵出 ' + have.length + ' 隻' : '還沒孵出來')));
+        have ? petImg(p, 'pet-m' + (have.g ? ' gold' : '')) : eggEl(p, 0, 's'),
+        h('b', {}, have ? (have.g ? '✨' : '') + p.name : '？？？'),
+        h('div', { class: 'muted small' }, have ? '孵出 ' + have.n + ' 隻' + (have.g ? '（金色 ' + have.g + '）' : '') : '還沒孵出來')));
     });
     add(app, h('div', { class: 'crumbs' }, h('a', { href: '#/' }, '← 選課')),
       h('h2', { class: 'center' }, '🐾 寵物圖鑑'),
-      h('p', { class: 'muted center' }, '收集了 ' + kinds + '／' + PETS.length + ' 種台灣動物寶寶'), grid);
+      h('p', { class: 'muted center' }, '收集了 ' + kinds + '／' + PETS.length + ' 種台灣動物寶寶' + (golds ? '・金色 ' + golds + ' 種' : '')),
+      h('p', { class: 'muted center small' }, '✨ 一顆蛋的每一句都念到 100 分，就有機會孵出金色寶寶。'), grid);
   }
 
   // ── 路由 ────────────────────────────────

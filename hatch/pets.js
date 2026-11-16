@@ -12,5 +12,17 @@ window.PETS = [
   { name: '黑面琵鷺', emoji: '🦢', egg: ['#F4F4F2', '#555555'], food: '🦐', say: '我的嘴巴像一支湯匙！' },
   { name: '領角鴞', emoji: '🦉', egg: ['#E9E1D3', '#7A6550'], food: '🐛', say: '我晚上眼睛最亮了！' },
   { name: '白海豚', emoji: '🐬', egg: ['#FBE3E6', '#D9798A'], food: '🦑', say: '我是粉紅色的海豚喔！' },
-  { name: '櫻花鉤吻鮭', emoji: '🐟', egg: ['#FBE4EC', '#C9578A'], food: '🫐', say: '我住在冷冷的高山溪水裡！' }
+  { name: '櫻花鉤吻鮭', emoji: '🐟', egg: ['#FBE4EC', '#C9578A'], food: '🫐', say: '我住在冷冷的高山溪水裡！' },
+  { name: '山羌', emoji: '🦌', egg: ['#F2DCC6', '#A4532B'], food: '🍃', say: '我叫起來像小狗汪汪叫喔！' },
+  { name: '水獺', emoji: '🦦', egg: ['#E6DCCF', '#6B4F36'], food: '🐟', say: '我最會游泳，還會玩石頭！' },
+  { name: '八色鳥', emoji: '🐦', egg: ['#DDF0DA', '#3F9B5A'], food: '🪱', say: '我身上有好多種顏色！' },
+  { name: '藍腹鷴', emoji: '🐓', egg: ['#DCE3F2', '#2F4F9B'], food: '🌱', say: '我頭上有白色的冠毛！' },
+  { name: '紫斑蝶', emoji: '🦋', egg: ['#EADFF3', '#6B3F9B'], food: '🌸', say: '冬天我們會一起去南部過冬！' },
+  { name: '諸羅樹蛙', emoji: '🐸', egg: ['#E2F3D2', '#5FA33A'], food: '🦟', say: '我的腳趾頭黏黏的，會爬樹！' },
+  { name: '台灣狐蝠', emoji: '🦇', egg: ['#EFE2CC', '#8A6A3A'], food: '🥭', say: '我的臉長得像小狐狸！' },
+  { name: '長鬃山羊', emoji: '🐐', egg: ['#E3DED8', '#4E4238'], food: '🌿', say: '再陡的山壁我都爬得上去！' },
+  { name: '黃喉貂', emoji: '🦡', egg: ['#FBF0C9', '#B8862A'], food: '🍓', say: '我的脖子是黃色的喔！' },
+  { name: '雲豹', emoji: '🐆', egg: ['#EEE6D2', '#6E6450'], food: '🍖', say: '我身上的花紋像一朵一朵雲！' },
+  { name: '山椒魚', emoji: '🦎', egg: ['#E9E4D0', '#8C7A3A'], food: '🐛', say: '我住在高山上冷冷的地方！' },
+  { name: '鯨鯊', emoji: '🦈', egg: ['#DCE6EE', '#4A6A86'], food: '🦐', say: '我是世界上最大的魚，可是很溫柔！' }
 ];

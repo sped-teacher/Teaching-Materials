@@ -93,6 +93,13 @@ h1, h2 { margin: .3em 0; }
 .pet-l { width: 220px; height: 220px; }
 .pet-emoji { font-size: 60px; line-height: 1; }
 .pet-l .pet-emoji { font-size: 130px; }
+/* 金色寶寶：金色濾鏡＋閃光 */
+.pet.gold { position: relative; border-radius: 50%; background: radial-gradient(circle, rgba(255,215,90,.45) 0, rgba(255,215,90,0) 70%); }
+.pet.gold img { filter: sepia(.75) saturate(2.4) hue-rotate(-12deg) brightness(1.08); }
+.pet.gold::after { content: '✨'; position: absolute; top: 2%; right: 4%; font-size: 1.6em; animation: twinkle 1.4s ease-in-out infinite; }
+.pet-l.gold::after { font-size: 2.6em; }
+@keyframes twinkle { 50% { transform: scale(.6) rotate(20deg); opacity: .5; } }
+.gold-mini { filter: drop-shadow(0 0 3px #F2B92B); }
 .pop { animation: pop .6s cubic-bezier(.3,1.6,.6,1); }
 @keyframes pop { 0% { transform: scale(.2); opacity: 0; } 100% { transform: scale(1); opacity: 1; } }
 
