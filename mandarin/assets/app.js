@@ -2340,7 +2340,16 @@
         fold('tests', '📝 單課小考成績', true, testList()),
         fold('records', '📊 學習紀錄（每課可展開，含朗讀挑戰）', false, recordsTable(fold)));
       var reset = h('button', { class: 'btn btn-ghost danger', type: 'button', style: 'margin-top:16px' }, '清除這台 iPad 的學習紀錄');
-      reset.addEventListener('click', function () { if (window.confirm('確定要清除全部學習紀錄嗎？（含錯題、小考成績、造的句子）這個動作無法復原。')) { state.progress = {}; state.mistakes = []; save(); draw(); } });
+      reset.addEventListener('click', function () {
+        if (!window.confirm('確定要清除全部學習紀錄嗎？（含錯題、小考成績、造的句子、念課文孵寵物的蛋和圖鑑）這個動作無法復原。')) return;
+        state.progress = {}; state.mistakes = []; save();
+        // 念課文孵寵物（hatch/）的紀錄也一起清掉，只留它的等級、注音設定
+        try {
+          var hk = 'tm-hatch-v1', hs = JSON.parse(localStorage.getItem(hk) || 'null');
+          if (hs) localStorage.setItem(hk, JSON.stringify({ level: hs.level, zy: hs.zy, best: {}, hatched: {} }));
+        } catch (e) { }
+        draw();
+      });
       append(body, reset);
     }
     draw();
