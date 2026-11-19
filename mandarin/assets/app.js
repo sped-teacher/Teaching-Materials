@@ -1977,12 +1977,25 @@
         h('a', { class: 'btn btn-ghost', href: 'https://sites.google.com/view/samesentence/%E5%BA%B7%E8%BB%92', target: '_blank', rel: 'noopener' }, '✍️ 照樣造句線上練習（康軒 5A）')));
   }
 
-  function renderModule(lid, mid, uIdx) {
+  function renderModule(lid, mid, uIdx, stepName) {
     var L = LESSONS[lid], M = MODULES[mid], c = cfg();
     var units = M.units(L, c), prog = modProg(lid, mid);
     var ui = (uIdx != null && uIdx >= 0 && uIdx < units.length) ? uIdx : units.findIndex(function (u) { return !prog[u.key]; });
     if (ui < 0) ui = 0;
     var unit = units[ui], steps = M.steps(L, unit, c);
+    var stepKey = function (s) { return s.title.split('：')[0]; };
+    // 短語、句型：下拉選單直接換到別的短語／句型（老師 2026-11-19：學生造出來就直接換，不用每次走完全部引導）
+    //   換過去會停在同一個步驟（例如都在「自己造句」），那一組沒有這一步就從頭開始
+    var unitBox = null;
+    if (units.length > 1 && (mid === 'phrases' || mid === 'sentences')) {
+      unitBox = h('select', { class: 'unit-pick', 'aria-label': '換一個' + (mid === 'phrases' ? '短語' : '句型') });
+      units.forEach(function (u, k) {
+        var o = h('option', { value: k }, (prog[u.key] ? '✓ ' : '') + (k + 1) + '. ' + (u.label || '第 ' + (k + 1) + ' 組'));
+        if (k === ui) o.selected = true;
+        append(unitBox, o);
+      });
+      unitBox.addEventListener('change', function () { renderModule(lid, mid, parseInt(unitBox.value, 10), stepKey(steps[si])); });
+    }
     var main = shell([{ text: '首頁', href: '#/' }, { text: '第 ' + L.no + ' 課', href: '#/lesson/' + lid }, { text: M.name }], 'var(--c-' + mid + ')');
 
     var nowTxt = h('div', { class: 'txt' }), stepEl = h('span', { class: 'step' }), bar = h('i', { style: 'width:0' });
@@ -2006,12 +2019,16 @@
       h('div', { class: 'task-title' }, h('span', { class: 'icon' }, M.icon), h('h2', { style: 'flex:1' }, M.name),
         // 認識生字：這一組生字直接連到雄筆順（筆順、部件上色、部件拼圖），開新視窗
         mid === 'chars' ? h('a', { class: 'btn btn-ghost stroke-link', href: strokeLink(L, unit.items), target: '_blank', rel: 'noopener' }, '✍️ 筆順・部件') : null,
-        units.length > 1 ? h('span', { class: 'unit-pill' }, (unit.label || '第 ' + (ui + 1) + '／' + units.length + ' 組')) : (unit.label ? h('span', { class: 'unit-pill' }, unit.label) : null)),
+        unitBox ? unitBox : units.length > 1 ? h('span', { class: 'unit-pill' }, (unit.label || '第 ' + (ui + 1) + '／' + units.length + ' 組')) : (unit.label ? h('span', { class: 'unit-pill' }, unit.label) : null)),
       tabs,
       h('div', { class: 'progress' }, bar),
       h('div', { class: 'now' }, h('div', { style: 'flex:1' }, h('div', { class: 'lbl' }, '☑ 現在要做什麼　', stepEl), nowTxt), nowSay)), stage);
 
     var stats = { total: 0, indep: 0 }, si = 0;
+    if (stepName) {
+      si = Math.max(0, steps.findIndex(function (s) { return stepKey(s) === stepName; }));
+      for (var k0 = 0; k0 < si; k0++) seen[k0] = true;
+    }
     var api = {
       cfg: c,
       record: function (indep) { stats.total++; if (indep) stats.indep++; },
