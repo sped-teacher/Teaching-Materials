@@ -24,7 +24,7 @@ if mr.FIX_F.exists():
         if isinstance(v, dict):
             FIXES.update(v)
 # 出卷另外校正的讀音（依《國語辭典簡編本》）
-FIXES.update({'為什麼': 'ㄨㄟˋ ㄕㄣˊ ˙ㄇㄜ', '怎樣': 'ㄗㄣˇ ㄧㄤˋ', '怎麼樣': 'ㄗㄣˇ ˙ㄇㄜ ㄧㄤˋ', '亞馬遜': 'ㄧㄚˋ ㄇㄚˇ ㄒㄩㄣˋ', '法國': 'ㄈㄚˇ ㄍㄨㄛˊ'})
+FIXES.update({'為什麼': 'ㄨㄟˋ ㄕㄣˊ ˙ㄇㄜ', '怎樣': 'ㄗㄣˇ ㄧㄤˋ', '怎麼樣': 'ㄗㄣˇ ˙ㄇㄜ ㄧㄤˋ', '亞馬遜': 'ㄧㄚˋ ㄇㄚˇ ㄒㄩㄣˋ', '法國': 'ㄈㄚˇ ㄍㄨㄛˊ', '長得': 'ㄓㄤˇ ˙ㄉㄜ', '播報': 'ㄅㄛˋ ㄅㄠˋ'})
 for w in FIXES:
     mr.jieba.add_word(mr._t2s.convert(w), 99999)
 
@@ -118,9 +118,9 @@ def main():
         L = {'title': E['title']}
         for kind in ('dict', 'look', 'fix', 'idiom'):
             L[kind] = [{'s': s, 'z': zy(plain(kind, s))} for s in B.get(kind, [])]
-        for it in L['dict']:
-            w = re.search(r'〔([^〕]*)〕', it['s']).group(1)
-            it['f'], it['rare'] = freq_of(w)
+        for it in L['dict']:   # 一句可以考好幾個（整個語詞或單一生字）：有一個不常用就算不常用
+            fs = [freq_of(w) for w in re.findall(r'〔([^〕]*)〕', it['s'])]
+            it['f'], it['rare'] = min(f for f, r in fs), any(r for f, r in fs)
         L['idiom'] = [dict(it, w=re.search(r'〔([^〕]*)〕', it['s']).group(1)) for it in L['idiom']]
         for it in L['idiom']:
             it['wz'] = zy(it['w'])
@@ -133,6 +133,11 @@ def main():
                         'bz': {x: zy(x) for b in p['bank'] for x in b}} for p in E['phrase']]
         L['imitate'] = [{'s': p, 'z': zy(p)} for p in E['imitate']]
         out[lid] = L
+        for it in L['dict']:   # 答案的字不能印在同一句別的地方（例：小心〔翼〕翼）
+            vis = re.sub(r'〔[^〕]*〕', '', it['s'])
+            for a in re.findall(r'〔([^〕]*)〕', it['s']):
+                if any(ch in vis for ch in a):
+                    print('！', lid, '答案在同一句看得到：', it['s'])
         bad = [c for c in L['radical'] if not c['r']]
         if bad:
             print('！', lid, '部首題的字不是本課生字：', ''.join(c['c'] for c in bad))

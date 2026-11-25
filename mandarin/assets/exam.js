@@ -132,6 +132,13 @@
         var src = BANK[l][kind];
         list = list.filter(function (r) { return !src[r.i].rare; }).concat(list.filter(function (r) { return src[r.i].rare; }));
       }
+      if (kind === 'dict') {   // 第一大題考法：語詞、生字（一句兩個）、都有（交錯排）
+        var isChar = function (r) { return /〔.〕/.test(BANK[l].dict[r.i].s); };
+        var ch = list.filter(isChar), wd = list.filter(function (r) { return !isChar(r); }), mode = st.dictMode || 'mix';
+        if (mode === 'char') list = ch.concat(wd);
+        else if (mode === 'word') list = wd.concat(ch);
+        else { list = []; while (ch.length || wd.length) { if (ch.length) list.push(ch.shift()); if (wd.length) list.push(wd.shift()); } }
+      }
       by[l] = list;
     });
     return by;
@@ -210,7 +217,7 @@
   }
   function fits(it, C) {
     var vis = visibleOf(it), mine = answersOfItem(it);
-    if (C.A.some(function (a) { return vis.indexOf(a) >= 0 && mine.indexOf(a) < 0; })) return false;
+    if (C.A.some(function (a) { return vis.indexOf(a) >= 0; })) return false;   // 別題的答案不能印在這一題（同一個字也不能兩題都考）
     if (mine.some(function (a) { return C.V.some(function (v) { return v.indexOf(a) >= 0; }); })) return false;
     return true;
   }
@@ -320,13 +327,16 @@
     for (var t = 0; t < 80 && bestN > 0 && (t < 3 || Date.now() - t0 < 700); t++) {
       st.items = {}; st.idiomBank = [];
       var C = { A: [], V: [] };
-      PICK_ORDER.forEach(function (k) {
+      var order = (st.dictMode || 'mix') === 'word' ? PICK_ORDER : ['dict'].concat(PICK_ORDER.filter(function (k) { return k !== 'dict'; }));   // 考單一生字：先挑第一大題，別的大題再避開這些字
+      order.forEach(function (k) {
         var on = st.secs[k].on;
         st.items[k] = shuffle(pick(k, st.secs[k].n, on ? C : { A: [], V: [] }));
       });
       makeIdiomBank();
       repair();
-      var n = leaks().length * 100 + imbalance();   // 先求答案不洩漏，再求各課題數平均
+      var nChar = (st.items.dict || []).filter(function (it) { return /〔.〕/.test(it.s); }).length;
+      var want = { char: (st.items.dict || []).length, mix: Math.floor((st.items.dict || []).length / 2), word: 0 }[st.dictMode || 'mix'];
+      var n = leaks().length * 100 + imbalance() * 3 + Math.max(0, want - nChar);   // 先求答案不洩漏，再求各課題數平均，再求考法符合
       if (n < bestN) { bestN = n; best = { items: st.items, bank: st.idiomBank }; }
     }
     st.items = best.items; st.idiomBank = best.bank;
@@ -368,7 +378,7 @@
   Para.prototype.paren = function (n) { this.cells.push({ k: 'c', c: '（' }); this.sp(n); this.cells.push({ k: 'c', c: '）' }); return this; };
   // 一組不要拆開的格子（選項、詞庫的詞）
   Para.prototype.group = function (fn) { var a = this.cells.length; fn(this); this.gs.push([a, this.cells.length]); return this; };
-  function adv(c) { return c.k === 'box' ? 1.9 : c.k === 'sq' ? 1.5 : c.big ? 1.15 : 1; }
+  function adv(c) { return c.k === 'box' ? 2.08 : c.k === 'sq' ? 1.5 : c.big ? 1.15 : 1; }
 
   // 段落 → 一欄一欄（L：一欄可以放幾個 em）
   function breakPara(p, L) {
@@ -423,7 +433,7 @@
     if (c.r != null) attrs['data-r'] = c.r;
     if (c.k === 'box') {    // 只有注音的格子：字型畫出字＋注音，再用白色方格蓋住國字
       var gb = c.z && ivs(c.c, c.z);
-      if (gb) return h('div', attrs, h('span', { class: 'g bxg' }, gb, h('span', { class: 'cover' })));
+      if (gb) return h('div', attrs, h('span', { class: 'g bxg' }, h('span', { class: 'z' }, gb), h('span', { class: 'cover' })));
       return h('div', attrs, h('span', { class: 'g bxg nz' }, h('span', { class: 'cover' })), c.z ? zyEl(c.z) : null);
     }
     if (c.z) {
@@ -773,6 +783,10 @@
             h('td', {}, h('input', { type: 'number', min: 1, max: 20, value: c.pts, onchange: function (e) { c.pts = Math.max(1, +e.target.value || 1); save(); render(); } })),
             h('td', {}, h('input', { type: 'checkbox', checked: c.zy, title: s.k === 'dict' ? '句子的注音（格子的注音一定會印）' : '', onchange: function () { c.zy = !c.zy; save(); render(); } })));
         })),
+      h('div', { class: 'field' }, '第一大題考', ['mix', 'word', 'char'].map(function (m) {
+        var lab = { mix: '都有', word: '語詞', char: '生字（一句兩個）' }[m];
+        return h('label', { class: 'chip' + ((st.dictMode || 'mix') === m ? ' on' : ''), style: 'font-size:14px;padding:2px 8px' }, h('input', { type: 'radio', name: 'dm', checked: (st.dictMode || 'mix') === m, onchange: function () { st.dictMode = m; var used = {}; st.items.dict = []; st.items.dict = shuffle(pick('dict', st.secs.dict.n, ctx(null), used)); balanceOrders(); save(); render(); } }), lab);
+      })),
       h('div', { class: 'total' + (total === 100 ? '' : ' bad') }, '總分：' + total + ' 分' + (total === 100 ? '' : '（不是 100 分）')),
       (function () { var L = leaks(); return L.length ? h('div', { class: 'tip', style: 'color:#B3261E' }, '⚠️ 答案在別題出現：' + L.map(function (x) { return '「' + x.w + '」（' + SEC[x.it.kind].name + '）'; }).join('、') + '。可以按「編輯題目」→「換一題」。') : null; })(),
       h('label', { class: 'field' }, h('input', { type: 'checkbox', checked: st.headZy, onchange: function () { st.headZy = !st.headZy; save(); render(); } }), '大題標題也標注音'),
