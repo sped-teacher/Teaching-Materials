@@ -273,9 +273,6 @@
   // 段落 = 一串格子；格子：{k:'c', c, z, r(可點的字), b(粗體), big, sh(灰底)}、{k:'box'}、{k:'sq'}、{k:'num'}、{k:'sp'}
   var REFS = [];
   var OPEN = '（「『〔【《〈︵﹁﹃', CLOSE = '）」』〕】》〉，。、；：？！︶﹂﹄';
-  var VERT = { '（': '︵', '）': '︶', '「': '﹁', '」': '﹂', '『': '﹃', '』': '﹄' };
-  var ROT = '～…─—〔〕【】《》〈〉：；';         // 直書時轉 90 度
-  var SHIFT = '，。、．';                          // 直書時放在右上角
   function Para(first, rest) { this.cells = []; this.first = first || 0; this.rest = rest == null ? first || 0 : rest; this.gs = []; }
   Para.prototype.push = function (c) { this.cells.push(c); return this; };
   // 文字：showZy 時有注音；setZ(i, z) 讓老師點字改讀音
@@ -289,7 +286,7 @@
     return this;
   };
   Para.prototype.raw = function (text, st) { return this.t(text, null, false, null, st); };
-  Para.prototype.box = function (c, z, set) { this.cells.push({ k: 'box', z: z, r: REFS.push({ c: c, z: z, set: set }) - 1 }); return this; };
+  Para.prototype.box = function (c, z, set) { this.cells.push({ k: 'box', c: c, z: z, r: REFS.push({ c: c, z: z, set: set }) - 1 }); return this; };
   Para.prototype.sq = function (n) { for (var i = 0; i < n; i++) this.cells.push({ k: 'sq' }); return this; };
   Para.prototype.num = function (n) { this.cells.push({ k: 'num', t: String(n) + '.' }); return this; };
   Para.prototype.sp = function (n, st) { for (var i = 0; i < (n || 1); i++) this.cells.push({ k: 'sp', sh: st && st.sh }); return this; };
@@ -321,9 +318,16 @@
     cols.forEach(function (col) { col.wide = col.cells.some(function (c) { return c.z; }); col.box = col.cells.some(function (c) { return c.k === 'box'; }); col.sq = col.cells.some(function (c) { return c.k === 'sq'; }); });
     return cols;
   }
-  var PITCH = 1.42, PITCH_Z = 1.9;
-  function colW(col) { return col.line ? 2.1 : col.box ? 3.05 : col.sq ? Math.max(1.7, col.wide ? PITCH_Z : PITCH) : col.wide ? PITCH_Z : PITCH; }
+  var PITCH = 1.3, PITCH_Z = 1.72;
+  function colW(col) { return col.line ? 2.1 : col.box ? 3.0 : col.sq ? Math.max(1.6, col.wide ? PITCH_Z : PITCH) : col.wide ? PITCH_Z : PITCH; }
 
+  // 注音字型（TMBpmfKai＝字嗨注音標楷）：字（＋讀音選擇符 IVS）就會畫出那個讀音的注音；ss10＝不要注音
+  // 讀音不在字型的讀音表裡（老師自己打的）才用手畫的注音
+  function ivs(ch, z) {
+    var list = ZY[ch] || [], k = list.indexOf(z);
+    if (k < 0) return null;
+    return k === 0 ? ch : ch + String.fromCodePoint(0xE01E0 + k);   // 第一個讀音不用選擇符；U+E01E0 是「不標注音」，U+E01E1 起是第二、三…個讀音
+  }
   function zyEl(syl) {
     var el = h('span', { class: 'zy' }), light = syl.indexOf('˙') >= 0, tone = '';
     if (light) syl = syl.replace('˙', '');
@@ -342,13 +346,18 @@
     var poly = c.r != null && REFS[c.r] && (ZY[REFS[c.r].c] || []).length > 1;
     var attrs = { class: cls + (c.k === 'box' ? ' boxc' : '') + (c.r != null ? ' ch' : '') + (poly ? ' poly' : '') };
     if (c.r != null) attrs['data-r'] = c.r;
-    var g;
-    if (c.k === 'box') g = h('span', { class: 'g bx' });
-    else {
-      var ch = VERT[c.c] || c.c;
-      g = h('span', { class: 'g' + (ROT.indexOf(c.c) >= 0 ? ' rot' : '') + (SHIFT.indexOf(c.c) >= 0 ? ' shift' : '') }, ch);
+    if (c.k === 'box') {    // 只有注音的格子：字型畫出字＋注音，再用白色方格蓋住國字
+      var gb = c.z && ivs(c.c, c.z);
+      if (gb) return h('div', attrs, h('span', { class: 'g bxg' }, gb, h('span', { class: 'cover' })));
+      return h('div', attrs, h('span', { class: 'g bxg nz' }, h('span', { class: 'cover' })), c.z ? zyEl(c.z) : null);
     }
-    return h('div', attrs, g, c.z ? zyEl(c.z) : null);
+    if (c.z) {
+      var gz = ivs(c.c, c.z);
+      if (gz) { attrs.class += ' wz'; return h('div', attrs, h('span', { class: 'g' }, gz)); }
+      return h('div', attrs, h('span', { class: 'g plain' }, c.c), zyEl(c.z));
+    }
+    var punct = !HAN.test(c.c);
+    return h('div', attrs, h('span', { class: 'g ' + (punct ? 'pv' : 'plain') }, c.c));
   }
   function colEl(col) {
     var el = h('div', { class: 'col' + (col.line ? ' wl' : '') + (col.box ? ' bxcol' : '') + (col.sq ? ' sqcol' : ''), style: 'width:' + colW(col) + 'em;padding-top:' + (col.start || 0) + 'em' });
@@ -697,9 +706,10 @@
       h('div', { class: 'btns' },
         h('button', { class: 'btn', type: 'button', onclick: function () { if (confirm('重新出一份題目？（改過的題目會不見）')) { generate(); render(); } } }, '🔀 換一份題目'),
         h('button', { class: 'btn' + (editing ? ' on' : ''), type: 'button', onclick: function () { editing = !editing; render(); } }, editing ? '✏️ 編輯中（再按一次結束）' : '✏️ 編輯題目、改破音字'),
-        h('button', { class: 'btn main', type: 'button', onclick: function () { editing = false; render(); setTimeout(function () { window.print(); }, 50); } }, '🖨️ 列印')),
+        h('button', { class: 'btn main', type: 'button', onclick: function () { editing = false; render(); var go = function () { setTimeout(function () { window.print(); }, 80); }; if (document.fonts && document.fonts.ready) document.fonts.ready.then(go); else go(); } }, '🖨️ 列印')),
       h('p', { class: 'tip' }, editing ? '編輯中：把滑鼠移到題目上，可以「改題目」「換一題」「刪除」；點任何一個字可以改它的注音（藍色注音是破音字）。' : '列印時紙張選「' + st.paper + '」、方向「橫向」，邊界選「無」，縮放 100%。'),
       h('p', { class: 'tip' }, '題目和讀音的修改會自動記在這台電腦。'),
+      h('p', { class: 'tip', style: 'font-size:12px' }, '注音字型：字嗨注音標楷（But Ko／ButTaiwan bpmfvs，漢字 CC-BY 4.0，含全字庫正楷體；其他 OFL 1.1），本站改名 TMBpmfKai 使用。'),
       h('button', { class: 'btn', type: 'button', style: 'margin-top:10px;width:100%;font-size:14px', onclick: function () { if (confirm('鎖上題庫？下次要再輸入出卷密碼。')) { try { localStorage.removeItem(KEY_STORE); } catch (e) { } location.reload(); } } }, '🔒 鎖上題庫')
     ]);
   }

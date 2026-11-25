@@ -24,7 +24,7 @@ if mr.FIX_F.exists():
         if isinstance(v, dict):
             FIXES.update(v)
 # 出卷另外校正的讀音（依《國語辭典簡編本》）
-FIXES.update({'為什麼': 'ㄨㄟˋ ㄕㄣˊ ˙ㄇㄜ'})
+FIXES.update({'為什麼': 'ㄨㄟˋ ㄕㄣˊ ˙ㄇㄜ', '怎樣': 'ㄗㄣˇ ㄧㄤˋ', '怎麼樣': 'ㄗㄣˇ ˙ㄇㄜ ㄧㄤˋ'})
 for w in FIXES:
     mr.jieba.add_word(mr._t2s.convert(w), 99999)
 
@@ -66,19 +66,14 @@ console.log(JSON.stringify(out))"""
 
 
 def zy_table():
+    """讀音表照 bpmfvs 原本的順序（注音字型的 IVS：第 n 個讀音 = U+E01E0+n）。"""
     one, poly = {}, {}
     for line in (mr.TXT / 'phonic_table_Z.txt').read_text(encoding='utf-8-sig').splitlines():
-        cols = line.split('\t')
+        cols = line.split('	')
         if len(cols) < 4 or not re.search('[ABC]', cols[2]):
             continue
-        rs = [r for r in cols[3:] if r]
-        rs = list(dict.fromkeys('˙' + r.replace('˙', '') if '˙' in r else r for r in rs))
+        rs = ['˙' + r.replace('˙', '') if '˙' in r else r for r in cols[3:] if r]
         c = cols[0]
-        if c in mr.PARTICLE:                       # 的、了、著……單獨出現多半念輕聲
-            p = mr.PARTICLE[c]
-            rs = [p] + [r for r in rs if r != p]
-        if mr.CHAR_ONLY.get(c):
-            rs = [mr.CHAR_ONLY[c]]
         one[rs[0]] = one.get(rs[0], '') + c
         if len(rs) > 1:
             poly[c] = ' '.join(rs)

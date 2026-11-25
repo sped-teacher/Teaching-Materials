@@ -2,6 +2,7 @@
 :root {
   --ink: #2A2825; --muted: #6E675E; --line: #DDD3C2; --bg: #F6F1E7; --card: #FFFDF8; --accent: #C0573E;
   --kai: 'DFKai-SB', 'BiauKai', '標楷體', 'Kaiti TC', 'TW-Kai', 'KaiTi', serif;
+  --bpmf: 'TMBpmfKai', 'DFKai-SB', 'BiauKai', 'Kaiti TC', serif;
 }
 * { box-sizing: border-box; }
 body { margin: 0; background: var(--bg); color: var(--ink); font: 16px/1.6 'Noto Sans TC', system-ui, sans-serif; }
@@ -50,19 +51,22 @@ a { color: var(--accent); }
 .blk { position: relative; display: flex; flex-direction: row-reverse; margin-left: .3em; }
 .col { flex: none; display: flex; flex-direction: column; align-items: flex-start; }
 .col.wl { border-left: 1px solid #000; margin-left: .25em; width: 1.85em !important; }
-.cell { position: relative; width: 1em; height: 1em; line-height: 1em; flex: none; }
-.cell.big { height: 1.15em; font-size: 1em; }
+.cell { position: relative; width: 1em; height: 1em; line-height: 1; flex: none; font-family: var(--bpmf); }
+.cell.wz { width: 1.5em; }
+.cell.big { height: 1.15em; }
 .cell.big .g { font-size: 1.12em; }
 .cell.b .g { font-weight: 700; }
 .cell.sh { background: #E9E9E9; }
-.cell .g { display: block; width: 1em; height: 1em; text-align: center; }
-.cell .g.rot { transform: rotate(90deg); }
-.cell .g.shift { transform: translate(.55em, -.5em); }
+.cell .g { display: block; height: 1em; line-height: 1; white-space: nowrap; }
+.cell .g.plain { font-feature-settings: 'ss10' 1; }       /* 字型的 ss10：只有國字、沒有注音 */
+.cell .g.pv { font-feature-settings: 'vert' 1; text-align: center; width: 1em; }   /* 直書標點 */
 .cell.num { font-size: .78em; width: 1.28em; text-align: center; letter-spacing: -.05em; font-family: 'Times New Roman', serif; }
-/* 看注音寫國字的格子：比內文大很多（像 BopoDoc 考卷），注音也跟著放大 */
+/* 看注音寫國字的格子：字型畫出「字＋注音」放大，白色方格蓋住國字（比內文大很多，像 BopoDoc 考卷） */
 .boxc { height: 1.9em; width: 1.75em; }
-.boxc .g.bx { width: 1.75em; height: 1.75em; border: 1.2px solid #000; margin-top: .08em; }
-.boxc .zy { font-size: 1.45em; left: 1.26em; top: .25em; }
+.boxc .g.bxg { position: relative; font-size: 1.75em; height: 1em; margin-top: .04em; font-feature-settings: normal; }
+.boxc .cover { position: absolute; left: 0; top: 0; width: 1em; height: 1em; background: #fff; border: 1.2px solid #000; box-sizing: border-box; }
+.boxc .g.nz { width: 1em; }
+.boxc .zy { left: 1.86em; top: .4em; }
 .sqc { height: 1.5em; width: 1.4em; }
 /* 有大格子的那一欄：字和格子的中線對齊 */
 .bxcol .cell:not(.boxc) { margin-left: .375em; }
@@ -80,7 +84,7 @@ a { color: var(--accent); }
 .editing .blk.it:hover { outline: 2px dashed #C0573E; outline-offset: 1px; }
 .editing .ch { cursor: pointer; }
 .editing .ch:hover { background: #FFE9A8; }
-.editing .ch.poly .zy { color: #1A5FB4; }
+.editing .ch.poly .zy, .editing .ch.poly .g { color: #1A5FB4; }
 .tools { position: absolute; top: -4px; right: 0; display: none; writing-mode: horizontal-tb; gap: 3px; z-index: 5; font-family: 'Noto Sans TC', sans-serif; }
 .editing .blk.it:hover .tools { display: flex; }
 .tools button { font-size: 12px; padding: 1px 6px; border-radius: 6px; border: 1px solid #C0573E; background: #fff; cursor: pointer; }
@@ -116,5 +120,5 @@ dialog .row2 { display: flex; gap: 8px; justify-content: flex-end; margin-top: 1
   .sheet:last-child { break-after: auto; page-break-after: auto; }
   .editing .blk.it:hover { outline: none; }
   .editing .ch:hover { background: none; }
-  .editing .ch.poly .zy { color: inherit; }
+  .editing .ch.poly .zy, .editing .ch.poly .g { color: inherit; }
 }
