@@ -730,6 +730,8 @@
   if (/^(localhost|127\.0\.0\.1)$/.test(location.hostname)) window.__exam = { generate: function () { generate(); }, leaks: function () { return leaks(); }, st: function () { return st; } };
   function start() {
     st = load() || defaults();
+    var hl = /[#&]l=([\d,]+)/.exec(location.hash);   // exam.html#l=07,08,09：直接選這幾課出一份
+    if (hl) { st.lessons = hl[1].split(',').map(function (x) { return ('0' + x).slice(-2); }).filter(function (l) { return BANK[l]; }); if (st.lessons.length) generate(); }
     st.lessons = st.lessons.filter(function (l) { return BANK[l]; });
     if (!st.lessons.length) { st.lessons = Object.keys(BANK).sort().slice(0, 3); generate(); }
     app.innerHTML = '';

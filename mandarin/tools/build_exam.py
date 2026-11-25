@@ -24,7 +24,7 @@ if mr.FIX_F.exists():
         if isinstance(v, dict):
             FIXES.update(v)
 # 出卷另外校正的讀音（依《國語辭典簡編本》）
-FIXES.update({'為什麼': 'ㄨㄟˋ ㄕㄣˊ ˙ㄇㄜ', '怎樣': 'ㄗㄣˇ ㄧㄤˋ', '怎麼樣': 'ㄗㄣˇ ˙ㄇㄜ ㄧㄤˋ'})
+FIXES.update({'為什麼': 'ㄨㄟˋ ㄕㄣˊ ˙ㄇㄜ', '怎樣': 'ㄗㄣˇ ㄧㄤˋ', '怎麼樣': 'ㄗㄣˇ ˙ㄇㄜ ㄧㄤˋ', '亞馬遜': 'ㄧㄚˋ ㄇㄚˇ ㄒㄩㄣˋ', '法國': 'ㄈㄚˇ ㄍㄨㄛˊ'})
 for w in FIXES:
     mr.jieba.add_word(mr._t2s.convert(w), 99999)
 
