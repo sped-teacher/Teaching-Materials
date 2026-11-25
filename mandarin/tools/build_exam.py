@@ -80,6 +80,33 @@ def zy_table():
     return one, poly
 
 
+# 高頻字優先（老師：國字考常用、會再用到的字）：常用字表（教育部 A 級）＋新酷音詞頻
+LEVEL_A = set()
+for _line in (mr.TXT / 'phonic_table_Z.txt').read_text(encoding='utf-8-sig').splitlines():
+    _c = _line.split('	')
+    if len(_c) >= 3 and 'A' in _c[2]:
+        LEVEL_A.add(_c[0])
+WORD_FREQ, CHAR_FREQ = {}, {}
+for _line in (mr.TXT / 'tsi.src.txt').read_text(encoding='utf-8-sig').splitlines():
+    _p = _line.split(' ')
+    if len(_p) >= 2 and _p[1].isdigit():
+        _f = int(_p[1])
+        WORD_FREQ[_p[0]] = max(WORD_FREQ.get(_p[0], 0), _f)
+        for _ch in set(_p[0]):
+            CHAR_FREQ[_ch] = CHAR_FREQ.get(_ch, 0) + _f
+
+
+# 字頻排名前 2500 的字算「高頻字」（教育部常用字表太寬，嚏、嚨都在裡面）
+TOP = set(sorted(CHAR_FREQ, key=lambda c: -CHAR_FREQ[c])[:2500])
+
+
+def freq_of(word):
+    """f：越大越常用；rare：有不是高頻字的字。"""
+    rare = any(c not in TOP for c in word)
+    f = WORD_FREQ.get(word) or min(CHAR_FREQ.get(c, 0) for c in word) // 50
+    return f, rare
+
+
 def main():
     bank = json.loads(BANK.read_text(encoding='utf-8'))
     extra = lesson_extra()
@@ -91,12 +118,15 @@ def main():
         L = {'title': E['title']}
         for kind in ('dict', 'look', 'fix', 'idiom'):
             L[kind] = [{'s': s, 'z': zy(plain(kind, s))} for s in B.get(kind, [])]
+        for it in L['dict']:
+            w = re.search(r'〔([^〕]*)〕', it['s']).group(1)
+            it['f'], it['rare'] = freq_of(w)
         L['idiom'] = [dict(it, w=re.search(r'〔([^〕]*)〕', it['s']).group(1)) for it in L['idiom']]
         for it in L['idiom']:
             it['wz'] = zy(it['w'])
         L['word'] = [{'s': q['q'], 'z': zy(plain('word', q['q'])), 'o': q['o'], 'oz': [zy(o) for o in q['o']]} for q in B.get('word', [])]
         L['choice'] = [{'s': q['q'], 'z': zy(q['q']), 'o': q['o'], 'oz': [zy(o) for o in q['o']]} for q in B.get('choice', [])]
-        L['radical'] = [{'c': c, 'r': E['radical'].get(c, '')} for c in B.get('radical', [])]
+        L['radical'] = [dict({'c': c, 'r': E['radical'].get(c, '')}, f=CHAR_FREQ.get(c, 0), rare=c not in TOP) for c in B.get('radical', [])]
         # 短語：fix＝照印的字（的、而、般…）；bank＝每一格可以用的詞（中組給詞庫用，不放範例本身的詞）
         L['phrase'] = [{'w': p['m'], 'z': [zy(w) for w in p['m']], 'fix': p['fix'],
                         'bank': [[x for x in b if x != w] for b, w in zip(p['bank'], p['m'])],

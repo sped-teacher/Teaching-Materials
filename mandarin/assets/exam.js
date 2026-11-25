@@ -122,14 +122,25 @@
     });
     return out;
   }
-  // 從各課輪流抽（同一課的題目不會擠在一起）
-  function draw(kind, n, exclude) {
+  // 每一課一個題目佇列（寫國字、部首：高頻字的題目排前面，老師：國字優先考高頻字）
+  function queues(kind, exclude) {
     var by = {};
     pool(kind).forEach(function (r) { if (!(exclude || {})[r.lid + ':' + r.i]) (by[r.lid] = by[r.lid] || []).push(r); });
-    var ls = shuffle(Object.keys(by)); ls.forEach(function (l) { by[l] = shuffle(by[l]); });
-    var out = [];
+    Object.keys(by).forEach(function (l) {
+      var list = shuffle(by[l]);
+      if (kind === 'dict' || kind === 'radical') {
+        var src = BANK[l][kind];
+        list = list.filter(function (r) { return !src[r.i].rare; }).concat(list.filter(function (r) { return src[r.i].rare; }));
+      }
+      by[l] = list;
+    });
+    return by;
+  }
+  // 從各課輪流抽（同一課的題目不會擠在一起、各課題數平均）
+  function draw(kind, n, exclude) {
+    var by = queues(kind, exclude), ls = shuffle(Object.keys(by)), out = [];
     while (out.length < n && ls.some(function (l) { return by[l].length; })) ls.forEach(function (l) { if (out.length < n && by[l].length) out.push(by[l].shift()); });
-    return shuffle(out);
+    return out;
   }
   function mk(kind, ref) {
     var src = BANK[ref.lid][kind][ref.i], it = clone(src);
@@ -186,6 +197,8 @@
   function answersOfItem(it) {
     if (it.kind === 'dict' || it.kind === 'word') return segs(it.kind, it.s).filter(function (g) { return g.t === 'slot'; }).map(function (g) { return g.w; });
     if (it.kind === 'radical') return [it.c];
+    if (it.kind === 'look') return segs('look', it.s).filter(function (g) { return g.t === 'opts'; }).map(function (g) { return g.ans; });   // 圈字的正確字
+    if (it.kind === 'fix') return segs('fix', it.s).filter(function (g) { return g.t === 'wrong'; }).map(function (g) { return g.right; });  // 改錯字要寫的正確字
     return [];
   }
   // 目前卷子上（除了 skip）的答案 A、看得到的字 V；新的一題 ok：不含別題的答案、自己的答案也沒在別題露出來
@@ -210,15 +223,23 @@
     it.o = use.map(function (i) { return it.o[i]; }); it.oz = use.map(function (i) { return it.oz[i]; });
   }
   function take(C, it) { C.A = C.A.concat(answersOfItem(it)); C.V.push(visibleOf(it)); }
-  // 依順序挑 n 題：先挑不會洩漏的，不夠才用會洩漏的補
-  function pick(kind, n, C, exclude) {
-    var chosen = [], spare = [];
-    draw(kind, 999, exclude).forEach(function (r) {
-      if (chosen.length >= n) return;
-      var it = mk(kind, r);
-      trimWord(it, C);
-      if (fits(it, C)) { chosen.push(it); take(C, it); } else spare.push(it);
-    });
+  // 各課輪流挑 n 題：每一課挑佇列裡第一個不會洩漏答案的；都不行才用會洩漏的補（prefer：先從這一課挑）
+  function pick(kind, n, C, exclude, prefer) {
+    var by = queues(kind, exclude), ls = shuffle(Object.keys(by)), chosen = [], spare = [];
+    if (prefer && by[prefer]) ls = [prefer].concat(ls.filter(function (l) { return l !== prefer; }));
+    var active = ls.slice();
+    while (chosen.length < n && active.length) {
+      active = active.filter(function (l) {
+        if (chosen.length >= n) return true;
+        while (by[l].length) {
+          var it = mk(kind, by[l].shift());
+          trimWord(it, C);
+          if (fits(it, C)) { chosen.push(it); take(C, it); return true; }
+          spare.push(it);
+        }
+        return false;     // 這一課沒有可以用的了
+      });
+    }
     while (chosen.length < n && spare.length) { var x = spare.shift(); chosen.push(x); take(C, x); }
     return chosen;
   }
@@ -232,10 +253,62 @@
       if (!victim) return;
       var list = st.items[victim.kind], used = {}; list.forEach(function (y) { used[y.ref] = 1; });
       var C = ctx(victim), alt = null;
-      draw(victim.kind, 999, used).some(function (r) { var it = mk(victim.kind, r); trimWord(it, C); if (fits(it, C)) { alt = it; return true; } return false; });
+      var cands = draw(victim.kind, 999, used);
+      cands = cands.filter(function (r) { return r.lid === victim.lid; }).concat(cands.filter(function (r) { return r.lid !== victim.lid; }));   // 先換同一課的，各課題數才平均
+      cands.some(function (r) { var it = mk(victim.kind, r); trimWord(it, C); if (fits(it, C)) { alt = it; return true; } return false; });
       if (!alt) continue;
       list[list.indexOf(victim)] = alt;
       if (victim.kind === 'idiom') makeIdiomBank();
+    }
+  }
+  // 各課題數差多少（每個大題：最多和最少的課差超過 1 題就算不平均）
+  function imbalance() {
+    var bad = 0;
+    SECS.forEach(function (S) {
+      var list = st.items[S.k] || []; if (!st.secs[S.k].on || !list.length) return;
+      var c = {}; st.lessons.forEach(function (l) { c[l] = 0; }); list.forEach(function (it) { c[it.lid] = (c[it.lid] || 0) + 1; });
+      var have = st.lessons.filter(function (l) { return (BANK[l][S.k] || []).length; }).map(function (l) { return c[l]; });
+      if (have.length) bad += Math.max(0, Math.max.apply(null, have) - Math.min.apply(null, have) - 1);
+    });
+    return bad;
+  }
+  // 答案要亂序（老師：不可以都是第一個選項）：答案的位置平均分到①②③④，不會連續三題一樣
+  function spread(k, m) {
+    var best = null;
+    for (var t = 0; t < 60; t++) {
+      var arr = [];
+      while (arr.length < k) arr = arr.concat(shuffle(Array.from({ length: m }, function (x, i) { return i; })));
+      arr = arr.slice(0, k);
+      var run3 = arr.some(function (v, i) { return i >= 2 && v === arr[i - 1] && v === arr[i - 2]; });
+      var adj = arr.filter(function (v, i) { return i && v === arr[i - 1]; }).length;
+      if (!run3 && (!best || adj < best.adj)) best = { arr: arr, adj: adj };
+      if (best && best.adj === 0) break;
+    }
+    return best ? best.arr : arr;
+  }
+  function orderWithAnswerAt(m, pos) {   // 0 是正確答案，放在第 pos 個
+    var rest = shuffle(Array.from({ length: m - 1 }, function (x, i) { return i + 1; }));
+    rest.splice(pos, 0, 0); return rest;
+  }
+  function balanceOrders() {
+    var ch = st.items.choice || [];
+    var p4 = spread(ch.length, 4), p3 = spread(ch.length, 3);
+    ch.forEach(function (it, i) { var m = Math.min(4, it.o.length); it.order = orderWithAnswerAt(m, Math.min(p4[i], m - 1)); it.order3 = orderWithAnswerAt(3, p3[i]); });
+    var wd = st.items.word || [], pw = spread(wd.length, 4);
+    wd.forEach(function (it, i) { it.order = orderWithAnswerAt(4, pw[i]); });
+    var lk = st.items.look || [], pl = spread(lk.length, 2);
+    lk.forEach(function (it, i) {   // 圈字：正確的字在左邊或右邊也要平均
+      var g = segs('look', it.s).filter(function (x) { return x.t === 'opts'; })[0];
+      if (g) it.flip = (g.opts.indexOf(g.ans) === 0) !== (pl[i] === 0);
+    });
+    // 成語代號：答案不要照順序（不要 ①②③④⑤）
+    var id = st.items.idiom || [], bank = st.idiomBank || [];
+    for (var t = 0; t < 30 && id.length > 2; t++) {
+      var codes = id.map(function (it) { return bank.indexOf(it.w); });
+      var asc = codes.every(function (c, i) { return !i || c > codes[i - 1]; });
+      var steps = codes.filter(function (c, i) { return i && Math.abs(c - codes[i - 1]) === 1; }).length;
+      if (!asc && steps < 2) break;
+      st.idiomBank = bank = shuffle(bank);
     }
   }
   // 先挑只是「看得到」的大題，最後才挑有答案的大題（選語詞、部首、寫國字），答案從還沒出現過的詞裡挑
@@ -244,7 +317,7 @@
     // 隨機出很多份，留下「答案在別題露出來」最少的一份
     var best = null, bestN = 1e9;
     var t0 = Date.now();
-    for (var t = 0; t < 40 && bestN > 0 && (t < 3 || Date.now() - t0 < 600); t++) {
+    for (var t = 0; t < 80 && bestN > 0 && (t < 3 || Date.now() - t0 < 700); t++) {
       st.items = {}; st.idiomBank = [];
       var C = { A: [], V: [] };
       PICK_ORDER.forEach(function (k) {
@@ -253,19 +326,21 @@
       });
       makeIdiomBank();
       repair();
-      var n = leaks().length;
+      var n = leaks().length * 100 + imbalance();   // 先求答案不洩漏，再求各課題數平均
       if (n < bestN) { bestN = n; best = { items: st.items, bank: st.idiomBank }; }
     }
     st.items = best.items; st.idiomBank = best.bank;
+    balanceOrders();
     st.heads = {};
     save();
   }
   function replaceOne(it) {
     var list = st.items[it.kind], used = {}; list.forEach(function (x) { used[x.ref] = 1; });
-    var alt = pick(it.kind, 1, ctx(it), used)[0];
+    var alt = pick(it.kind, 1, ctx(it), used, it.lid)[0];
     if (!alt) { alert('這幾課的題庫沒有別的題目可以換了。'); return; }
     list[list.indexOf(it)] = alt;
     if (it.kind === 'idiom') makeIdiomBank();
+    balanceOrders();
     save(); render();
   }
 
@@ -428,7 +503,7 @@
             paras.push(op); break;
           case 'choice':
             p = new Para(0, 3).paren(1).num(no).t(it.s, it.z, z, function (i, nz) { it.z[i] = nz; save(); }); paras.push(p);
-            var ord = it.order.filter(function (oi) { return oi < g.choiceN; });
+            var ord = g.choiceN === 3 && it.order3 ? it.order3 : it.order.filter(function (oi) { return oi < g.choiceN; });
             var long = ord.some(function (oi) { return Array.from(it.o[oi]).length > 8; });
             var cp = new Para(3, long ? 4 : 3);
             ord.forEach(function (oi, j) {
@@ -550,7 +625,7 @@
           case 'fix': return n + segs('fix', it.s).filter(function (x) { return x.t === 'wrong'; }).map(function (x) { return x.wrong + '→' + x.right; }).join('');
           case 'idiom': return n + NUMS[(st.idiomBank || []).indexOf(it.w)];
           case 'word': return n + NUMS[it.order.indexOf(0)];
-          case 'choice': return n + NUMS[it.order.filter(function (oi) { return oi < g.choiceN; }).indexOf(0)];
+          case 'choice': return n + NUMS[(g.choiceN === 3 && it.order3 ? it.order3 : it.order.filter(function (oi) { return oi < g.choiceN; })).indexOf(0)];
           case 'phrase': return n + '（自由作答）';
           case 'imitate': return n + '（自由作答）';
         }
@@ -722,6 +797,7 @@
       var used = {}; list.forEach(function (x) { used[x.ref] = 1; });
       pick(k, n - list.length, ctx(null), used).forEach(function (x) { list.push(x); });
     }
+    balanceOrders();
     if (k === 'idiom') makeIdiomBank();
     save(); render();
   }
