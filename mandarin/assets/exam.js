@@ -196,8 +196,9 @@
     each(function (it) {
       var mine = answersOfItem(it);
       if (!mine.length) return;
-      var others = allVisible(it);
-      mine.forEach(function (w) { if (others.indexOf(w) >= 0) bad.push({ it: it, w: w }); });
+      var others = allVisible(it), otherAns = [];
+      each(function (x) { if (x !== it) otherAns = otherAns.concat(answersOfItem(x)); });
+      mine.forEach(function (w) { if (others.indexOf(w) >= 0 || otherAns.some(function (b) { return sameAns(w, b); })) bad.push({ it: it, w: w }); });
     });
     return bad;
   }
@@ -215,8 +216,11 @@
     V.push((st.idiomBank || []).join('|'));
     return { A: A, V: V };
   }
+  // 兩題考到同一個字（例：寫國字考「坦」、改錯字也考「坦」）也不行
+  function sameAns(a, b) { return a === b || (Array.from(a).length === 1 && b.indexOf(a) >= 0) || (Array.from(b).length === 1 && a.indexOf(b) >= 0); }
   function fits(it, C) {
     var vis = visibleOf(it), mine = answersOfItem(it);
+    if (mine.some(function (a) { return C.A.some(function (b) { return sameAns(a, b); }); })) return false;
     if (C.A.some(function (a) { return vis.indexOf(a) >= 0; })) return false;   // 別題的答案不能印在這一題（同一個字也不能兩題都考）
     if (mine.some(function (a) { return C.V.some(function (v) { return v.indexOf(a) >= 0; }); })) return false;
     return true;
@@ -436,6 +440,12 @@
     var poly = c.r != null && REFS[c.r] && (ZY[REFS[c.r].c] || []).length > 1;
     var attrs = { class: cls + (c.k === 'box' ? ' boxc' : '') + (c.r != null ? ' ch' : '') + (poly ? ' poly' : '') };
     if (c.r != null) attrs['data-r'] = c.r;
+    if (c.k === 'wrong') {  // 改錯字的錯字：字型畫「正確字＋注音」只留注音，錯字疊在國字的位置
+      var gw = c.z && ivs(c.rc, c.z);
+      if (!gw) return h('div', attrs, h('span', { class: 'g plain' }, c.c), c.z ? zyEl(c.z) : null);
+      attrs.class += ' wz wrongc';
+      return h('div', attrs, h('span', { class: 'g' }, h('span', { class: 'z' }, gw), h('span', { class: 'wch' }, c.c)));
+    }
     if (c.k === 'box') {    // 只有注音的格子：字型畫出字＋注音，再用白色方格蓋住國字
       var gb = c.z && ivs(c.c, c.z);
       if (gb) return h('div', attrs, h('span', { class: 'g bxg' }, h('span', { class: 'z' }, gb), h('span', { class: 'cover' })));
@@ -467,8 +477,10 @@
       } else if (g.t === 'opts') {
         var os = it.flip ? g.opts.slice().reverse() : g.opts;
         p.group(function () { p.raw('（' + os.join('／') + '）', { big: true }); });
-      } else if (g.t === 'wrong') {
-        p.t(g.wrong, [it.z[g.at] || ''], false, null, { b: opt.bold });
+      } else if (g.t === 'wrong') {   // 錯字：標「正確字」的注音，學生才不會一眼看出哪一個字沒有注音
+        var at = g.at;
+        p.cells.push({ k: 'wrong', c: g.wrong, rc: g.right, z: showZy ? (it.z[at] || '') : '', b: opt.bold,
+          r: REFS.push({ c: g.right, z: it.z[at] || '', set: function (nz) { setZ(at, nz); } }) - 1 });
       }
     });
     return p;
@@ -832,6 +844,8 @@
   if (/^(localhost|127\.0\.0\.1)$/.test(location.hostname)) window.__exam = { generate: function () { generate(); }, leaks: function () { return leaks(); }, st: function () { return st; } };
   function start() {
     st = load() || defaults();
+    var hs = /[#&]on=([a-z,]+)/.exec(location.hash);   // exam.html#l=07,08,09&on=fix：另外打開這幾個大題
+    if (hs) hs[1].split(',').forEach(function (k) { if (st.secs[k]) st.secs[k].on = true; });
     var hl = /[#&]l=([\d,]+)/.exec(location.hash);   // exam.html#l=07,08,09：直接選這幾課出一份
     if (hl) { st.lessons = hl[1].split(',').map(function (x) { return ('0' + x).slice(-2); }).filter(function (l) { return BANK[l]; }); if (st.lessons.length) generate(); }
     st.lessons = st.lessons.filter(function (l) { return BANK[l]; });

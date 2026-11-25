@@ -65,6 +65,9 @@ a { color: var(--accent); }
 .boxc { height: 2.08em; width: 1.75em; padding-top: .18em; }
 .boxc .g.bxg { position: relative; font-size: 1.75em; height: 1em; margin-top: .04em; font-feature-settings: normal; }
 .boxc .g.bxg .z { display: inline-block; clip-path: inset(-.6em -.6em -.6em .99em); }   /* 只留字型畫的注音，國字整個剪掉 */
+.wrongc .g { position: relative; }
+.wrongc .g .z { display: inline-block; font-weight: 400; clip-path: inset(-.6em -.6em -.6em .99em); }
+.wrongc .g .wch { position: absolute; left: 0; top: 0; width: 1em; text-align: center; font-feature-settings: 'ss10' 1; }
 .boxc .cover { position: absolute; left: 0; top: 0; width: 1em; height: 1em; background: #fff; border: 1.2px solid #000; box-sizing: border-box; }
 .boxc .g.nz { width: 1em; }
 .boxc .zy { left: 1.86em; top: .4em; }
