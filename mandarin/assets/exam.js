@@ -79,7 +79,7 @@
 
   // ── 大題設定 ──
   var SECS = [
-    { k: 'dict', name: '看注音寫國字', head: '看注音，在格子裡寫出國字。', n: 10, pts: 2, zy: true },
+    { k: 'dict', name: '看注音寫國字', head: '看注音，在格子裡寫出國字。', n: 20, pts: 1, zy: true, unit: '格' },   // 第一大題算格數：每格 1 分、預設 20 格（老師：四字語詞一題就 4 格）
     { k: 'radical', name: '部首造詞', head: '寫出部首，並造一個語詞。', n: 6, pts: 3, zy: false },
     { k: 'look', name: '圈形近字', head: '圈出正確的字。', n: 5, pts: 2, zy: true },
     { k: 'fix', name: '改錯字', head: '每一句都有一個錯字，把它圈起來，再把正確的字寫在（　）裡。', n: 5, pts: 2, zy: true, off: true },
@@ -96,11 +96,11 @@
   function defaults() {
     var secs = {};
     SECS.forEach(function (s) { secs[s.k] = { on: !s.off, n: s.n, pts: s.pts, zy: s.zy }; });
-    return { v2: 1, lessons: [], group: 'std', paper: 'B4', title: '', titleAuto: true, headZy: false, answers: true, secs: secs, items: {}, heads: {} };
+    return { v2: 1, v3: 1, lessons: [], group: 'std', paper: 'B4', title: '', titleAuto: true, headZy: false, answers: true, secs: secs, items: {}, heads: {} };
   }
   function save() { try { localStorage.setItem(SAVE, JSON.stringify(st)); } catch (e) { } }
   function load() {
-    try { var s = JSON.parse(localStorage.getItem(SAVE) || 'null'); if (s && s.secs) { if (!s.v2) { s.v2 = 1; if (s.secs.dict) s.secs.dict.zy = true; } var d = defaults(); SECS.forEach(function (x) { if (!s.secs[x.k]) s.secs[x.k] = d.secs[x.k]; }); return s; } } catch (e) { }
+    try { var s = JSON.parse(localStorage.getItem(SAVE) || 'null'); if (s && s.secs) { if (!s.v2) { s.v2 = 1; if (s.secs.dict) s.secs.dict.zy = true; } if (!s.v3) { s.v3 = 1; if (s.secs.dict) { s.secs.dict.n = 20; s.secs.dict.pts = 1; } s.items = {}; } var d = defaults(); SECS.forEach(function (x) { if (!s.secs[x.k]) s.secs[x.k] = d.secs[x.k]; }); return s; } } catch (e) { }
     return null;
   }
   function G() { return GROUPS[st.group] || GROUPS.std; }
@@ -231,23 +231,28 @@
   }
   function take(C, it) { C.A = C.A.concat(answersOfItem(it)); C.V.push(visibleOf(it)); }
   // 各課輪流挑 n 題：每一課挑佇列裡第一個不會洩漏答案的；都不行才用會洩漏的補（prefer：先從這一課挑）
+  // 一題佔幾個單位：看注音寫國字算格數，其他大題一題算 1
+  function size(it) { return it.kind === 'dict' ? segs('dict', it.s).filter(function (g) { return g.t === 'slot'; }).reduce(function (a, g) { return a + Array.from(g.w).length; }, 0) : 1; }
+  function units(k) { return (st.items[k] || []).reduce(function (a, it) { return a + size(it); }, 0); }
   function pick(kind, n, C, exclude, prefer) {
-    var by = queues(kind, exclude), ls = shuffle(Object.keys(by)), chosen = [], spare = [];
+    var by = queues(kind, exclude), ls = shuffle(Object.keys(by)), chosen = [], spare = [], got = 0;
     if (prefer && by[prefer]) ls = [prefer].concat(ls.filter(function (l) { return l !== prefer; }));
     var active = ls.slice();
-    while (chosen.length < n && active.length) {
+    while (got < n && active.length) {
       active = active.filter(function (l) {
-        if (chosen.length >= n) return true;
+        if (got >= n) return true;
         while (by[l].length) {
           var it = mk(kind, by[l].shift());
           trimWord(it, C);
-          if (fits(it, C)) { chosen.push(it); take(C, it); return true; }
+          if (got + size(it) > n) { spare.push(it); continue; }   // 格數會超過：先跳過
+          if (fits(it, C)) { chosen.push(it); take(C, it); got += size(it); return true; }
           spare.push(it);
         }
         return false;     // 這一課沒有可以用的了
       });
     }
-    while (chosen.length < n && spare.length) { var x = spare.shift(); chosen.push(x); take(C, x); }
+    spare.sort(function (a, b) { return (fits(a, C) ? 0 : 1) - (fits(b, C) ? 0 : 1); });
+    spare.forEach(function (x) { if (got < n && got + size(x) <= n) { chosen.push(x); take(C, x); got += size(x); } });
     return chosen;
   }
   // 修補：答案出現在別的題目裡 → 把「露出答案的那一題」換成沒有這些答案的題目
@@ -336,7 +341,7 @@
       repair();
       var nChar = (st.items.dict || []).filter(function (it) { return /〔.〕/.test(it.s); }).length;
       var want = { char: (st.items.dict || []).length, mix: Math.floor((st.items.dict || []).length / 2), word: 0 }[st.dictMode || 'mix'];
-      var n = leaks().length * 100 + imbalance() * 3 + Math.max(0, want - nChar);   // 先求答案不洩漏，再求各課題數平均，再求考法符合
+      var n = leaks().length * 100 + Math.abs(st.secs.dict.n - units('dict')) * 20 + imbalance() * 3 + Math.max(0, want - nChar);   // 先求答案不洩漏、格數剛好，再求各課題數平均，再求考法符合
       if (n < bestN) { bestN = n; best = { items: st.items, bank: st.idiomBank }; }
     }
     st.items = best.items; st.idiomBank = best.bank;
@@ -485,7 +490,8 @@
       var headTxt = cnNum(++secNo) + '、' + S.head;
       if (!st.heads[S.k] || st.heads[S.k].t !== headTxt) st.heads[S.k] = { t: headTxt, z: zyOf(headTxt) };
       var hp = new Para(0, 1.5).t(headTxt, st.heads[S.k].z, st.headZy, function (i, nz) { st.heads[S.k].z[i] = nz; save(); }, { b: true });
-      var pts = '（每題' + cfg.pts + '分，共' + cfg.pts * n + '分）';
+      var un = S.unit || '題', cnt = S.unit ? units(S.k) : n;
+      var pts = '（每' + un + cfg.pts + '分，共' + cfg.pts * cnt + '分）';
       pts.split(/(\d+)/).forEach(function (x) { if (/^\d+$/.test(x)) hp.push({ k: 'num', t: x }); else if (x) hp.raw(x); });
       var hb = blk([hp], null, true); hb.head = true; blocks.push(hb);
       if (S.k === 'idiom') {
@@ -752,7 +758,7 @@
   function drawPanel() {
     panel.innerHTML = '';
     var avail = Object.keys(BANK).sort();
-    var total = 0; SECS.forEach(function (s) { if (st.secs[s.k].on) total += st.secs[s.k].pts * (st.items[s.k] || []).length; });
+    var total = 0; SECS.forEach(function (s) { if (st.secs[s.k].on) total += st.secs[s.k].pts * units(s.k); });
     add(panel, [
       h('a', { class: 'back', href: './' }, '← 回國語學習樂園'),
       h('h1', {}, '📝 出卷'),
@@ -779,7 +785,7 @@
           return h('tr', {},
             h('td', {}, h('input', { type: 'checkbox', checked: c.on, onchange: function () { c.on = !c.on; if (c.on && !(st.items[s.k] || []).length) { st.items[s.k] = pick(s.k, c.n, ctx(null)); if (s.k === 'idiom') makeIdiomBank(); } save(); render(); } })),
             h('td', { class: 'nm', title: '題庫有 ' + have + ' 題' }, s.name),
-            h('td', {}, h('input', { type: 'number', min: 1, max: 20, value: (st.items[s.k] || []).length || c.n, onchange: function (e) { setCount(s.k, +e.target.value); } })),
+            h('td', { title: s.unit ? '第一大題算格數（每格 1 分）' : '' }, h('input', { type: 'number', min: 1, max: s.unit ? 40 : 20, value: units(s.k) || c.n, onchange: function (e) { setCount(s.k, +e.target.value); } }), s.unit ? h('small', {}, s.unit) : null),
             h('td', {}, h('input', { type: 'number', min: 1, max: 20, value: c.pts, onchange: function (e) { c.pts = Math.max(1, +e.target.value || 1); save(); render(); } })),
             h('td', {}, h('input', { type: 'checkbox', checked: c.zy, title: s.k === 'dict' ? '句子的注音（格子的注音一定會印）' : '', onchange: function () { c.zy = !c.zy; save(); render(); } })));
         })),
@@ -803,7 +809,13 @@
     ]);
   }
   function setCount(k, n) {
-    n = Math.max(1, Math.min(20, n || 1));
+    n = Math.max(1, Math.min(SEC[k].unit ? 40 : 20, n || 1));
+    if (SEC[k].unit) {   // 第一大題：照格數重新挑
+      st.secs[k].n = n; st.items[k] = [];
+      for (var t = 0, best = null; t < 30; t++) { var c = pick(k, n, ctx(null)); st.items[k] = c; if (!best || Math.abs(n - units(k)) < Math.abs(n - best.u)) best = { c: c, u: units(k) }; if (best.u === n) break; st.items[k] = []; }
+      st.items[k] = shuffle(best.c);
+      save(); render(); return;
+    }
     var list = st.items[k] = st.items[k] || [];
     st.secs[k].n = n;
     if (list.length > n) list.length = n;
@@ -824,6 +836,7 @@
     if (hl) { st.lessons = hl[1].split(',').map(function (x) { return ('0' + x).slice(-2); }).filter(function (l) { return BANK[l]; }); if (st.lessons.length) generate(); }
     st.lessons = st.lessons.filter(function (l) { return BANK[l]; });
     if (!st.lessons.length) { st.lessons = Object.keys(BANK).sort().slice(0, 3); generate(); }
+    else if (!st.items || !Object.keys(st.items).length) generate();
     app.innerHTML = '';
     panel = h('aside', { class: 'panel' });
     sheetsBox = h('div', { class: 'sheets' });
