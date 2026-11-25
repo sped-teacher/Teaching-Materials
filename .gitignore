@@ -34,3 +34,7 @@ build/
 
 # 學習單的題目資料只放老師電腦（Desktop\學國5上\學習單資料），不上傳
 **/tools/worksheet/
+
+# 出卷題庫原稿（只放老師電腦；網站用加密後的 data/exam.enc.js）
+**/tools/exam/bank.json
+**/data/exam_plain.js

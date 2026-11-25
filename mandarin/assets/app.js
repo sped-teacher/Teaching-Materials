@@ -1870,7 +1870,7 @@
     crumbs.forEach(function (c, i) { if (i) append(nav, h('span', {}, '／')); append(nav, c.href ? h('a', { href: c.href }, c.text) : h('span', {}, c.text)); });
     var main = h('main', {});
     if (mc) main.style.setProperty('--mc', mc);
-    append(app, h('header', { class: 'topbar' }, h('a', { class: 'brand', href: '#/' }, '📚 ' + SITE_NAME), nav, gearBtn()), main,
+    append(app, h('header', { class: 'topbar' }, h('a', { class: 'brand', href: '#/' }, '📚 ' + SITE_NAME), nav, h('a', { class: 'exam-btn', href: 'exam.html', title: '老師出卷' }, '📝', h('span', {}, '出卷')), gearBtn()), main,
       h('footer', { class: 'footer' }, h('a', { href: 'guide.html' }, '📘 使用說明'), '　', h('a', { href: '../' }, '🏫 資源班教材總覽'), h('br'), '特殊教育輔助教材，非出版社官方產品。', h('br'), '內容依康軒版國語五上整理改寫，僅供教學使用，不作商業用途。', h('br'), '楷書字型：全字庫正楷體（數位發展部，CNS11643 中文標準交換碼全字庫網站 https://www.cns11643.gov.tw，政府資料開放授權條款－第1版）', h('br'),
         '注音聽打、識字讀詞參考顏國雄老師「HTML5 FUN」的遊戲構想，本站改寫成簡易版；雄筆順、部件拼語詞（PARTDLE）、語文高手為顏國雄老師作品，以連結使用（', h('a', { href: 'https://gsyan888.blogspot.com/', target: '_blank', rel: 'noopener' }, '雄::gsyan'), '）。'));
     window.scrollTo(0, 0);

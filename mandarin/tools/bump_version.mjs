@@ -8,7 +8,7 @@ const ROOT = join(dirname(fileURLToPath(import.meta.url)), '..');
 const d = new Date(), p = (n) => String(n).padStart(2, '0');
 const v = `${d.getFullYear()}${p(d.getMonth() + 1)}${p(d.getDate())}${p(d.getHours())}${p(d.getMinutes())}`;
 
-for (const name of ['index.html', 'guide.html']) {
+for (const name of ['index.html', 'guide.html', 'exam.html']) {
   const f = join(ROOT, name);
   const before = readFileSync(f, 'utf8');
   // 只處理本站的相對路徑（assets/、data/），外部網址不動

@@ -194,6 +194,93 @@ def tone(z):
     return 4 if z.endswith('ˋ') else 3 if z.endswith('ˇ') else 2 if z.endswith('ˊ') else 0 if z.startswith('˙') else 1
 
 
+def zy_line(line, fixes=None, review=None):
+    """一行文字 → [[詞, 注音（以空白分字；標點為空字串）], …]：斷詞、查詞庫、多音字規則、一不變調。"""
+    fixes = fixes or {}
+    review = review if review is not None else []
+    para = []  # [文字, 注音（以空白分字；標點為空字串）]
+    for tok in cut(line):
+        if not HAN.search(tok):
+            para.append([tok, ''])
+            continue
+        if tok in fixes:
+            # 可寫成「注音|朗讀用字」，例如 "ㄇㄠˊ ㄈㄚˇ ㄓㄤˇ|毛髮漲"，讓語音念對
+            zy, _, say = fixes[tok].partition('|')
+            para.append([tok, zy] + ([say] if say else []))
+            continue
+        z = lookup(tok) if len(tok) > 1 else None
+        if z:
+            para.append([tok, z])
+            continue
+        # 整個詞查不到：拆成已知的小詞＋單字；單字用預設讀音，多音字列入複核
+        zs = []
+        for part in split_known(tok):
+            if len(part) > 1:
+                zs.append(TSI[part])
+                continue
+            c = part
+            if c in PARTICLE:
+                zs.append(PARTICLE[c])
+            else:
+                zs.append(lookup(c) or '？')
+            if c in REVIEW:
+                at = line.find(tok)
+                review.append(f'{c}（{zs[-1]}）：…{line[max(0, at - 6): at + len(tok) + 6]}…')
+        para.append([tok, ' '.join(zs)])
+    # 連接詞「和」（我和媽媽）：單獨成詞時念ㄏㄢˋ，朗讀改用同音字「汗」（老師實測「漢」仍會念成ㄏㄜˊ）；和平、溫和等詞維持ㄏㄜˊ
+    for tk in para:
+        if tk[0] == '和' and tk[1] == 'ㄏㄜˊ':
+            tk[1] = 'ㄏㄢˋ'
+            tk.append('汗')
+    # 「為」單獨成詞：當「為了、替」（為女孩爭取、為牠發急）念ㄨㄟˋ，朗讀改用同音字「位」；
+    # 當「成為、當作」（封為、稱為、化危機為轉機、以……為……）維持ㄨㄟˊ。以為、成為等詞由詞庫決定
+    for i, tk in enumerate(para):
+        if tk[0] != '為':
+            continue
+        prev = para[i - 1][0][-1:] if i else ''
+        clause = re.split(r'[，。？！；：、「」『』]', ''.join(t[0] for t in para[:i]))[-1]
+        if prev in WEI2 or re.search('(?<![可所得足難加予])以|[化認視把將當]', clause):
+            tk[1] = 'ㄨㄟˊ'
+        else:
+            tk[1] = 'ㄨㄟˋ'
+            tk.append('位')
+    # 固定輕聲：「們」（我們、你們、他們、人們……）一律念˙ㄇㄣ
+    for tk in para:
+        if tk[1] and '們' in tk[0]:
+            zs = tk[1].split(' ')
+            tk[1] = ' '.join('˙ㄇㄣ' if ch == '們' else z for ch, z in zip(tk[0], zs))
+    # 一、不 變調
+    flat = [(pi, ci) for pi, tk in enumerate(para) if tk[1] for ci in range(len(tk[0]))]
+    def zy_at(k):
+        pi, ci = flat[k]
+        return para[pi][1].split(' ')[ci]
+    def set_at(k, v):
+        pi, ci = flat[k]
+        zs = para[pi][1].split(' ')
+        zs[ci] = v
+        para[pi][1] = ' '.join(zs)
+    chars = [para[pi][0][ci] for pi, ci in flat]
+    for k, c in enumerate(chars):
+        if k + 1 >= len(chars):
+            continue
+        nxt = zy_at(k + 1)
+        # 後面的字念輕聲（一個 ˙ㄍㄜ）時，依它的本調變調：個 ㄍㄜˋ → 一ˊ個
+        if nxt.startswith('˙') and CHAR.get(chars[k + 1]):
+            nxt = CHAR[chars[k + 1]]
+        if c == '不' and zy_at(k) == 'ㄅㄨˋ' and tone(nxt) == 4:
+            set_at(k, 'ㄅㄨˊ')
+        if c == '一' and zy_at(k) == 'ㄧ':
+            prev = chars[k - 1] if k else ''
+            if prev in NUM or chars[k + 1] in DIGIT or chars[k + 1] in '月日號樓':
+                continue
+            # 「一」在詞尾（之一、唯一、同一）或後面隔著標點，念本調
+            pi, ci = flat[k]
+            if (len(para[pi][0]) > 1 and ci == len(para[pi][0]) - 1) or flat[k + 1][0] - pi > 1:
+                continue
+            set_at(k, 'ㄧˊ' if tone(nxt) == 4 else 'ㄧˋ')
+    return para
+
+
 def build(lid):
     lines = (TXT / f'lesson{lid}.txt').read_text(encoding='utf-8').strip().splitlines()
     fixes = json.loads(FIX_F.read_text(encoding='utf-8')).get(lid, {}) if FIX_F.exists() else {}
@@ -213,86 +300,7 @@ def build(lid):
                 sections.append(cur)
             cur = {'h': line[1:], 'paras': []}
             continue
-        para = []  # [文字, 注音（以空白分字；標點為空字串）]
-        for tok in cut(line):
-            if not HAN.search(tok):
-                para.append([tok, ''])
-                continue
-            if tok in fixes:
-                # 可寫成「注音|朗讀用字」，例如 "ㄇㄠˊ ㄈㄚˇ ㄓㄤˇ|毛髮漲"，讓語音念對
-                zy, _, say = fixes[tok].partition('|')
-                para.append([tok, zy] + ([say] if say else []))
-                continue
-            z = lookup(tok) if len(tok) > 1 else None
-            if z:
-                para.append([tok, z])
-                continue
-            # 整個詞查不到：拆成已知的小詞＋單字；單字用預設讀音，多音字列入複核
-            zs = []
-            for part in split_known(tok):
-                if len(part) > 1:
-                    zs.append(TSI[part])
-                    continue
-                c = part
-                if c in PARTICLE:
-                    zs.append(PARTICLE[c])
-                else:
-                    zs.append(lookup(c) or '？')
-                if c in REVIEW:
-                    at = line.find(tok)
-                    review.append(f'{c}（{zs[-1]}）：…{line[max(0, at - 6): at + len(tok) + 6]}…')
-            para.append([tok, ' '.join(zs)])
-        # 連接詞「和」（我和媽媽）：單獨成詞時念ㄏㄢˋ，朗讀改用同音字「汗」（老師實測「漢」仍會念成ㄏㄜˊ）；和平、溫和等詞維持ㄏㄜˊ
-        for tk in para:
-            if tk[0] == '和' and tk[1] == 'ㄏㄜˊ':
-                tk[1] = 'ㄏㄢˋ'
-                tk.append('汗')
-        # 「為」單獨成詞：當「為了、替」（為女孩爭取、為牠發急）念ㄨㄟˋ，朗讀改用同音字「位」；
-        # 當「成為、當作」（封為、稱為、化危機為轉機、以……為……）維持ㄨㄟˊ。以為、成為等詞由詞庫決定
-        for i, tk in enumerate(para):
-            if tk[0] != '為':
-                continue
-            prev = para[i - 1][0][-1:] if i else ''
-            clause = re.split(r'[，。？！；：、「」『』]', ''.join(t[0] for t in para[:i]))[-1]
-            if prev in WEI2 or re.search('(?<![可所得足難加予])以|[化認視把將當]', clause):
-                tk[1] = 'ㄨㄟˊ'
-            else:
-                tk[1] = 'ㄨㄟˋ'
-                tk.append('位')
-        # 固定輕聲：「們」（我們、你們、他們、人們……）一律念˙ㄇㄣ
-        for tk in para:
-            if tk[1] and '們' in tk[0]:
-                zs = tk[1].split(' ')
-                tk[1] = ' '.join('˙ㄇㄣ' if ch == '們' else z for ch, z in zip(tk[0], zs))
-        # 一、不 變調
-        flat = [(pi, ci) for pi, tk in enumerate(para) if tk[1] for ci in range(len(tk[0]))]
-        def zy_at(k):
-            pi, ci = flat[k]
-            return para[pi][1].split(' ')[ci]
-        def set_at(k, v):
-            pi, ci = flat[k]
-            zs = para[pi][1].split(' ')
-            zs[ci] = v
-            para[pi][1] = ' '.join(zs)
-        chars = [para[pi][0][ci] for pi, ci in flat]
-        for k, c in enumerate(chars):
-            if k + 1 >= len(chars):
-                continue
-            nxt = zy_at(k + 1)
-            # 後面的字念輕聲（一個 ˙ㄍㄜ）時，依它的本調變調：個 ㄍㄜˋ → 一ˊ個
-            if nxt.startswith('˙') and CHAR.get(chars[k + 1]):
-                nxt = CHAR[chars[k + 1]]
-            if c == '不' and zy_at(k) == 'ㄅㄨˋ' and tone(nxt) == 4:
-                set_at(k, 'ㄅㄨˊ')
-            if c == '一' and zy_at(k) == 'ㄧ':
-                prev = chars[k - 1] if k else ''
-                if prev in NUM or chars[k + 1] in DIGIT or chars[k + 1] in '月日號樓':
-                    continue
-                # 「一」在詞尾（之一、唯一、同一）或後面隔著標點，念本調
-                pi, ci = flat[k]
-                if (len(para[pi][0]) > 1 and ci == len(para[pi][0]) - 1) or flat[k + 1][0] - pi > 1:
-                    continue
-                set_at(k, 'ㄧˊ' if tone(nxt) == 4 else 'ㄧˋ')
+        para = zy_line(line, fixes, review)
         cur['paras'].append(para)
     sections.append(cur)
     OUT.mkdir(parents=True, exist_ok=True)

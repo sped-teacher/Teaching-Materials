@@ -71,6 +71,8 @@ button:disabled { cursor: default; }
   border: 1px solid var(--line); background: var(--card); font-size: 22px;
   display: grid; place-items: center; flex: none;
 }
+.exam-btn { flex: none; display: inline-flex; align-items: center; gap: 4px; height: 48px; padding: 0 14px; border-radius: 999px; border: 1px solid var(--line); background: var(--card); color: var(--ink); text-decoration: none; font-size: 17px; }
+@media (max-width: 560px) { .exam-btn span { display: none; } .exam-btn { padding: 0 12px; } }
 .gear .ring { position: absolute; inset: -3px; border-radius: 50%; border: 3px solid var(--accent); clip-path: inset(0 100% 0 0); }
 .gear.holding .ring { animation: hold 1.5s linear forwards; }
 @keyframes hold { to { clip-path: inset(0 0 0 0); } }
