@@ -138,6 +138,10 @@ def main():
             for a in re.findall(r'〔([^〕]*)〕', it['s']):
                 if any(ch in vis for ch in a):
                     print('！', lid, '答案在同一句看得到：', it['s'])
+        for it in L['fix']:   # 改錯字：正確的字不能已經印在同一句
+            m = re.search(r'〔([^>〕]*)>([^〕]*)〕', it['s'])
+            if m and m.group(2) in re.sub(r'〔[^〕]*〕', '', it['s']):
+                print('！', lid, '改錯字的正確字在同一句看得到：', it['s'])
         bad = [c for c in L['radical'] if not c['r']]
         if bad:
             print('！', lid, '部首題的字不是本課生字：', ''.join(c['c'] for c in bad))
