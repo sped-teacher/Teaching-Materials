@@ -1135,7 +1135,7 @@
       desc: function (L) {
         var R = L.reading || {}, U = R.unit || '段';
         if (!R.map) return '排順序、回答問題';
-        return '看課文地圖、一' + U + '一' + U + '讀、' + (R.task || (R.decode ? '詩句解碼' : R.sort ? '分類' : '排順序')) + '、回答問題';
+        return (R.wh ? '人事時地物、' : '') + '看課文地圖、一' + U + '一' + U + '讀、' + (R.task || (R.decode ? '詩句解碼' : R.sort ? '分類' : '排順序')) + '、回答問題';
       },
       pending: function (L) { return !(L.reading && L.reading.map); },
       units: function () { return [{ key: 'reading', items: [] }]; },
@@ -1143,6 +1143,39 @@
         var R = L.reading, idx = R.eventsByLevel[c.level] || R.eventsByLevel[3], U = R.unit || '段';
         var nq = { 1: 3, 2: 4, 3: 5 }[c.level] || 5;
         var guided = [];
+        // ── 人事時地物：卡片分到五格（人、事、時、地、物），分完把五格連成一句話說一說 ──
+        //   提示由少到多：想一想卡片在回答哪一個問題 → 打開那一段課文、用螢光筆畫出來 → 拿掉錯的選項
+        if (R.wh && R.paras) guided.push(step('人事時地物：這張卡片是人、事、時、地，還是物？', 'quiz', function (stage, api) {
+          var W = R.wh, cats = [['人', '誰？'], ['事', '發生什麼事？'], ['時', '什麼時候？'], ['地', '在哪裡？'], ['物', '有什麼東西？']];
+          var cards = W.cards.filter(function (cd) { return (cd.lv || 1) <= c.level; });
+          var cols = {}, placed = 0, inner = h('div'), sumBox = h('div', { hidden: true });
+          var board = h('div', { class: 'wh-board' }, cats.map(function (k) {
+            cols[k[0]] = h('div', { class: 'sort-col' }, h('h4', {}, k[0], h('small', {}, k[1])));
+            return cols[k[0]];
+          }));
+          append(stage, W.note ? h('div', { class: 'note', style: 'text-align:left;margin-bottom:12px' }, W.note) : null, inner, board, sumBox);
+          runQuiz(inner, shuffle(cards).map(function (cd) {
+            var pz = R.paras.find(function (x) { return x.no === cd.para; }), ev = null;
+            return {
+              say: cd.t + '。是人、事、時、地，還是物？', options: [cd.g], fixed: cats.map(function (k) { return k[0]; }), kai: true, after: cd.t,
+              hints: [
+                { text: '想一想：「' + cd.t + '」是在回答哪一個問題？誰？發生什麼事？什麼時候？在哪裡？有什麼東西？' },
+                { text: '回課文第 ' + cd.para + ' ' + U + '找一找，看螢光筆畫起來的地方。', on: function () { if (ev) { ev.hidden = false; ev.firstChild.classList.add('show-key'); } } }
+              ],
+              onRight: function () {
+                cols[cd.g].appendChild(h('div', { class: 'sort-card' }, cd.t));
+                if (++placed === cards.length && W.say) {
+                  sumBox.hidden = false;
+                  append(sumBox, h('div', { class: 'wh-say' }, h('b', {}, '把人事時地物連起來說一說：'), h('div', { class: 'row' }, h('span', { style: 'flex:1' }, W.say), sayBtn(W.say))));
+                }
+              },
+              prompt: function () {
+                ev = h('div', { class: 'q-evidence', hidden: true }, readingParaEl(L.id, { no: pz.no, text: pz.text, keys: cd.keys }, false));
+                return h('div', {}, h('div', { class: 'sub' }, '這張卡片是人、事、時、地，還是物？'), h('div', { class: 'sentence' }, cd.t), ev);
+              }
+            };
+          }), api);
+        }));
         // ── 帶著讀：先看課文地圖（示範），再一段一段讀、選出這段在說什麼（引導），最後才自己排順序、回答問題 ──
         if (R.map) guided.push(step('看課文地圖：這一課分成幾個部分？點每一格聽一聽。', 'cards', function (stage, api) {
           var seen = 0, total = R.map.length;

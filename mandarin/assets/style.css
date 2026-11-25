@@ -793,3 +793,8 @@ details.pos-card[open] > summary::after { content: '－'; }
 .sort-box .btn.right { border-color: var(--right); background: var(--right-soft); }
 .sort-word { font-size: 40px; }
 .sort-hl { text-decoration: none; border-bottom: 4px solid var(--accent); background: var(--accent-soft); border-radius: 6px; padding: 0 4px; }
+/* 人事時地物：五格分類表、最後連成一句話 */
+.wh-board { display: grid; grid-template-columns: repeat(5, minmax(0, 1fr)); gap: 6px; margin-top: 16px; }
+@media (max-width: 640px) { .wh-board { grid-template-columns: repeat(2, minmax(0, 1fr)); } }
+.wh-board .sort-col h4 { font-size: 22px; }
+.wh-say { margin-top: 14px; background: #FFF8E6; border: 2px solid #E8C56A; border-radius: 14px; padding: 10px 14px; font-size: 18px; line-height: 1.7; text-align: left; }
