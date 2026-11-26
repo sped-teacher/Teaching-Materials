@@ -321,7 +321,7 @@
       h('ul', { class: 'rules' },
         h('li', {}, '🍒 念得很好餵 3 個、很接近餵 2 個、有開口餵 1 個'),
         h('li', {}, '🥚 每一句都念過、飽食度滿了，蛋就會破掉；先孵出還沒收集過的寶寶'),
-        h('li', {}, '✨ 每一句都念到 100 分，有機會孵出金色寶寶'),
+        h('li', {}, '✨ 每一句都念到 100 分，很有機會孵出金色寶寶'),
         h('li', {}, '💛 念不好沒關係，按「🔊 聽示範」再念一次'))));
     var grid = h('div', { class: 'lessons' });
     lessonIds().forEach(function (lid) {
@@ -426,9 +426,9 @@
       }
     }
     function hatchNow() {
-      // 每一句都念到 100 分：一半機會孵出金色寶寶
+      // 每一句都念到 100 分：95% 機會孵出金色寶寶（老師 2026-11-26：機會要高）
       var perfect = egg.chunks.every(function (c, ci) { return best[ci] === 100; });
-      var got = { p: choosePet().name, g: perfect && Math.random() < 0.5 ? 1 : 0, t: Date.now() };
+      var got = { p: choosePet().name, g: perfect && Math.random() < 0.95 ? 1 : 0, t: Date.now() };
       var isNew = !collected()[got.p];
       S.hatched[lid] = S.hatched[lid] || {}; S.hatched[lid][pi] = got; save();
       var hp = hatchedPet(lid, pi);
@@ -445,6 +445,21 @@
         speak('破蛋了！孵出' + petName(hp) + '。' + hp.pet.say);
       }, 1400);
     }
+    // 可以破蛋了：不自動破蛋，讓學生自己按（還可以把沒念好的句子重念，不會因為最後一句念不好就錯過金色寶寶）
+    function readyPanel(box) {
+      var perfect = egg.chunks.every(function (c, ci) { return best[ci] === 100; });
+      var low = -1; egg.chunks.forEach(function (c, ci) { if (best[ci] < 100 && (low < 0 || best[ci] < best[low])) low = ci; });
+      var hb = h('button', { class: 'btn btn-main', type: 'button' }, '🐣 讓蛋破殼！');
+      hb.addEventListener('click', function () { stopRec(); hb.disabled = true; hatchNow(); });
+      var again = null;
+      if (low >= 0) {
+        again = h('button', { class: 'btn', type: 'button' }, '再念第 ' + (low + 1) + ' 句（' + best[low] + ' 分）');
+        again.addEventListener('click', function () { at = low; show(); });
+      }
+      add(box, h('div', { class: 'hint' }, perfect ? '✨ 每一句都念到 100 分！現在破蛋，很有機會是金色寶寶喔！'
+        : '蛋吃飽了，可以破殼了！想孵出金色寶寶，可以先把沒有 100 分的句子再念一次（也可以點上面的數字選句子）。'),
+        h('div', { class: 'row' }, hb, again));
+    }
     function show() {
       stopSpeak(); stopRec();
       var st = drawStage();
@@ -459,6 +474,7 @@
       var mic = h('button', { class: 'btn btn-main mic', type: 'button' }, '🎙️ 開始念');
       add(body, h('div', { class: 'muted small' }, '第 ' + (at + 1) + '／' + egg.chunks.length + ' 句' + (st.hatched ? '（已經孵出來了，可以再練習）' : '')),
         line, h('div', { class: 'row' }, demo, mic), live, result);
+      if (st.ready && !st.hatched) readyPanel(result);   // 回到這顆蛋時，已經可以破殼
       if (!SR) { live.textContent = '這個瀏覽器不能語音辨識。請用 iPad 的 Safari，或電腦的 Chrome、Edge。'; mic.disabled = true; return; }
       var heard = '';
       function finish() {
@@ -482,7 +498,7 @@
         if (gain > 0) { feed(Math.min(3, gain), r.left, r.top); sfx.eat(); } else sfx.soft();
         setTimeout(function () {
           drawStage(gain > 0);
-          if (after.ready && !after.hatched) { hatchNow(); return; }
+          if (after.ready && !after.hatched) { readyPanel(result); return; }
           var nextAt = -1;
           for (var k = 1; k <= egg.chunks.length; k++) { var c = (at + k) % egg.chunks.length; if (best[c] == null) { nextAt = c; break; } }
           var nb;
