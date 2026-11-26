@@ -62,18 +62,18 @@ a { color: var(--accent); }
 .cell .g.pv { font-feature-settings: 'vert' 1; text-align: center; width: 1em; }   /* 直書標點 */
 .cell.num { font-size: .78em; width: 1.28em; text-align: center; letter-spacing: -.05em; font-family: 'Times New Roman', serif; }
 /* 看注音寫國字的格子：字型畫出「字＋注音」放大，白色方格蓋住國字（比內文大很多，像 BopoDoc 考卷） */
-.boxc { height: 2.08em; width: 1.75em; padding-top: .18em; }
-.boxc .g.bxg { position: relative; font-size: 1.75em; height: 1em; margin-top: .04em; font-feature-settings: normal; }
+.boxc { height: 2.66em; width: 2.3em; padding-top: .22em; }
+.boxc .g.bxg { position: relative; font-size: 2.3em; height: 1em; margin-top: .04em; font-feature-settings: normal; }
 .boxc .g.bxg .z { display: inline-block; clip-path: inset(-.6em -.6em -.6em .99em); }   /* 只留字型畫的注音，國字整個剪掉 */
 .wrongc .g { position: relative; }
 .wrongc .g .z { display: inline-block; font-weight: 400; clip-path: inset(-.6em -.6em -.6em .99em); }
 .wrongc .g .wch { position: absolute; left: 0; top: 0; width: 1em; text-align: center; font-feature-settings: 'ss10' 1; }
 .boxc .cover { position: absolute; left: 0; top: 0; width: 1em; height: 1em; background: #fff; border: 1.2px solid #000; box-sizing: border-box; }
 .boxc .g.nz { width: 1em; }
-.boxc .zy { left: 1.86em; top: .4em; }
+.boxc .zy { left: 2.4em; top: .55em; }
 .sqc { height: 1.5em; width: 1.4em; }
 /* 有大格子的那一欄：字和格子的中線對齊 */
-.bxcol .cell:not(.boxc) { margin-left: .375em; }
+.bxcol .cell:not(.boxc) { margin-left: .65em; }
 .sqcol .cell:not(.sqc) { margin-left: .2em; }
 .sq { display: block; width: 1.4em; height: 1.4em; border: 1px solid #000; margin-top: .05em; }
 /* 注音：在字的右邊，符號由上往下，聲調在最後一個符號的右邊 */

@@ -387,7 +387,7 @@
   Para.prototype.paren = function (n) { this.cells.push({ k: 'c', c: '（' }); this.sp(n); this.cells.push({ k: 'c', c: '）' }); return this; };
   // 一組不要拆開的格子（選項、詞庫的詞）
   Para.prototype.group = function (fn) { var a = this.cells.length; fn(this); this.gs.push([a, this.cells.length]); return this; };
-  function adv(c) { return c.k === 'box' ? 2.08 : c.k === 'sq' ? 1.5 : c.big ? 1.15 : 1; }
+  function adv(c) { return c.k === 'box' ? 2.66 : c.k === 'sq' ? 1.5 : c.big ? 1.15 : 1; }
 
   // 段落 → 一欄一欄（L：一欄可以放幾個 em）
   function breakPara(p, L) {
@@ -413,7 +413,7 @@
     return cols;
   }
   var PITCH = 1.3, PITCH_Z = 1.72;
-  function colW(col) { return col.line ? 2.1 : col.box ? 3.0 : col.sq ? Math.max(1.6, col.wide ? PITCH_Z : PITCH) : col.wide ? PITCH_Z : PITCH; }
+  function colW(col) { return col.line ? 2.1 : col.box ? 3.75 : col.sq ? Math.max(1.6, col.wide ? PITCH_Z : PITCH) : col.wide ? PITCH_Z : PITCH; }
 
   // 注音字型（TMBpmfKai＝字嗨注音標楷）：字（＋讀音選擇符 IVS）就會畫出那個讀音的注音；ss10＝不要注音
   // 讀音不在字型的讀音表裡（老師自己打的）才用手畫的注音
@@ -605,7 +605,7 @@
     box.innerHTML = '';
     pages.forEach(function (pg) {
       var P = G0.P;
-      var sheet = h('div', { class: 'sheet', style: 'width:' + P[0] + 'mm;height:' + P[1] + 'mm;font-size:' + P[2] + 'pt' });
+      var sheet = h('div', { class: 'sheet' + (st.paper === 'A4' ? ' a4' : ''), style: 'width:' + P[0] + 'mm;height:' + P[1] + 'mm;font-size:' + P[2] + 'pt' });
       var inner = h('div', { class: 'inner' }), body = h('div', { class: 'body' });
       if (pg.first) add(inner, h('div', { class: 'titlebox' }, h('div', { class: 't1' }, '五上國語　' + (st.title || autoTitle())), h('div', { class: 't2' }, '五年　　班　　號　姓名：　　　　　　　得分：')));
       pg.rows.forEach(function (r, k) {
