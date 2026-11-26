@@ -96,11 +96,11 @@
   function defaults() {
     var secs = {};
     SECS.forEach(function (s) { secs[s.k] = { on: !s.off, n: s.n, pts: s.pts, zy: s.zy }; });
-    return { v2: 1, v3: 1, lessons: [], group: 'std', paper: 'B4', title: '', titleAuto: true, headZy: false, answers: true, secs: secs, items: {}, heads: {} };
+    return { v2: 1, v3: 1, v4: 1, lessons: [], group: 'std', paper: 'B4', title: '', titleAuto: true, headZy: false, answers: false, secs: secs, items: {}, heads: {} };
   }
   function save() { try { localStorage.setItem(SAVE, JSON.stringify(st)); } catch (e) { } }
   function load() {
-    try { var s = JSON.parse(localStorage.getItem(SAVE) || 'null'); if (s && s.secs) { if (!s.v2) { s.v2 = 1; if (s.secs.dict) s.secs.dict.zy = true; } if (!s.v3) { s.v3 = 1; if (s.secs.dict) { s.secs.dict.n = 20; s.secs.dict.pts = 1; } s.items = {}; } var d = defaults(); SECS.forEach(function (x) { if (!s.secs[x.k]) s.secs[x.k] = d.secs[x.k]; }); return s; } } catch (e) { }
+    try { var s = JSON.parse(localStorage.getItem(SAVE) || 'null'); if (s && s.secs) { if (!s.v2) { s.v2 = 1; if (s.secs.dict) s.secs.dict.zy = true; } if (!s.v3) { s.v3 = 1; if (s.secs.dict) { s.secs.dict.n = 20; s.secs.dict.pts = 1; } s.items = {}; } if (!s.v4) { s.v4 = 1; s.answers = false; }   /* 參考答案改成要勾才印（老師 2026-11-26） */ var d = defaults(); SECS.forEach(function (x) { if (!s.secs[x.k]) s.secs[x.k] = d.secs[x.k]; }); return s; } } catch (e) { }
     return null;
   }
   function G() { return GROUPS[st.group] || GROUPS.std; }
@@ -808,7 +808,7 @@
       h('div', { class: 'total' + (total === 100 ? '' : ' bad') }, '總分：' + total + ' 分' + (total === 100 ? '' : '（不是 100 分）')),
       (function () { var L = leaks(); return L.length ? h('div', { class: 'tip', style: 'color:#B3261E' }, '⚠️ 答案在別題出現：' + L.map(function (x) { return '「' + x.w + '」（' + SEC[x.it.kind].name + '）'; }).join('、') + '。可以按「編輯題目」→「換一題」。') : null; })(),
       h('label', { class: 'field' }, h('input', { type: 'checkbox', checked: st.headZy, onchange: function () { st.headZy = !st.headZy; save(); render(); } }), '大題標題也標注音'),
-      h('label', { class: 'field' }, h('input', { type: 'checkbox', checked: st.answers, onchange: function () { st.answers = !st.answers; save(); render(); } }), '附參考答案（最後一頁）'),
+      h('label', { class: 'field' }, h('input', { type: 'checkbox', checked: st.answers, onchange: function () { st.answers = !st.answers; save(); render(); } }), '印參考答案（另一頁，要用再勾）'),
       h('div', { class: 'tip', style: lastPages > 2 ? 'color:#B3261E;font-weight:700' : '' }, '考卷 ' + lastPages + ' 頁' + (lastPages > 2 ? '（超過兩頁：可以減少題數，或改用 B4）' : lastPages === 2 ? '（正反兩面）' : '')),
       h('div', { class: 'btns' },
         h('button', { class: 'btn', type: 'button', onclick: function () { if (confirm('重新出一份題目？（改過的題目會不見）')) { generate(); render(); } } }, '🔀 換一份題目'),
