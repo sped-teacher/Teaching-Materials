@@ -24,7 +24,7 @@ if mr.FIX_F.exists():
         if isinstance(v, dict):
             FIXES.update(v)
 # 出卷另外校正的讀音（依《國語辭典簡編本》）
-FIXES.update({'為什麼': 'ㄨㄟˋ ㄕㄣˊ ˙ㄇㄜ', '怎樣': 'ㄗㄣˇ ㄧㄤˋ', '怎麼樣': 'ㄗㄣˇ ˙ㄇㄜ ㄧㄤˋ', '亞馬遜': 'ㄧㄚˋ ㄇㄚˇ ㄒㄩㄣˋ', '法國': 'ㄈㄚˇ ㄍㄨㄛˊ', '長得': 'ㄓㄤˇ ˙ㄉㄜ', '播報': 'ㄅㄛˋ ㄅㄠˋ'})
+FIXES.update({'為什麼': 'ㄨㄟˋ ㄕㄣˊ ˙ㄇㄜ', '怎樣': 'ㄗㄣˇ ㄧㄤˋ', '怎麼樣': 'ㄗㄣˇ ˙ㄇㄜ ㄧㄤˋ', '亞馬遜': 'ㄧㄚˋ ㄇㄚˇ ㄒㄩㄣˋ', '法國': 'ㄈㄚˇ ㄍㄨㄛˊ', '長得': 'ㄓㄤˇ ˙ㄉㄜ', '播報': 'ㄅㄛˋ ㄅㄠˋ', '穿著': 'ㄔㄨㄢ ˙ㄓㄜ'})
 for w in FIXES:
     mr.jieba.add_word(mr._t2s.convert(w), 99999)
 
@@ -58,7 +58,7 @@ global.window={};const out={};
 for(let i=1;i<=12;i++){const id=String(i).padStart(2,'0');try{require(process.argv[1]+'/data/lesson'+id+'.js')}catch(e){continue}
 const L=window.LESSONS[id];out[id]={title:L.title,
  radical:Object.fromEntries(L.chars.map(c=>[c.c,c.radical])),
- phrase:(L.phrases||[]).map(p=>({m:p.model,fix:(p.blocks||[]).map(b=>typeof b==='string'),bank:(p.blocks||[]).map(b=>typeof b==='string'?[]:((p.bank||{})[b.k]||[]).map(x=>x.w))})),
+ phrase:(L.phrases||[]).map(p=>({m:p.model,fix:(p.blocks||[]).map(b=>typeof b==='string'),bank:(p.blocks||[]).map(b=>typeof b==='string'?[]:((p.bank||{})[b.k]||[]).map(x=>x.w)),pr:(p.practice||[]).concat(p.examples||[]).filter(x=>x.length===p.model.length)})),
  imitate:(L.sentences||[]).map(s=>s.pattern)}}
 console.log(JSON.stringify(out))"""
     r = subprocess.run(['node', '-e', js, str(ROOT)], capture_output=True, text=True, encoding='utf-8', check=True)
@@ -130,7 +130,8 @@ def main():
         # 短語：fix＝照印的字（的、而、般…）；bank＝每一格可以用的詞（中組給詞庫用，不放範例本身的詞）
         L['phrase'] = [{'w': p['m'], 'z': [zy(w) for w in p['m']], 'fix': p['fix'],
                         'bank': [[x for x in b if x != w] for b, w in zip(p['bank'], p['m'])],
-                        'bz': {x: zy(x) for b in p['bank'] for x in b}} for p in E['phrase']]
+                        'pr': p['pr'],   # 完整的練習短語（中組詞庫：拿兩個完整短語的詞打散，學生一定拼得出通順的短語）
+                        'bz': {x: zy(x) for x in set([w for b in p['bank'] for w in b] + [w for ph in p['pr'] for w in ph])}} for p in E['phrase']]
         L['imitate'] = [{'s': p, 'z': zy(p)} for p in E['imitate']]
         out[lid] = L
         for it in L['dict']:   # 答案的字不能印在同一句別的地方（例：小心〔翼〕翼）

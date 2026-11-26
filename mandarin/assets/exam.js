@@ -155,7 +155,11 @@
     if (kind === 'choice') it.order = shuffle([0, 1, 2, 3].slice(0, it.o.length));
     if (kind === 'word') it.order = shuffle([0, 1, 2, 3]);
     if (kind === 'look') it.flip = Math.random() < 0.5;
-    if (kind === 'phrase') it.pick = it.w.map(function (w, k) { return it.fix[k] ? [] : shuffle(it.bank[k] || []).slice(0, 2); });
+    if (kind === 'phrase') {   // 中組詞庫：兩個完整練習短語的詞（只取要填的格子），學生拼得出通順的短語
+      var prs = shuffle(it.pr || []).slice(0, 2);
+      it.pick = prs.length ? [[].concat.apply([], prs.map(function (ph) { return ph.filter(function (w, k) { return !it.fix[k]; }); }))]
+        : it.w.map(function (w, k) { return it.fix[k] ? [] : shuffle(it.bank[k] || []).slice(0, 2); });
+    }
     return it;
   }
   function makeIdiomBank() {
@@ -189,7 +193,7 @@
       default: return it.s || '';
     }
   }
-  function allVisible(skip) { var v = []; each(function (it) { if (it !== skip) v.push(visibleOf(it)); }); return v.join('|') + '|' + (st.idiomBank || []).join('|'); }
+  function allVisible(skip) { var v = []; each(function (it) { if (it !== skip) v.push(visibleOf(it)); }); return v.join('|') + '|' + (st.secs.idiom.on ? (st.idiomBank || []).join('|') : ''); }   // 成語大題沒有勾，詞庫不會印出來
   function each(f) { SECS.forEach(function (s) { if (st.secs[s.k].on) (st.items[s.k] || []).forEach(f); }); }
   function leaks() {
     var bad = [];
@@ -197,7 +201,7 @@
       var mine = answersOfItem(it);
       if (!mine.length) return;
       var others = allVisible(it), otherAns = [];
-      each(function (x) { if (x !== it) otherAns = otherAns.concat(answersOfItem(x)); });
+      each(function (x) { if (x !== it && !(SAME_OK[it.kind] && x.kind === it.kind)) otherAns = otherAns.concat(answersOfItem(x)); });
       mine.forEach(function (w) { if (others.indexOf(w) >= 0 || otherAns.some(function (b) { return sameAns(w, b); })) bad.push({ it: it, w: w }); });
     });
     return bad;
@@ -211,16 +215,18 @@
   }
   // 目前卷子上（除了 skip）的答案 A、看得到的字 V；新的一題 ok：不含別題的答案、自己的答案也沒在別題露出來
   function ctx(skip) {
-    var A = [], V = [];
-    each(function (it) { if (it !== skip) { A = A.concat(answersOfItem(it)); V.push(visibleOf(it)); } });
-    V.push((st.idiomBank || []).join('|'));
-    return { A: A, V: V };
+    var A = [], V = [], K = [];
+    each(function (it) { if (it !== skip) { var a = answersOfItem(it); A = A.concat(a); K = K.concat(a.map(function () { return it.kind; })); V.push(visibleOf(it)); } });
+    if (st.secs.idiom.on) V.push((st.idiomBank || []).join('|'));
+    return { A: A, V: V, K: K };
   }
   // 兩題考到同一個字（例：寫國字考「坦」、改錯字也考「坦」）也不行
   function sameAns(a, b) { return a === b || (Array.from(a).length === 1 && b.indexOf(a) >= 0) || (Array.from(b).length === 1 && a.indexOf(b) >= 0); }
+  // 改錯字、圈字同一大題裡考到同一個字沒關係（兩句都看不到答案，是同一個字的另一種考法）；不同大題才不行
+  var SAME_OK = { fix: 1, look: 1 };
   function fits(it, C) {
     var vis = visibleOf(it), mine = answersOfItem(it);
-    if (mine.some(function (a) { return C.A.some(function (b) { return sameAns(a, b); }); })) return false;
+    if (mine.some(function (a) { return C.A.some(function (b, i) { return sameAns(a, b) && !(SAME_OK[it.kind] && C.K[i] === it.kind); }); })) return false;
     if (C.A.some(function (a) { return vis.indexOf(a) >= 0; })) return false;   // 別題的答案不能印在這一題（同一個字也不能兩題都考）
     if (mine.some(function (a) { return C.V.some(function (v) { return v.indexOf(a) >= 0; }); })) return false;
     return true;
@@ -233,7 +239,7 @@
     var use = good.concat(idx.filter(function (i) { return good.indexOf(i) < 0; })).slice(0, 3);
     it.o = use.map(function (i) { return it.o[i]; }); it.oz = use.map(function (i) { return it.oz[i]; });
   }
-  function take(C, it) { C.A = C.A.concat(answersOfItem(it)); C.V.push(visibleOf(it)); }
+  function take(C, it) { var a = answersOfItem(it); C.A = C.A.concat(a); C.K = (C.K || []).concat(a.map(function () { return it.kind; })); C.V.push(visibleOf(it)); }
   // 各課輪流挑 n 題：每一課挑佇列裡第一個不會洩漏答案的；都不行才用會洩漏的補（prefer：先從這一課挑）
   // 一題佔幾個單位：看注音寫國字算格數，其他大題一題算 1
   function size(it) { return it.kind === 'dict' ? segs('dict', it.s).filter(function (g) { return g.t === 'slot'; }).reduce(function (a, g) { return a + Array.from(g.w).length; }, 0) : 1; }
@@ -335,11 +341,11 @@
     var t0 = Date.now();
     for (var t = 0; t < 80 && bestN > 0 && (t < 3 || Date.now() - t0 < 700); t++) {
       st.items = {}; st.idiomBank = [];
-      var C = { A: [], V: [] };
+      var C = { A: [], V: [], K: [] };
       var order = (st.dictMode || 'mix') === 'word' ? PICK_ORDER : ['dict'].concat(PICK_ORDER.filter(function (k) { return k !== 'dict'; }));   // 考單一生字：先挑第一大題，別的大題再避開這些字
       order.forEach(function (k) {
         var on = st.secs[k].on;
-        st.items[k] = shuffle(pick(k, st.secs[k].n, on ? C : { A: [], V: [] }));
+        st.items[k] = shuffle(pick(k, st.secs[k].n, on ? C : { A: [], V: [], K: [] }));
       });
       makeIdiomBank();
       repair();
@@ -752,6 +758,132 @@
     popEl.style.top = Math.min(y + 8, innerHeight - r.height - 8) + 'px';
   }
 
+  // ── 下載 .bopo：把這一份（含老師改過的題目、破音字）轉成 BopoDoc 檔，可以在波波注音「匯入 BOPO」再調版面 ──
+  // 格式沿用 bopo-review-exam skill 的 mix_bopo.js（考試卷：橫式直書、上下雙欄、側邊標題框）
+  function uuid() { return (crypto.randomUUID ? crypto.randomUUID() : 'id' + Math.random().toString(36).slice(2) + Date.now().toString(36)); }
+  function ivsStr(text, zarr) {   // 破音字：第二個以後的讀音加讀音選擇符（和注音字型、BopoDoc 同一套）
+    return Array.from(text).map(function (c, i) {
+      var z = zarr && zarr[i], k = z ? (ZY[c] || []).indexOf(z) : -1;
+      return k > 0 ? c + String.fromCodePoint(0xE01E0 + k) : c;
+    }).join('');
+  }
+  function bopoDoc() {
+    var B4 = st.paper !== 'A4', g = G();
+    var S = B4 ? 16 : 14, BOX = B4 ? 36 : 30, SQ = B4 ? 22 : 20, LINE = B4 ? 15 : 14, WL = B4 ? 12 : 9;   // 字級、只有注音的格子（老師：格子要大）、方格、一行約幾字、寫字線長
+    var PW = B4 ? 257 : 210, PH = B4 ? 364 : 297;
+    var blocks = [];
+    var VERT = { '「': '﹁', '」': '﹂', '『': '﹃', '』': '﹄', '（': '︵', '）': '︶', '…': '︙', '〈': '︿', '〉': '﹀', '《': '︽', '》': '︾' };
+    var vert = function (t) { return t.replace(/[「」『』（）…〈〉《》]/g, function (c) { return VERT[c]; }); };
+    var vlen = function (t) { return Array.from(t.replace(/[\u{E0100}-\u{E01EF}]/gu, '')).length; };
+    var txt = function (t, o) { o = o || {}; var st2 = { fontSize: o.size || S }; if (!o.zy) st2.displayMode = 'charOnly'; if (o.bold) st2.bold = true; if (o.hl) st2.highlight = { type: 'solid', color: o.hl }; return { text: vert(t), style: st2 }; };
+    var blank = function (ch) { return { text: ch, style: { fontSize: BOX, showBoxes: true, displayMode: 'rubyOnly' } }; };
+    var sq = function (size) { return { text: '　', style: { fontSize: size || SQ, showBoxes: true, showBoxesCharOnly: true } }; };
+    var pad = function () { return { text: ' ', style: { fontSize: 8 } }; };
+    var wideBlank = function (n) { return [txt('（'), { text: ' '.repeat(n || 4), style: { fontSize: 24, displayMode: 'charOnly' } }, txt('）')]; };
+    var para = function (runs, p) {
+      var b = { type: 'text', id: uuid(), runs: runs }; if (p) b.paragraph = p;
+      var sel = [], n = 0;
+      Array.from(runs.map(function (r) { return r.text || ''; }).join('')).forEach(function (ch) { var cp = ch.codePointAt(0); if (cp >= 0xE0100 && cp <= 0xE01EF) sel.push(n - 1); else n++; });
+      if (sel.length) b.userSelectedOffsets = sel;
+      blocks.push(b); return b;
+    };
+    var hang = function (n) { return { leftIndent: n * S, firstLineIndent: -n * S }; };
+    var writeLine = function () { para([{ text: '　'.repeat(WL + 2), style: { fontSize: 20, displayMode: 'charOnly', underline: 'solid' } }], { leftIndent: 1.5 * S, lineSpacing: 1.5 }); };
+    var secNo = 0;
+    // 題目句子：一般的字照設定標注音，〔〕的地方換成格子／括號／方格
+    var sentRuns = function (it, zy, o) {
+      o = o || {};
+      var P = Array.from(plainOf(it.kind, it.s)), out = [];
+      segs(it.kind, it.s).forEach(function (sg) {
+        if (sg.t === 'text') out.push(txt(ivsStr(P.slice(sg.a, sg.b).join(''), it.z.slice(sg.a, sg.b)), { zy: zy }));
+        else if (sg.t === 'slot') {
+          if (it.kind === 'dict') Array.from(sg.w).forEach(function (c, i) { out.push(pad(), blank(ivsStr(c, [it.z[sg.a + i]])), pad()); });
+          else if (it.kind === 'idiom') out = out.concat(wideBlank(4));
+          else if (it.kind === 'word') Array.from(sg.w).forEach(function () { out.push(sq(S + 2)); });
+        } else if (sg.t === 'opts') {
+          var os = it.flip ? sg.opts.slice().reverse() : sg.opts;
+          out.push(txt('（' + os.join('／') + '）', { size: S + 2 }));
+        } else if (sg.t === 'wrong') out.push(txt(sg.wrong, { zy: zy, bold: o.bold }));
+      });
+      return out;
+    };
+    SECS.forEach(function (Sx) {
+      var cfg = st.secs[Sx.k], items = st.items[Sx.k] || [];
+      if (!cfg.on || !items.length) return;
+      var zy = cfg.zy, cnt = Sx.unit ? units(Sx.k) : items.length;
+      var headTxt = cnNum(++secNo) + '、' + Sx.head;
+      para([txt(ivsStr(headTxt, (st.heads[Sx.k] || {}).z), { bold: true, size: S + 1, zy: st.headZy }), txt('（每' + (Sx.unit || '題') + cfg.pts + '分，共' + cfg.pts * cnt + '分）', { size: S - 1 })], { spaceBefore: 6, spaceAfter: 2 });
+      if (Sx.k === 'idiom') para([txt((st.idiomBank || []).map(function (w, k) { var it = items.filter(function (x) { return x.w === w; })[0]; return NUMS[k] + ivsStr(w, it ? it.wz : null); }).join('　') + '　', { hl: '#eeeeee', zy: zy })], { leftIndent: S, lineSpacing: 1.15 });
+      items.forEach(function (it, i) {
+        var no = (i + 1) + '. ';
+        switch (Sx.k) {
+          case 'dict': para([txt(no)].concat(sentRuns(it, zy)), hang(1.5)); break;
+          case 'radical': para([txt(no), txt(it.c, { size: S + 2, bold: true }), txt('　部首（　　）　　造詞（　　　　）')], { leftIndent: S, spaceBefore: 5, spaceAfter: 5 }); break;
+          case 'look': para([txt(no)].concat(sentRuns(it, zy)), hang(1.5)); break;
+          case 'fix': para([txt('（　　）'), txt(no)].concat(sentRuns(it, zy, { bold: g.fixBold })), hang(3)); break;
+          case 'idiom': para([txt(no, { zy: 1 })].concat(sentRuns(it, zy)), hang(1.5)); break;
+          case 'word':
+            para([txt('（　）' + (i + 1) + ' ', { zy: 1 })].concat(sentRuns(it, zy)), hang(3));
+            var ans = segs('word', it.s).filter(function (x) { return x.t === 'slot'; })[0];
+            var wo = [ans.w].concat(it.o), wz = [it.z.slice(ans.a, ans.b)].concat(it.oz);
+            var opts = it.order.map(function (oi, j) { return NUMS[j] + ivsStr(wo[oi], wz[oi]); });
+            (vlen(opts.join('　')) <= LINE + 2 ? [opts] : [opts.slice(0, 2), opts.slice(2)]).forEach(function (r) { para([txt(r.join('　'), { zy: zy })], { leftIndent: 3 * S }); });
+            break;
+          case 'choice':
+            para([txt('（　）' + (i + 1) + ' ', { zy: 1 }), txt(ivsStr(it.s, it.z), { zy: zy })], Object.assign(hang(3), { lineSpacing: 1.15 }));
+            var ord = g.choiceN === 3 && it.order3 ? it.order3 : it.order.filter(function (oi) { return oi < g.choiceN; });
+            var co = ord.map(function (oi, j) { return NUMS[j] + ivsStr(it.o[oi], it.oz[oi]); });
+            var rows = [[]];
+            co.forEach(function (o) { var r = rows[rows.length - 1]; if (r.length && vlen(r.concat(o).join('　')) > LINE - 3) rows.push([o]); else r.push(o); });
+            rows.forEach(function (r) { para([txt(r.join('　'), { zy: zy })], { leftIndent: 3 * S, lineSpacing: 1.15 }); });
+            break;
+          case 'phrase':
+            para([txt(no), txt(it.w.map(function (w, j) { return ivsStr(w, it.z[j]); }).join('　'), { zy: zy })], Object.assign(hang(1.5), { lineSpacing: 1.15 }));
+            if (g.phraseBank) para([txt('詞庫：', { zy: zy }), txt(shuffleSeed([].concat.apply([], it.pick || []), it.ref).map(function (w) { return ivsStr(w, (it.bz || {})[w]); }).join('　'), { zy: zy, hl: '#eeeeee' })], { leftIndent: 1.5 * S, lineSpacing: 1.15 });
+            var runs = [];
+            it.w.forEach(function (w, j) { if (it.fix[j]) runs.push(txt(ivsStr(w, it.z[j]), { zy: zy })); else runs = runs.concat(wideBlank(2 * vlen(w))); runs.push(txt('　')); });
+            para(runs, { leftIndent: 1.5 * S, lineSpacing: 1.15 });
+            break;
+          case 'imitate':
+            para([txt(no), txt(ivsStr(it.s, it.z), { zy: zy })], hang(1.5)); writeLine(); writeLine();
+            break;
+        }
+      });
+    });
+    blocks.unshift({ type: 'section', id: uuid(), columns: 2, separatorStyle: 'solid' });   // 上下雙欄
+    blocks.forEach(function (b) {   // 題號「1.」、兩位數的分數橫排
+      if (!b.runs) return;
+      b.runs = [].concat.apply([], b.runs.map(function (r) {
+        if (typeof r.text !== 'string' || !r.text) return [r];
+        return r.text.split(/([0-9]+\.|[0-9]{2,})/).filter(Boolean).map(function (t) {
+          return /^([0-9]+\.|[0-9]{2,})$/.test(t) ? { text: t, style: Object.assign({}, r.style, { tateChuYoko: true, tcyGroupId: uuid() }) } : { text: t, style: Object.assign({}, r.style) };
+        });
+      }));
+    });
+    var W = 60, MG = 10 / 25.4 * 96, title = st.title || autoTitle();
+    var side = { id: uuid(),
+      blocks: [{ type: 'text', id: uuid(), runs: [txt('五上國語　' + title, { bold: true, size: S + 4 }), txt('　　　　　姓名：　　　　　　　　得分：', { size: S - 1 })] }],
+      position: { x: PH / 25.4 * 96 - MG - W, y: MG, pageIndex: 0 },
+      style: { width: W, height: PW / 25.4 * 96 - 2 * MG, border: { width: 8, color: '#eeeeee', style: 'solid' }, backgroundColor: '#f5f5f5', verticalAlign: 'middle', frameShape: 'roundedRect', shapeAdjust: [0.5] },
+      zIndex: 0, behindText: true,
+      paragraphAnchor: { blockId: blocks.filter(function (x) { return x.type === 'text'; })[0].id, mode: 'move-with-text', offset: { dx: -W + (48 - MG), dy: -19.80577427821521 + (MG - 28.19422572178479) } },
+      textWrap: 'topBottom' };
+    side.blocks[0].runs = [].concat.apply([], side.blocks[0].runs.map(function (r) { return r.text.split(/([0-9]{2,})/).filter(Boolean).map(function (t) { return /^[0-9]{2,}$/.test(t) ? { text: t, style: Object.assign({}, r.style, { tateChuYoko: true, tcyGroupId: uuid() }) } : { text: t, style: Object.assign({}, r.style) }; }); }));
+    var now = Date.now();
+    return { format: 'bopodoc', version: 14, name: '康軒5上 ' + title + (g === GROUPS.mid ? '（中組）' : ''),
+      doc: { blocks: [], frames: [{ id: '__main__', blocks: blocks, frameConfig: { overflow: { type: 'paginate' } } }, side], styles: {} },
+      pageConfig: { width: PW, height: PH, marginTop: 10, marginBottom: 10, marginLeft: 10, marginRight: 10, orientation: 'landscape', writingMode: 'vertical', fontSize: S, lineSpacing: B4 ? 1.0 : 1.05, charSpacing: 0, compactRuby: true, gridMode: false, gridCellSize: 20, gridGuide: 'cross', fontFamily: 'BpmfZihiKaiStd', gridColor: '#3c78d8' },
+      createdAt: now, updatedAt: now };
+  }
+  function downloadBopo() {
+    var doc = bopoDoc();
+    var blob = new Blob([JSON.stringify(doc)], { type: 'application/json' });
+    var a = document.createElement('a');
+    a.href = URL.createObjectURL(blob); a.download = doc.name + '.bopo';
+    document.body.appendChild(a); a.click();
+    setTimeout(function () { URL.revokeObjectURL(a.href); a.remove(); }, 1000);
+  }
+
   // ── 畫面 ──
   var app = document.getElementById('app'), sheetsBox = null, panel = null, lastPages = 0;
   function render() {
@@ -813,6 +945,7 @@
       h('div', { class: 'btns' },
         h('button', { class: 'btn', type: 'button', onclick: function () { if (confirm('重新出一份題目？（改過的題目會不見）')) { generate(); render(); } } }, '🔀 換一份題目'),
         h('button', { class: 'btn' + (editing ? ' on' : ''), type: 'button', onclick: function () { editing = !editing; render(); } }, editing ? '✏️ 編輯中（再按一次結束）' : '✏️ 編輯題目、改破音字'),
+        h('button', { class: 'btn', type: 'button', title: '下載後在波波注音按「匯入 BOPO」打開，可以再調版面', onclick: downloadBopo }, '⬇️ 下載 .bopo（用波波注音改）'),
         h('button', { class: 'btn main', type: 'button', onclick: function () { editing = false; render(); var go = function () { setTimeout(function () { window.print(); }, 80); }; if (document.fonts && document.fonts.ready) document.fonts.ready.then(go); else go(); } }, '🖨️ 列印')),
       h('p', { class: 'tip' }, editing ? '編輯中：把滑鼠移到題目上，可以「改題目」「換一題」「刪除」；點任何一個字可以改它的注音（藍色注音是破音字）。' : '列印時紙張選「' + st.paper + '」、方向「橫向」，邊界選「無」，縮放 100%。'),
       h('p', { class: 'tip' }, '題目和讀音的修改會自動記在這台電腦。'),
@@ -841,7 +974,7 @@
   }
 
   // 本機測試用
-  if (/^(localhost|127\.0\.0\.1)$/.test(location.hostname)) window.__exam = { generate: function () { generate(); }, leaks: function () { return leaks(); }, st: function () { return st; } };
+  if (/^(localhost|127\.0\.0\.1)$/.test(location.hostname)) window.__exam = { bopo: function () { return bopoDoc(); }, generate: function () { generate(); }, leaks: function () { return leaks(); }, st: function () { return st; } };
   function start() {
     st = load() || defaults();
     var hs = /[#&]on=([a-z,]+)/.exec(location.hash);   // exam.html#l=07,08,09&on=fix：另外打開這幾個大題
